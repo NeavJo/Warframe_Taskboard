@@ -1,0 +1,1254 @@
+/* =============================================================
+   Warframe Taskboard — Web 版样式系统
+   奥罗金暗色科幻美学：深灰底色 + 金色/蓝/黄强调色
+   ============================================================= */
+
+/* ----- CSS Custom Properties (主题令牌) ----- */
+:root {
+  --bg-primary: #0A0E14;
+  --bg-surface: #13181F;
+  --bg-surface-alt: #1A232E;
+  --bg-border: #2A3340;
+
+  --gold: #D4AF37;
+  --gold-dim: rgba(212, 175, 55, 0.6);
+  --gold-glow: rgba(212, 175, 55, 0.25);
+
+  --blue: #1FB6FF;
+  --blue-dim: rgba(31, 182, 255, 0.6);
+  --blue-glow: rgba(31, 182, 255, 0.25);
+
+  --yellow: #FFD84D;
+  --yellow-dim: rgba(255, 216, 77, 0.6);
+  --yellow-glow: rgba(255, 216, 77, 0.25);
+
+  --text-primary: #E6EDF3;
+  --text-secondary: #8B9AAA;
+  --text-muted: #5C6773;
+
+  --success: #3FB950;
+  --danger: #E5534B;
+
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+
+  --header-height: 72px;
+  --sidebar-width: 220px;
+}
+
+/* ----- Reset & Base ----- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ----- App Shell ----- */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ----- Header (宽屏顶栏) ----- */
+.app-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 24px 14px;
+  background: linear-gradient(135deg, #0E141C, #13181F);
+  border-bottom: 1px solid var(--bg-border);
+  flex-shrink: 0;
+}
+
+.app-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.app-header .brand-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2A3340, #0A0E14);
+  border: 1.5px solid var(--gold);
+  box-shadow: 0 0 10px var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.app-header .brand-text h1 {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  color: var(--gold);
+  text-shadow: 0 0 12px var(--gold);
+  line-height: 1.2;
+}
+
+.app-header .brand-text .subtitle {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.app-header .header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.app-header .header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ----- Glow Divider ----- */
+.glow-divider {
+  height: 1px;
+  width: 100%;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--blue), transparent);
+}
+
+/* ----- Main Content Area ----- */
+.main-area {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ----- Sidebar (宽屏左侧导航) ----- */
+.sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, #0E141C, #0A0E14);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 8px;
+}
+
+.sidebar-footer {
+  padding: 12px 20px 20px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+}
+
+/* ----- Content Panel (页面容器) ----- */
+.content-panel {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-view {
+  flex: 1;
+  overflow: auto;
+  display: none;
+}
+
+.page-view.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ----- Bottom Nav (窄屏底部导航) ----- */
+.bottom-nav {
+  display: none;
+  background: linear-gradient(180deg, #13181F, #0A0E14);
+  border-top: 1px solid var(--bg-border);
+  flex-shrink: 0;
+}
+
+.bottom-nav-inner {
+  display: flex;
+  padding: 6px 8px;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.bottom-nav-item:hover {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.bottom-nav-item.active {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--gold);
+  text-shadow: 0 0 6px var(--gold);
+}
+
+/* =============================================================
+   按钮样式系统 (WfButtonShell 等效)
+   ============================================================= */
+
+.wf-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--bg-border);
+  border-radius: 6px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.wf-btn:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--gold-dim);
+  color: var(--gold);
+  box-shadow: 0 0 6px var(--gold-glow);
+}
+
+.wf-btn.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.wf-btn:active {
+  transform: scale(0.93);
+}
+
+/* 强调色变体 */
+.wf-btn.accent-gold { --btn-accent: var(--gold); --btn-accent-dim: var(--gold-dim); --btn-accent-glow: var(--gold-glow); }
+.wf-btn.accent-blue { --btn-accent: var(--blue); --btn-accent-dim: var(--blue-dim); --btn-accent-glow: var(--blue-glow); }
+.wf-btn.accent-yellow { --btn-accent: var(--yellow); --btn-accent-dim: var(--yellow-dim); --btn-accent-glow: var(--yellow-glow); }
+.wf-btn.accent-blue:hover,
+.wf-btn.accent-blue.active { border-color: var(--blue-dim); color: var(--blue); box-shadow: 0 0 6px var(--blue-glow); }
+.wf-btn.accent-blue.active { background: rgba(31, 182, 255, 0.15); border-color: var(--blue); box-shadow: 0 0 10px var(--blue-glow); }
+.wf-btn.accent-yellow:hover,
+.wf-btn.accent-yellow.active { border-color: var(--yellow-dim); color: var(--yellow); box-shadow: 0 0 6px var(--yellow-glow); }
+.wf-btn.accent-yellow.active { background: rgba(255, 216, 77, 0.15); border-color: var(--yellow); box-shadow: 0 0 10px var(--yellow-glow); }
+
+/* 图标按钮 (WfIconButton) */
+.wf-icon-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+/* 侧栏导航按钮 */
+.wf-btn.sidebar-tile {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 14px;
+  background: transparent;
+  border-color: transparent;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.wf-btn.sidebar-tile:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--gold-dim);
+}
+
+.wf-btn.sidebar-tile.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold);
+}
+
+/* 底栏导航按钮 */
+.wf-btn.nav-bottom {
+  flex: 1;
+  flex-direction: column;
+  padding: 8px 4px;
+  background: transparent;
+  border-color: transparent;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+}
+
+/* 管理按钮 */
+.wf-btn.manage-btn {
+  padding: 8px 12px;
+}
+
+/* =============================================================
+   任务看板页
+   ============================================================= */
+
+.taskboard-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 窄屏头部 (替代宽屏全局 header) */
+.taskboard-header {
+  display: none;
+  padding: 16px 24px 14px;
+  background: linear-gradient(135deg, #0E141C, #13181F);
+  border-bottom: 1px solid var(--bg-border);
+}
+
+.taskboard-header .header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.taskboard-header .header-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.taskboard-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  padding: 20px;
+  gap: 20px;
+}
+
+/* 双栏：日常 (左) + 周常 (右) */
+.taskboard-two-col {
+  flex: 1;
+  display: flex;
+  gap: 20px;
+  overflow: hidden;
+}
+
+.taskboard-two-col .panel-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 单栏：TabBar */
+.taskboard-tabbar {
+  display: none;
+  padding: 12px 16px 8px;
+  gap: 0;
+}
+
+/* 单栏 Tab 视图容器（窄屏使用，宽屏隐藏防止重复渲染） */
+.taskboard-tab-view {
+  display: none;
+}
+
+.taskboard-tabbar .tab-btn {
+  flex: 1;
+  padding: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.taskboard-tabbar .tab-btn:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.taskboard-tabbar .tab-btn:last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+.taskboard-tabbar .tab-btn.active {
+  color: #000;
+  font-weight: 800;
+}
+
+.taskboard-tabbar .tab-btn.active.daily-tab {
+  background: var(--yellow);
+}
+
+.taskboard-tabbar .tab-btn.active.weekly-tab {
+  background: var(--blue);
+}
+
+.taskboard-tabbar .tab-divider {
+  width: 0;
+  border: none;
+}
+
+/* =============================================================
+   任务面板 (TaskPanel)
+   ============================================================= */
+
+.task-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+}
+
+/* 面板头部 */
+.panel-header {
+  padding: 16px 18px;
+  background: linear-gradient(135deg, var(--bg-surface), var(--bg-surface-alt));
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+}
+
+.panel-header .header-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-header .accent-bar {
+  width: 4px;
+  height: 22px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.panel-header .subtitle-text {
+  font-size: 11px;
+  letter-spacing: 3px;
+  font-weight: 700;
+}
+
+.panel-header .header-top .spacer {
+  flex: 1;
+}
+
+.panel-header .counter {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-header .title-text {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-top: 6px;
+}
+
+.panel-header .progress-bar {
+  margin-top: 12px;
+  height: 6px;
+  background: var(--bg-primary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.panel-header .progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* 面板任务列表 */
+.panel-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 14px;
+  padding: 2px 0;
+}
+
+.panel-list.drag-active .task-card {
+  cursor: default;
+}
+
+/* =============================================================
+   任务卡片 (TaskCard)
+   ============================================================= */
+
+.task-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: all 0.22s ease;
+  cursor: pointer;
+}
+
+.task-card:hover {
+  border-color: var(--text-muted);
+}
+
+.task-card.completed {
+  background: rgba(212, 175, 55, 0.06);
+  border-color: rgba(212, 175, 55, 0.7);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.18);
+}
+
+/* 拖拽手柄 */
+.task-card .drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 42px;
+  font-size: 20px;
+  cursor: grab;
+  color: rgba(212, 175, 55, 0.5);
+  flex-shrink: 0;
+}
+
+.task-card .drag-handle:active {
+  cursor: grabbing;
+}
+
+/* 图标徽章 */
+.task-card .icon-badge {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.task-card .icon-badge.default {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--bg-border);
+  color: var(--text-secondary);
+}
+
+.task-card .icon-badge.done {
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  color: var(--text-secondary);
+}
+
+/* 任务信息区 */
+.task-card .task-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-card .task-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-card.completed .task-name {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+  text-decoration-color: var(--text-muted);
+}
+
+.task-card .task-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.task-card.completed .task-desc {
+  color: var(--text-muted);
+}
+
+/* 操作按钮区 */
+.task-card .task-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.task-card .action-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid;
+  font-size: 16px;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.15s;
+}
+
+.task-card .action-btn.edit {
+  color: var(--blue);
+  border-color: var(--blue);
+  background: rgba(31, 182, 255, 0.1);
+}
+
+.task-card .action-btn.edit:hover {
+  background: rgba(31, 182, 255, 0.2);
+}
+
+.task-card .action-btn.delete {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(229, 83, 75, 0.1);
+}
+
+.task-card .action-btn.delete:hover {
+  background: rgba(229, 83, 75, 0.2);
+}
+
+/* 完成勾选框 */
+.task-card .check-badge {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1.5px solid var(--bg-border);
+  flex-shrink: 0;
+  transition: all 0.22s;
+  font-size: 16px;
+}
+
+.task-card.completed .check-badge {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: #000;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.55);
+}
+
+/* =============================================================
+   任务编辑器对话框
+   ============================================================= */
+
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s;
+}
+
+.dialog-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dialog-box {
+  width: 480px;
+  max-height: 700px;
+  background: #121418;
+  border: 1.5px solid var(--gold);
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform 0.2s;
+}
+
+.dialog-overlay.open .dialog-box {
+  transform: scale(1);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px 12px;
+}
+
+.dialog-header .bar {
+  width: 4px;
+  height: 24px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+.dialog-header .title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  flex: 1;
+}
+
+.dialog-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.dialog-close:hover {
+  color: var(--text-primary);
+}
+
+.dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.dialog-body .field-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.dialog-body .field-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.dialog-body .field-input:focus {
+  border-color: var(--gold);
+}
+
+.dialog-body .field-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.dialog-body .icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dialog-body .icon-option {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 22px;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.dialog-body .icon-option:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--gold-dim);
+}
+
+.dialog-body .icon-option.selected {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.dialog-body .color-row {
+  display: flex;
+  gap: 12px;
+}
+
+.dialog-body .color-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog-body .color-swatch:hover {
+  transform: scale(1.05);
+}
+
+.dialog-body .color-swatch.selected {
+  border-color: #fff;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.dialog-divider {
+  height: 1px;
+  background: var(--bg-border);
+}
+
+.dialog-footer {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px 16px;
+}
+
+.dialog-footer .wf-btn {
+  flex: 1;
+  height: 44px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.wf-btn.primary {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #000;
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.wf-btn.primary:hover {
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.wf-btn.outline {
+  background: transparent;
+  border-color: var(--bg-border);
+  color: var(--text-primary);
+}
+
+.wf-btn.outline:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--gold-dim);
+  color: var(--gold);
+}
+
+/* =============================================================
+   浏览器页面
+   ============================================================= */
+
+.browser-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.browser-toolbar {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #0E141C, #13181F);
+  border-bottom: 1px solid var(--bg-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.browser-toolbar .toolbar-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.browser-toolbar .toolbar-top .title-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.browser-toolbar .site-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.browser-toolbar .site-tabs::-webkit-scrollbar {
+  height: 2px;
+}
+
+.browser-toolbar .site-tabs::-webkit-scrollbar-thumb {
+  background: var(--bg-border);
+  border-radius: 1px;
+}
+
+.browser-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.browser-controls .url-bar {
+  flex: 1;
+  max-width: 260px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--bg-border);
+  border-radius: 6px;
+}
+
+.browser-controls .url-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 11px;
+  outline: none;
+  letter-spacing: 0.5px;
+}
+
+.browser-controls .url-bar .link-icon {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.browser-view {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.browser-view iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
+
+.browser-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+}
+
+/* =============================================================
+   加载 / 初始状态
+   ============================================================= */
+
+.loading-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 16px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--bg-border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =============================================================
+   Snackbar
+   ============================================================= */
+
+.snackbar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--bg-border);
+  border-radius: 6px;
+  padding: 12px 24px;
+  color: var(--text-primary);
+  font-size: 13px;
+  letter-spacing: 1px;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+}
+
+.snackbar.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* =============================================================
+   Loading spinner 小部件
+   ============================================================= */
+
+.small-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--bg-border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+/* =============================================================
+   响应式适配
+   ============================================================= */
+
+/* 宽屏：浏览器内部工具栏与顶栏控件重复，隐藏 */
+@media (min-width: 900px) {
+  .browser-page .browser-toolbar {
+    display: none;
+  }
+}
+
+/* 窄屏：宽度 < 900px */
+@media (max-width: 899px) {
+  .app-header { display: none; }
+  .sidebar { display: none; }
+  .bottom-nav { display: block; }
+
+  .taskboard-header {
+    display: block;
+  }
+
+  .taskboard-content {
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+  }
+
+  .taskboard-two-col {
+    display: none;
+  }
+
+  .taskboard-tabbar {
+    display: flex;
+  }
+
+  .taskboard-tab-view {
+    display: block;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .taskboard-tab-view .tab-panel {
+    display: none;
+    height: 100%;
+    overflow: auto;
+    padding: 8px 16px;
+  }
+
+  .taskboard-tab-view .tab-panel.active {
+    display: block;
+  }
+
+  /* 窄屏 浏览器 */
+  .browser-toolbar {
+    padding: 14px 16px 12px;
+  }
+
+  .browser-controls .url-bar {
+    display: none;
+  }
+}
+
+/* 手机竖屏：宽度 < 480px */
+@media (max-width: 479px) {
+  .taskboard-header { padding: 14px 14px 12px; }
+  .taskboard-tabbar { padding: 12px 12px 6px; }
+
+  .panel-header { padding: 12px 14px; }
+  .panel-header .title-text { font-size: 18px; }
+
+  .task-card { padding: 10px; gap: 10px; }
+  .task-card .task-name { font-size: 14px; }
+
+  .dialog-box { width: calc(100vw - 32px); }
+
+  .taskboard-content { gap: 0; }
+}
+
+/* =============================================================
+   设置页 (Settings)
+   ============================================================= */
+
+.settings-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 32px;
+  overflow-y: auto;
+}
+
+.settings-header {
+  margin-bottom: 28px;
+}
+
+.settings-title-bar {
+  width: 4px;
+  height: 24px;
+  background: var(--gold);
+  border-radius: 2px;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.settings-title-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-heading {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text-primary);
+  margin-top: 6px;
+}
+
+.settings-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 680px;
+}
+
+.settings-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.settings-card:hover {
+  border-color: var(--text-muted);
+}
+
+.settings-card-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid;
+  flex-shrink: 0;
+  font-size: 24px;
+}
+
+.settings-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+
+.settings-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* 窄屏适配 */
+@media (max-width: 899px) {
+  .settings-page {
+    padding: 16px;
+  }
+
+  .settings-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .settings-card .wf-btn {
+    align-self: stretch;
+  }
+}
+
+@media (max-width: 479px) {
+  .settings-page {
+    padding: 12px;
+  }
+}

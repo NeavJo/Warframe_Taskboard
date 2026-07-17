@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Warframe Taskboard</title>
+
+  <!-- Material Icons (Google Fonts) -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- 样式 -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- 预加载字体（可选） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+  <div id="app">
+    <!-- ============================================================
+         宽屏全局顶栏 (≥900px)
+         ============================================================ -->
+    <header class="app-header" id="wide-header">
+      <div class="brand">
+        <div class="brand-badge">✦</div>
+        <div class="brand-text">
+          <h1>WARFRAME</h1>
+          <div class="subtitle" id="header-subtitle">TASKBOARD / 看板</div>
+        </div>
+      </div>
+
+      <!-- 中间区域（浏览器页显示控件） -->
+      <div class="header-center" id="header-center"></div>
+
+      <!-- 右侧：日期 + 倒计时 + 管理按钮 -->
+      <div class="header-right" id="header-right">
+        <div style="text-align:right;">
+          <div style="display:flex;align-items:center;gap:16px;justify-content:flex-end;">
+            <span style="font-size:13px;letter-spacing:1.5px;color:var(--text-secondary);" id="wide-date-text"></span>
+            <button class="wf-btn manage-btn" id="wide-manage-btn">管理</button>
+          </div>
+          <div style="font-size:12px;font-variant-numeric:tabular-nums;color:var(--blue);letter-spacing:1.2px;margin-top:4px;text-align:right;" id="wide-countdown-text"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="glow-divider"></div>
+
+    <!-- ============================================================
+         主内容区
+         ============================================================ -->
+    <div class="main-area">
+      <!-- 宽屏侧栏 (≥900px) -->
+      <nav class="sidebar" id="sidebar">
+        <div class="sidebar-nav" id="sidebar-nav"></div>
+        <div class="sidebar-footer">WIN · v0.1.0</div>
+      </nav>
+
+      <!-- 内容面板  -->
+      <main class="content-panel" id="content-panel">
+        <!-- 看板页 -->
+        <div class="page-view active" id="page-taskboard"></div>
+        <!-- 浏览器页 -->
+        <div class="page-view" id="page-browser"></div>
+        <!-- 设置页 -->
+        <div class="page-view" id="page-settings"></div>
+      </main>
+    </div>
+
+    <!-- ============================================================
+         窄屏底部导航栏 (<900px)
+         ============================================================ -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <div class="bottom-nav-inner" id="bottom-nav-inner"></div>
+    </nav>
+
+    <!-- ============================================================
+         浏览器宽屏控制区（默认隐藏，由 AppShell 顶栏动态渲染）
+         ============================================================ -->
+    <template id="browser-controls-template">
+      <div class="browser-controls" id="br-wide-controls">
+        <div class="site-tabs" id="br-wide-site-tabs"></div>
+        <div class="url-bar">
+          <span class="material-icons link-icon">link</span>
+          <input type="text" id="br-url-input" placeholder="输入 URL…" />
+        </div>
+        <button class="wf-btn wf-icon-btn" id="br-reload-btn" title="刷新">
+          <span class="material-icons">refresh</span>
+        </button>
+        <button class="wf-btn wf-icon-btn" id="br-home-btn" title="首页">
+          <span class="material-icons">home</span>
+        </button>
+      </div>
+    </template>
+  </div>
+
+  <!-- ============================================================
+       JavaScript 模块加载（按依赖顺序）
+       ============================================================ -->
+  <script src="js/utils.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/taskboard.js"></script>
+  <script src="js/browser.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
