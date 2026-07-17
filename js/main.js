@@ -39,6 +39,9 @@
     // =============================================================
 
     async init() {
+      // 动态视口高度：解决手机浏览器地址栏遮挡问题
+      this._setupViewportHeight();
+
       // 缓存 DOM
       this._els.sidebarNav = document.getElementById('sidebar-nav');
       this._els.bottomNav = document.getElementById('bottom-nav-inner');
@@ -78,6 +81,30 @@
 
       // 初始激活看板页
       this._switchPage(0);
+    },
+
+    // =============================================================
+    // 动态视口高度（手机浏览器地址栏自适应）
+    // =============================================================
+
+    _setupViewportHeight() {
+      const setVh = () => {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      };
+      setVh();
+      window.addEventListener('resize', setVh);
+      window.addEventListener('orientationchange', () => {
+        // orientationchange 后延迟等待浏览器完成重排
+        setTimeout(setVh, 100);
+      });
+      // visualViewport API（更精确的移动端适配）
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+          const vh = window.visualViewport.height * 0.01;
+          document.documentElement.style.setProperty('--vh', `${vh}px`);
+        });
+      }
     },
 
     // =============================================================
