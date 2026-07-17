@@ -14,6 +14,9 @@ const Settings = {
       <div class="settings-page">
         <div class="settings-header">
           <div class="settings-title-area">
+            <button class="nav-trigger-inline" onclick="window.App.openDrawer()" aria-label="打开导航菜单" style="margin-left:-6px;">
+              <span class="material-icons" style="font-size:22px;">dashboard</span>
+            </button>
             <div class="settings-title-bar"></div>
             <span class="material-icons" style="font-size:22px;color:var(--gold);text-shadow:0 0 8px var(--gold);">settings</span>
             <span style="font-size:11px;letter-spacing:3px;color:var(--gold);font-weight:700;">SETTINGS</span>

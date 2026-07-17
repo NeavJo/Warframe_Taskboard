@@ -34,7 +34,9 @@ const Taskboard = {
         <!-- 窄屏头部 -->
         <div class="taskboard-header" id="tb-header">
           <div class="header-row" id="tb-header-row">
-            <div class="brand-badge" style="width:44px;height:44px;font-size:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:radial-gradient(circle,#2A3340,#0A0E14);border:1.5px solid var(--gold);box-shadow:0 0 10px var(--gold);color:var(--gold);">✦</div>
+            <button class="nav-trigger-inline" onclick="window.App.openDrawer()" aria-label="打开导航菜单">
+              <span class="material-icons" style="font-size:22px;">dashboard</span>
+            </button>
             <div>
               <div style="font-size:18px;font-weight:900;letter-spacing:3px;color:var(--gold);text-shadow:0 0 12px var(--gold);">WARFRAME</div>
               <div style="font-size:10px;letter-spacing:2px;color:var(--text-secondary);">TASKBOARD / 日常 · 周常 看板</div>

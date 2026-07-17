@@ -40,6 +40,9 @@ const Browser = {
         <div class="browser-toolbar" id="br-toolbar">
           <div class="toolbar-top">
             <div style="display:flex;align-items:center;gap:10px;">
+              <button class="nav-trigger-inline" onclick="window.App.openDrawer()" aria-label="打开导航菜单" style="margin-left:-6px;">
+                <span class="material-icons" style="font-size:22px;">dashboard</span>
+              </button>
               <span class="material-icons" id="br-site-icon" style="font-size:20px;color:${PRESET_SITES[IFRAME_SITE_INDEX].accent};text-shadow:0 0 6px ${PRESET_SITES[IFRAME_SITE_INDEX].accent};">public</span>
               <span style="font-size:14px;font-weight:800;letter-spacing:3px;">内置浏览器</span>
             </div>

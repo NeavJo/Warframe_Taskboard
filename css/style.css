@@ -56,6 +56,40 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ----- 自定义滚动条（WebKit / Firefox） ----- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-border);
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--bg-primary);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-border) var(--bg-primary);
+}
+
 /* ----- App Shell ----- */
 #app {
   display: flex;
@@ -701,8 +735,8 @@ body {
 }
 
 .dialog-box {
-  width: 480px;
-  max-height: 700px;
+  width: min(480px, calc(100vw - 40px));
+  max-height: min(700px, calc(100vh - 80px));
   background: #121418;
   border: 1.5px solid var(--gold);
   border-radius: 12px;
@@ -979,6 +1013,19 @@ body {
   overflow: hidden;
 }
 
+/* 障眼法：覆盖 iframe 右侧滚动条区域，保留滚轮滚动 */
+.browser-view::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 17px;
+  height: 100%;
+  background: var(--bg-primary);
+  z-index: 1;
+  pointer-events: none;
+}
+
 .browser-view iframe {
   width: 100%;
   height: 100%;
@@ -1077,7 +1124,7 @@ body {
 @media (max-width: 899px) {
   .app-header { display: none; }
   .sidebar { display: none; }
-  .bottom-nav { display: block; }
+  .bottom-nav { display: none; }
 
   .taskboard-header {
     display: block;
@@ -1122,6 +1169,22 @@ body {
   .browser-controls .url-bar {
     display: none;
   }
+
+  /* 窄屏 设置页 */
+  .settings-page {
+    padding: 16px;
+  }
+
+  .settings-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .settings-card .wf-btn {
+    align-self: stretch;
+  }
 }
 
 /* 手机竖屏：宽度 < 480px */
@@ -1135,9 +1198,6 @@ body {
   .task-card { padding: 10px; gap: 10px; }
   .task-card .task-name { font-size: 14px; }
 
-  .dialog-box { width: calc(100vw - 32px); }
-
-  .taskboard-content { gap: 0; }
 }
 
 /* =============================================================
@@ -1232,26 +1292,138 @@ body {
   line-height: 1.5;
 }
 
-/* 窄屏适配 */
-@media (max-width: 899px) {
-  .settings-page {
-    padding: 16px;
-  }
+/* =============================================================
+   窄屏抽屉侧栏 (替代底栏)
+   ============================================================= */
 
-  .settings-card {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-    padding: 16px;
-  }
+/* 窄屏浮动触发按钮 */
 
-  .settings-card .wf-btn {
-    align-self: stretch;
-  }
+/* 行内触发按钮（在页面头部中的那个） */
+.nav-trigger-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2A3340, #0A0E14);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px var(--gold-glow);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
 }
 
+.nav-trigger-inline:hover,
+.nav-trigger-inline:active {
+  animation: triggerGlow 1.2s ease-in-out infinite;
+  transform: scale(1.05);
+}
+
+@keyframes triggerGlow {
+  0%, 100% { box-shadow: 0 0 8px var(--gold-glow); }
+  50% { box-shadow: 0 0 18px rgba(212, 175, 55, 0.5), 0 0 30px rgba(212, 175, 55, 0.2); }
+}
+
+/* 抽屉遮罩层 */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
+}
+
+.drawer-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 抽屉面板 */
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  background: linear-gradient(180deg, #0E141C, #0A0E14);
+  border-right: 1px solid var(--bg-border);
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-overlay.open .drawer-panel {
+  transform: translateX(0);
+}
+
+/* 抽屉头部 */
+.drawer-header {
+  padding: 20px 20px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--bg-border);
+}
+
+.drawer-header .drawer-brand {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-shadow: 0 0 8px var(--gold);
+}
+
+.drawer-header .drawer-version {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+}
+
+/* 抽屉导航列表 */
+.drawer-nav {
+  flex: 1;
+  padding: 12px 8px;
+  overflow-y: auto;
+}
+
+.drawer-nav .wf-btn {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 14px;
+  background: transparent;
+  border-color: transparent;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.drawer-nav .wf-btn:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--gold-dim);
+}
+
+.drawer-nav .wf-btn.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold);
+}
+
+.drawer-footer {
+  padding: 12px 20px 20px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--bg-border);
+}
+
+
 @media (max-width: 479px) {
-  .settings-page {
-    padding: 12px;
-  }
+  .settings-page { padding: 12px; }
 }

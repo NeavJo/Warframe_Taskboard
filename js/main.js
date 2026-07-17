@@ -3,7 +3,8 @@
  * 对应 Flutter 版 AppShell
  *
  * 职责：初始化各模块、导航切换、状态同步、
- *       宽屏顶栏管理、浏览器控件渲染
+ *       宽屏顶栏管理、浏览器控件渲染、
+ *       窄屏抽屉侧栏管理
  */
 
 (function () {
@@ -44,7 +45,6 @@
 
       // 缓存 DOM
       this._els.sidebarNav = document.getElementById('sidebar-nav');
-      this._els.bottomNav = document.getElementById('bottom-nav-inner');
       this._els.headerSubtitle = document.getElementById('header-subtitle');
       this._els.headerCenter = document.getElementById('header-center');
       this._els.wideDateText = document.getElementById('wide-date-text');
@@ -56,9 +56,11 @@
         settings: document.getElementById('page-settings'),
       };
 
-      // 渲染侧栏和底栏导航
+      // 渲染宽屏侧栏
       this._renderSidebar();
-      this._renderBottomNav();
+
+      // 创建窄屏抽屉侧栏 + 浮动触发按钮
+      this._createDrawer();
 
       // 初始化看板页
       this.taskboard = Taskboard;
@@ -93,18 +95,10 @@
         document.documentElement.style.setProperty('--vh', `${vh}px`);
       };
       setVh();
-      window.addEventListener('resize', setVh);
-      window.addEventListener('orientationchange', () => {
-        // orientationchange 后延迟等待浏览器完成重排
-        setTimeout(setVh, 100);
+      window.addEventListener('resize', () => {
+        // 窄屏才触发，宽屏不用
+        if (window.innerWidth < 900) setVh();
       });
-      // visualViewport API（更精确的移动端适配）
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', () => {
-          const vh = window.visualViewport.height * 0.01;
-          document.documentElement.style.setProperty('--vh', `${vh}px`);
-        });
-      }
     },
 
     // =============================================================
@@ -120,7 +114,7 @@
     },
 
     // =============================================================
-    // 导航渲染
+    // 宽屏侧栏渲染
     // =============================================================
 
     _renderSidebar() {
@@ -137,22 +131,57 @@
       });
     },
 
-    _renderBottomNav() {
-      clearEl(this._els.bottomNav);
-      NAV_ITEMS.forEach((item, i) => {
-        const btn = document.createElement('button');
-        btn.className = 'bottom-nav-item' + (i === this._currentIndex ? ' active' : '');
-        const iconSpan = document.createElement('span');
-        iconSpan.className = 'material-icons';
-        iconSpan.textContent = i === this._currentIndex ? item.activeIcon : item.icon;
-        iconSpan.style.fontSize = '22px';
-        btn.appendChild(iconSpan);
-        const label = document.createElement('span');
-        label.textContent = item.label;
-        btn.appendChild(label);
-        btn.addEventListener('click', () => this._switchPage(i));
-        this._els.bottomNav.appendChild(btn);
+    // =============================================================
+    // 窄屏抽屉侧栏 + 浮动触发按钮
+    // =============================================================
+
+    _createDrawer() {
+      // --- 遮罩层 ---
+      const overlay = document.createElement('div');
+      overlay.className = 'drawer-overlay';
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) this.closeDrawer();
       });
+      document.body.appendChild(overlay);
+      this._els.drawerOverlay = overlay;
+
+      // --- 抽屉面板 ---
+      const panel = document.createElement('div');
+      panel.className = 'drawer-panel';
+      panel.innerHTML = `
+        <div class="drawer-header">
+          <div class="drawer-brand">WARFRAME</div>
+          <div class="drawer-version">TASKBOARD</div>
+        </div>
+        <div class="drawer-nav" id="drawer-nav"></div>
+        <div class="drawer-footer">WIN · v0.1.0</div>
+      `;
+      overlay.appendChild(panel);
+      this._els.drawerPanel = panel;
+
+      // 渲染抽屉导航项
+      const drawerNav = document.getElementById('drawer-nav');
+      NAV_ITEMS.forEach((item, i) => {
+        const btn = createBtn({
+          icon: item.icon,
+          text: item.label,
+          active: i === this._currentIndex,
+          onClick: () => {
+            this._switchPage(i);
+            this.closeDrawer();
+          },
+        });
+        drawerNav.appendChild(btn);
+      });
+      this._els.drawerNav = drawerNav;
+    },
+
+    openDrawer() {
+      this._els.drawerOverlay.classList.add('open');
+    },
+
+    closeDrawer() {
+      this._els.drawerOverlay.classList.remove('open');
     },
 
     // =============================================================
@@ -169,18 +198,25 @@
       const targetPage = document.getElementById(item.pageId);
       if (targetPage) targetPage.classList.add('active');
 
-      // 更新侧栏选中态
+      // 更新宽屏侧栏选中态
       Array.from(this._els.sidebarNav.children).forEach((btn, i) => {
         btn.classList.toggle('active', i === index);
       });
 
-      // 更新底栏选中态
-      Array.from(this._els.bottomNav.children).forEach((btn, i) => {
-        btn.classList.toggle('active', i === index);
-      });
+      // 更新抽屉导航选中态
+      if (this._els.drawerNav) {
+        Array.from(this._els.drawerNav.children).forEach((btn, i) => {
+          btn.classList.toggle('active', i === index);
+        });
+      }
 
       // 更新顶栏副标题
       this._els.headerSubtitle.textContent = `TASKBOARD / ${item.label}`;
+
+      // 更新所有行内触发按钮的图标（与当前功能区匹配）
+      document.querySelectorAll('.nav-trigger-inline .material-icons').forEach(el => {
+        el.textContent = item.icon;
+      });
 
       // 更新宽屏顶栏中间区域
       this._updateWideHeaderCenter(index);
@@ -212,9 +248,7 @@
         const siteTabs = document.getElementById('br-wide-site-tabs');
 
         if (urlInput) {
-          // 初始加载 URL
           urlInput.value = this.browser.getCurrentUrl();
-
           urlInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
               this.browser.handleUrlSubmit(urlInput.value);
@@ -249,15 +283,8 @@
         if (reloadBtn) reloadBtn.addEventListener('click', () => this.browser.reload());
         if (homeBtn) homeBtn.addEventListener('click', () => {
           this.browser.goHome();
-          if (urlInput) urlInput.value = PRESET_SITES[this.browser.getCurrentSite()].url;
+          if (urlInput) urlInput.value = PRESET_SITES[IFRAME_SITE_INDEX].url;
         });
-
-        // 隐藏右侧的日期+管理区域
-        const headerRight = document.getElementById('header-right');
-        if (headerRight) {
-          // 浏览器页不需要右侧的日期和管理按钮，但为了布局对称保留占位
-          // 不处理亦不影响
-        }
       }
     },
 
@@ -267,9 +294,7 @@
 
     _toggleManageMode() {
       this._isManageMode = !this._isManageMode;
-      // 更新看板页
       this.taskboard.setManageMode(this._isManageMode);
-      // 更新宽屏管理按钮文字
       this._els.wideManageBtn.textContent = this._isManageMode ? '管理中' : '管理';
       if (this._isManageMode) this._els.wideManageBtn.classList.add('active');
       else this._els.wideManageBtn.classList.remove('active');
