@@ -61,6 +61,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
 }
 
@@ -186,6 +187,7 @@ body {
   background: linear-gradient(180deg, #13181F, #0A0E14);
   border-top: 1px solid var(--bg-border);
   flex-shrink: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .bottom-nav-inner {
