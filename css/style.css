@@ -1170,6 +1170,11 @@ body {
     display: none;
   }
 
+  /* 移动端无固定滚动条，隐藏遮罩 */
+  .browser-view::after {
+    display: none;
+  }
+
   /* 窄屏 设置页 */
   .settings-page {
     padding: 16px;
