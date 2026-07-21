@@ -1,0 +1,523 @@
+.arbitration-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.arbi-header {
+  display: none;
+  padding: 16px 24px 14px;
+  background: linear-gradient(135deg, #0E141C, #13181F);
+}
+
+.arbi-header .header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arbi-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.arbi-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 20px;
+}
+
+.arbi-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--bg-border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.arbi-loading .loading-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+
+.arbi-main {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.arbi-current-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.arbi-current-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--yellow), var(--gold));
+}
+
+.arbi-current-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.arbi-current-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.arbi-current-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 2px solid var(--gold);
+  color: var(--gold);
+  font-size: 28px;
+  flex-shrink: 0;
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.arbi-current-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.arbi-current-name {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.arbi-current-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.arbi-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.arbi-tag.small {
+  padding: 1px 6px;
+  font-size: 10px;
+}
+
+.arbi-tag.tiny {
+  padding: 1px 5px;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+}
+
+.arbi-meta-item {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.arbi-meta-item.small {
+  font-size: 12px;
+}
+
+.arbi-meta-dot {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.arbi-current-level {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.arbi-current-countdown {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.arbi-current-countdown .countdown-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.arbi-current-countdown .countdown-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--yellow);
+  font-variant-numeric: tabular-nums;
+}
+
+.arbi-section {
+  margin-bottom: 24px;
+}
+
+.arbi-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+
+.arbi-section-title .material-icons {
+  font-size: 18px;
+  color: var(--gold-dim);
+}
+
+.arbi-badge {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--gold);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.arbi-hv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.arbi-hv-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.arbi-hv-card:hover {
+  border-color: var(--text-muted);
+}
+
+.arbi-hv-card.active {
+  border-color: var(--yellow);
+  box-shadow: 0 0 12px rgba(255, 216, 77, 0.15);
+}
+
+.arbi-hv-card.past {
+  opacity: 0.5;
+}
+
+.arbi-hv-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  width: 110px;
+}
+
+.arbi-hv-time .time-start {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.arbi-hv-time .time-arrow {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.arbi-hv-time .time-end {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.arbi-hv-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.arbi-hv-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.arbi-hv-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.arbi-hv-status {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.arbi-hv-status[data-status="active"] {
+  background: rgba(255, 216, 77, 0.15);
+  color: var(--yellow);
+  border: 1px solid var(--yellow);
+}
+
+.arbi-hv-status[data-status="upcoming"] {
+  background: rgba(31, 182, 255, 0.12);
+  color: var(--blue);
+  border: 1px solid rgba(31, 182, 255, 0.3);
+}
+
+.arbi-hv-status[data-status="past"] {
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  border: 1px solid var(--bg-border);
+}
+
+.arbi-empty-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 13px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+}
+
+.arbi-empty-tip .material-icons {
+  font-size: 18px;
+}
+
+.arbi-upcoming-list {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.arbi-upcoming-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--bg-border);
+  transition: background 0.15s;
+}
+
+.arbi-upcoming-row:last-child {
+  border-bottom: none;
+}
+
+.arbi-upcoming-row:hover {
+  background: var(--bg-surface-alt);
+}
+
+.arbi-upcoming-row.high-value {
+  background: rgba(212, 175, 55, 0.04);
+}
+
+.arbi-upcoming-row.high-value:hover {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.arbi-upcoming-time {
+  width: 45px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.arbi-upcoming-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.arbi-upcoming-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  width: 100px;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arbi-upcoming-meta {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arbi-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.arbi-setting-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.arbi-setting-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.arbi-setting-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--bg-border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--gold);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+  background: var(--gold);
+}
+
+@media (max-width: 899px) {
+  .arbi-header {
+    display: block;
+  }
+
+  .arbi-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 479px) {
+  .arbi-content {
+    padding: 12px;
+  }
+
+  .arbi-current-card {
+    padding: 16px;
+  }
+
+  .arbi-current-main {
+    flex-wrap: wrap;
+  }
+
+  .arbi-current-countdown {
+    width: 100%;
+    text-align: left;
+    padding-top: 12px;
+    border-top: 1px solid var(--bg-border);
+  }
+
+  .arbi-hv-card {
+    flex-wrap: wrap;
+  }
+
+  .arbi-hv-time {
+    width: 100%;
+  }
+
+  .arbi-upcoming-name {
+    width: 80px;
+  }
+}

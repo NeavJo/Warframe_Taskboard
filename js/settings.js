@@ -101,13 +101,17 @@ const Settings = {
     const dailyTasks = Store.loadDailyTasks();
     const weeklyTasks = Store.loadWeeklyTasks();
     const reminders = Store.loadReminders();
+    const arbiAutoAdd = localStorage.getItem('wf_arbi_auto_add');
 
     const payload = {
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       dailyTasks,
       weeklyTasks,
       reminders,
+      settings: {
+        arbiAutoAdd: arbiAutoAdd === null ? null : arbiAutoAdd === 'true',
+      },
     };
 
     const json = JSON.stringify(payload, null, 2);
@@ -149,7 +153,7 @@ const Settings = {
     }
 
     // 校验结构
-    if (!data || ![1, 2].includes(data.version) || !Array.isArray(data.dailyTasks) || !Array.isArray(data.weeklyTasks)) {
+    if (!data || ![1, 2, 3].includes(data.version) || !Array.isArray(data.dailyTasks) || !Array.isArray(data.weeklyTasks)) {
       showSnackbar('文件格式不匹配，不是有效的 Warframe Taskboard 备份');
       return;
     }
@@ -194,6 +198,10 @@ const Settings = {
       Store.saveReminders(data.reminders);
     }
 
+    if (data.version >= 3 && data.settings && typeof data.settings.arbiAutoAdd === 'boolean') {
+      localStorage.setItem('wf_arbi_auto_add', data.settings.arbiAutoAdd ? 'true' : 'false');
+    }
+
     // 通知刷新
     if (window.App) {
       if (window.App.taskboard) {
@@ -201,6 +209,9 @@ const Settings = {
       }
       if (window.App.reminder) {
         window.App._reloadReminder();
+      }
+      if (window.App.arbitration) {
+        window.App._reloadArbitration();
       }
     }
 

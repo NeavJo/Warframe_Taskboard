@@ -28,14 +28,24 @@ echo Press Ctrl+C to stop the server.
 echo ============================================
 echo.
 
-REM Use Python's built-in HTTP server
+REM Use Python proxy server (supports arbitration data CORS proxy)
 where py >nul 2>nul
 if %errorlevel%==0 (
-    py -m http.server %PORT% --bind 0.0.0.0
+    if exist "dev-server-proxy.py" (
+        set PORT=%PORT%
+        py dev-server-proxy.py
+    ) else (
+        py -m http.server %PORT% --bind 0.0.0.0
+    )
 ) else (
     where python >nul 2>nul
     if %errorlevel%==0 (
-        python -m http.server %PORT% --bind 0.0.0.0
+        if exist "dev-server-proxy.py" (
+            set PORT=%PORT%
+            python dev-server-proxy.py
+        ) else (
+            python -m http.server %PORT% --bind 0.0.0.0
+        )
     ) else (
         echo [ERROR] Python is not installed or not in PATH.
         echo Please install Python 3 or use another static server.

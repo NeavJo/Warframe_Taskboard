@@ -17,6 +17,7 @@
   const NAV_ITEMS = [
     { label: '看板', icon: 'dashboard', activeIcon: 'dashboard', pageId: 'page-taskboard' },
     { label: '提醒', icon: 'notifications', activeIcon: 'notifications', pageId: 'page-reminder' },
+    { label: '仲裁', icon: 'gavel', activeIcon: 'gavel', pageId: 'page-arbitration' },
     { label: '浏览器', icon: 'public', activeIcon: 'public', pageId: 'page-browser' },
     { label: '设置', icon: 'settings', activeIcon: 'settings', pageId: 'page-settings' },
   ];
@@ -35,6 +36,7 @@
     // 模块引用
     taskboard: null,
     reminder: null,
+    arbitration: null,
     browser: null,
 
     // =============================================================
@@ -56,6 +58,7 @@
       this._els.pages = {
         taskboard: document.getElementById('page-taskboard'),
         reminder: document.getElementById('page-reminder'),
+        arbitration: document.getElementById('page-arbitration'),
         browser: document.getElementById('page-browser'),
         settings: document.getElementById('page-settings'),
       };
@@ -73,6 +76,10 @@
       // 初始化提醒页
       this.reminder = Reminder;
       this.reminder.init(this._els.pages.reminder);
+
+      // 初始化仲裁页
+      this.arbitration = Arbitration;
+      this.arbitration.init(this._els.pages.arbitration);
 
       // 初始化浏览器页
       this.browser = Browser;
@@ -133,6 +140,12 @@
   _reloadReminder() {
     if (this.reminder) {
       this.reminder.reloadFromStore();
+    }
+  },
+
+  _reloadArbitration() {
+    if (this.arbitration) {
+      this.arbitration.reloadFromStore();
     }
   },
 
@@ -261,7 +274,11 @@
         return;
       }
 
-      if (index === 2) {
+      if (index === 1) {
+        return;
+      }
+
+      if (index === 3) {
         const template = document.getElementById('browser-controls-template');
         const clone = template.content.cloneNode(true);
         center.appendChild(clone);

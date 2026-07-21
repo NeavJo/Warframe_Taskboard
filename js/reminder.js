@@ -73,12 +73,14 @@ const Reminder = {
   // =============================================================
 
   _renderList() {
-    // 先清理已过期的项
     const now = Date.now();
     const before = this._state.reminders.length;
     this._state.reminders = this._state.reminders.filter(r => {
-      if (!r.isCompleted) return true;
       const targetTime = new Date(r.targetTime).getTime();
+      if (r.isTemp) {
+        return now - targetTime <= REMINDER_AUTO_DELETE_MS;
+      }
+      if (!r.isCompleted) return true;
       return now - targetTime <= REMINDER_AUTO_DELETE_MS;
     });
     if (this._state.reminders.length !== before) this._persist();
@@ -114,6 +116,7 @@ const Reminder = {
   _createReminderCard(reminder) {
     const card = document.createElement('div');
     card.className = 'reminder-card';
+    if (reminder.isTemp) card.classList.add('temp-reminder');
     card.style.setProperty('--card-accent', reminder.accent);
 
     const iconBadge = document.createElement('div');
@@ -273,10 +276,13 @@ const Reminder = {
 
     const now = Date.now();
 
-    // 单次过滤：同时完成过期检测和清理
-    const filtered = this._state.reminders.filter(r =>
-      !r.isCompleted || now - new Date(r.targetTime).getTime() <= REMINDER_AUTO_DELETE_MS
-    );
+    const filtered = this._state.reminders.filter(r => {
+      const targetTime = new Date(r.targetTime).getTime();
+      if (r.isTemp) {
+        return now - targetTime <= REMINDER_AUTO_DELETE_MS;
+      }
+      return !r.isCompleted || now - targetTime <= REMINDER_AUTO_DELETE_MS;
+    });
 
     if (filtered.length !== this._state.reminders.length) {
       this._state.reminders = filtered;

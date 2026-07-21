@@ -100,6 +100,63 @@
   opacity: 0.75;
 }
 
+.reminder-card.temp-reminder {
+  background: rgba(26, 92, 255, 0.08);
+  border-color: rgba(26, 92, 255, 0.3);
+}
+
+.reminder-card.temp-reminder:hover {
+  border-color: rgba(26, 92, 255, 0.6);
+}
+
+.reminder-card.temp-reminder.active {
+  background: rgba(26, 92, 255, 0.15);
+  border-color: #1a5cff;
+  box-shadow: 0 0 18px rgba(26, 92, 255, 0.25);
+  animation: tempReminderPulse 2s ease-in-out infinite;
+}
+
+@keyframes tempReminderPulse {
+  0%, 100% {
+    box-shadow: 0 0 18px rgba(26, 92, 255, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(26, 92, 255, 0.4);
+  }
+}
+
+.reminder-card.temp-reminder.completed {
+  background: rgba(26, 92, 255, 0.06);
+  border-color: rgba(26, 92, 255, 0.25);
+  opacity: 0.65;
+}
+
+.reminder-card.temp-reminder .icon-badge.default {
+  border-color: rgba(26, 92, 255, 0.3);
+  background: rgba(26, 92, 255, 0.1);
+  color: #1a5cff;
+}
+
+.reminder-card.temp-reminder .icon-badge.active {
+  border-color: #1a5cff;
+  background: rgba(26, 92, 255, 0.15);
+  color: #1a5cff;
+}
+
+.reminder-card.temp-reminder .icon-badge.done {
+  border-color: #1a5cff;
+  background: rgba(26, 92, 255, 0.15);
+  color: var(--success);
+}
+
+.reminder-card.temp-reminder .reminder-name {
+  color: var(--text-primary);
+}
+
+.reminder-card.temp-reminder.completed .reminder-name {
+  color: var(--text-secondary);
+}
+
 .reminder-card .icon-badge {
   width: 42px;
   height: 42px;

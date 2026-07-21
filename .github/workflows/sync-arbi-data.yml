@@ -1,0 +1,58 @@
+name: Sync Arbitration Data
+
+on:
+  schedule:
+    # 每天 UTC 4:00 运行（北京时间 12:00）
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create data directory
+        run: mkdir -p data
+
+      - name: Download arbitration data
+        run: |
+          curl -sSL -o data/arbys.schedule.v2.json https://arbi.wf.wiki/data/arbys.schedule.v2.json
+          curl -sSL -o data/arbys.nodes.zh.json https://arbi.wf.wiki/data/arbys.nodes.zh.json
+          curl -sSL -o data/tierlist.default.json https://arbi.wf.wiki/data/tierlist.default.json
+
+      - name: Verify downloads
+        run: |
+          for f in data/arbys.schedule.v2.json data/arbys.nodes.zh.json data/tierlist.default.json; do
+            if ! jq empty "$f" 2>/dev/null; then
+              echo "ERROR: $f is not valid JSON"
+              exit 1
+            fi
+            echo "OK: $f ($(wc -c < "$f") bytes)"
+          done
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected."
+          fi
+
+      - name: Commit changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git commit -m "chore: sync arbitration data [skip ci]
+
+          Auto-synced from arbi.wf.wiki on $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
