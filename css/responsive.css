@@ -1,0 +1,116 @@
+/* =============================================================
+   Responsive — 响应式适配
+   ============================================================= */
+
+/* 宽屏：浏览器内部工具栏与顶栏控件重复，隐藏 */
+@media (min-width: 900px) {
+  .browser-page .browser-toolbar {
+    display: none;
+  }
+}
+
+/* 窄屏：宽度 < 900px */
+@media (max-width: 899px) {
+  .app-header { display: none; }
+  .sidebar { display: none; }
+  .bottom-nav { display: none; }
+
+  .taskboard-header {
+    display: block;
+  }
+
+  .taskboard-content {
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+  }
+
+  .taskboard-two-col {
+    display: none;
+  }
+
+  .taskboard-tabbar {
+    display: flex;
+  }
+
+  .taskboard-tab-view {
+    display: block;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .taskboard-tab-view .tab-panel {
+    display: none;
+    height: 100%;
+    overflow: auto;
+    padding: 8px 16px;
+  }
+
+  .taskboard-tab-view .tab-panel.active {
+    display: block;
+  }
+
+  /* 窄屏 浏览器 */
+  .browser-toolbar {
+    padding: 14px 16px 12px;
+  }
+
+  .browser-controls .url-bar {
+    display: none;
+  }
+
+  /* 移动端无固定滚动条，隐藏遮罩 */
+  .browser-view::after {
+    display: none;
+  }
+
+  /* 窄屏 设置页 */
+  .settings-header {
+    padding: 16px 16px 14px;
+  }
+
+  .settings-cards {
+    padding: 0 16px 16px;
+  }
+
+  .settings-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .settings-card .wf-btn {
+    align-self: stretch;
+  }
+
+  /* 窄屏 提醒页 */
+  .reminder-header {
+    display: block;
+  }
+
+  .reminder-content {
+    padding: 16px;
+  }
+}
+
+/* 手机竖屏：宽度 < 480px */
+@media (max-width: 479px) {
+  .taskboard-header { padding: 14px 14px 12px; }
+  .taskboard-tabbar { padding: 12px 12px 6px; }
+
+  .panel-header { padding: 12px 14px; }
+  .panel-header .title-text { font-size: 18px; }
+
+  .task-card { padding: 10px; gap: 10px; }
+  .task-card .task-name { font-size: 14px; }
+
+  .settings-header { padding: 12px 12px 12px; }
+  .settings-cards { padding: 0 12px 12px; }
+
+  .reminder-header { padding: 14px 14px 12px; }
+  .reminder-content { padding: 12px; }
+  .reminder-card { padding: 12px; gap: 10px; }
+  .reminder-name { font-size: 14px; }
+  .reminder-delete { opacity: 1; }
+}

@@ -1,0 +1,88 @@
+/* =============================================================
+   Theme — 主题令牌与基础样式
+   奥罗金暗色科幻美学：深灰底色 + 金色/蓝/黄强调色
+   ============================================================= */
+
+/* ----- CSS Custom Properties (主题令牌) ----- */
+:root {
+  --bg-primary: #0A0E14;
+  --bg-surface: #13181F;
+  --bg-surface-alt: #1A232E;
+  --bg-border: #2A3340;
+
+  --gold: #D4AF37;
+  --gold-dim: rgba(212, 175, 55, 0.6);
+  --gold-glow: rgba(212, 175, 55, 0.25);
+
+  --blue: #1FB6FF;
+  --blue-dim: rgba(31, 182, 255, 0.6);
+  --blue-glow: rgba(31, 182, 255, 0.25);
+
+  --yellow: #FFD84D;
+  --yellow-dim: rgba(255, 216, 77, 0.6);
+  --yellow-glow: rgba(255, 216, 77, 0.25);
+
+  --text-primary: #E6EDF3;
+  --text-secondary: #8B9AAA;
+  --text-muted: #5C6773;
+
+  --success: #3FB950;
+  --danger: #E5534B;
+
+  --sidebar-width: 220px;
+}
+
+/* ----- Reset & Base ----- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ----- 自定义滚动条（WebKit / Firefox） ----- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb:hover {
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--bg-primary);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-border) var(--bg-primary);
+}

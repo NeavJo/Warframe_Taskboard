@@ -37,6 +37,7 @@ const STORE_KEYS = {
   WEEKLY: 'wf_weekly_state',
   LAST_DAILY_RESET: 'wf_last_daily_reset',
   LAST_WEEKLY_RESET: 'wf_last_weekly_reset',
+  REMINDERS: 'wf_reminders_state',
 };
 
 // =============================================================
@@ -99,7 +100,7 @@ const Store = {
 
     // --- 日常重置：每日 08:00 ---
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const todayResetTime = new Date(today.getTime() + DAILY_RESET_HOUR * 3600000);
+    const todayResetTime = new Date(today.getTime() + DAILY_RESET_HOUR * HOUR_MS);
     const lastDaily = localStorage.getItem(STORE_KEYS.LAST_DAILY_RESET);
     const todayKey = formatDateKey(now);
 
@@ -111,7 +112,7 @@ const Store = {
 
     // --- 周常重置：每周一 08:00 ---
     const thisWeekMonday = mostRecentWeekday(now, WEEKLY_RESET_WEEKDAY);
-    const thisWeekResetTime = new Date(thisWeekMonday.getTime() + WEEKLY_RESET_HOUR * 3600000);
+    const thisWeekResetTime = new Date(thisWeekMonday.getTime() + WEEKLY_RESET_HOUR * HOUR_MS);
     const lastWeekly = localStorage.getItem(STORE_KEYS.LAST_WEEKLY_RESET);
     const weekKey = formatDateKey(thisWeekMonday);
 
@@ -129,5 +130,23 @@ const Store = {
    */
   generateId() {
     return '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  },
+
+  // =============================================================
+  // 提醒事项存储
+  // =============================================================
+
+  /**
+   * 读取提醒事项列表
+   */
+  loadReminders() {
+    return this._load(STORE_KEYS.REMINDERS, () => []);
+  },
+
+  /**
+   * 保存提醒事项列表
+   */
+  saveReminders(reminders) {
+    this._save(STORE_KEYS.REMINDERS, reminders);
   },
 };

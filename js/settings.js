@@ -12,15 +12,15 @@ const Settings = {
   init(container) {
     container.innerHTML = `
       <div class="settings-page">
-        <div class="settings-header">
+        <div class="settings-header page-header">
           <div class="settings-title-area">
-            <button class="nav-trigger-inline" onclick="window.App.openDrawer()" aria-label="打开导航菜单" style="margin-left:-6px;">
-              <span class="material-icons" style="font-size:22px;">dashboard</span>
+            <button class="nav-trigger-inline" onclick="window.App.openDrawer()" aria-label="打开导航菜单">
+              <span class="material-icons mi-md">dashboard</span>
             </button>
             <div class="settings-title-bar"></div>
-            <span class="material-icons" style="font-size:22px;color:var(--gold);text-shadow:0 0 8px var(--gold);">settings</span>
-            <span style="font-size:11px;letter-spacing:3px;color:var(--gold);font-weight:700;">SETTINGS</span>
-            <div style="flex:1;"></div>
+            <span class="material-icons settings-title-icon">settings</span>
+            <span class="settings-label">SETTINGS</span>
+            <div class="page-spacer"></div>
           </div>
           <div class="settings-heading">设置</div>
         </div>
@@ -28,7 +28,7 @@ const Settings = {
         <div class="settings-cards">
           <!-- 导出卡片 -->
           <div class="settings-card">
-            <div class="settings-card-icon" style="background:rgba(212,175,55,0.12);border-color:var(--gold);color:var(--gold);">
+            <div class="settings-card-icon gold">
               <span class="material-icons">download</span>
             </div>
             <div class="settings-card-body">
@@ -37,15 +37,15 @@ const Settings = {
                 将日常和周常任务保存为 JSON 文件，方便备份或在其他设备上导入。
               </div>
             </div>
-            <button class="wf-btn primary" id="settings-export-btn" style="flex-shrink:0;">
-              <span class="material-icons" style="font-size:16px;">download</span>
+            <button class="wf-btn primary" id="settings-export-btn">
+              <span class="material-icons mi-sm">download</span>
               <span>导出</span>
             </button>
           </div>
 
           <!-- 导入卡片 -->
           <div class="settings-card">
-            <div class="settings-card-icon" style="background:rgba(31,182,255,0.12);border-color:var(--blue);color:var(--blue);">
+            <div class="settings-card-icon blue">
               <span class="material-icons">upload</span>
             </div>
             <div class="settings-card-body">
@@ -54,8 +54,8 @@ const Settings = {
                 读取之前导出的 JSON 备份文件，恢复任务列表。将 <strong>覆盖</strong> 当前所有任务数据。
               </div>
             </div>
-            <button class="wf-btn" id="settings-import-btn" style="flex-shrink:0;border-color:var(--blue);color:var(--blue);">
-              <span class="material-icons" style="font-size:16px;">upload</span>
+            <button class="wf-btn blue" id="settings-import-btn">
+              <span class="material-icons mi-sm">upload</span>
               <span>导入</span>
             </button>
             <input type="file" id="settings-file-input" accept=".json" style="display:none;" />
@@ -100,12 +100,14 @@ const Settings = {
   _exportData() {
     const dailyTasks = Store.loadDailyTasks();
     const weeklyTasks = Store.loadWeeklyTasks();
+    const reminders = Store.loadReminders();
 
     const payload = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       dailyTasks,
       weeklyTasks,
+      reminders,
     };
 
     const json = JSON.stringify(payload, null, 2);
@@ -147,7 +149,7 @@ const Settings = {
     }
 
     // 校验结构
-    if (!data || data.version !== 1 || !Array.isArray(data.dailyTasks) || !Array.isArray(data.weeklyTasks)) {
+    if (!data || ![1, 2].includes(data.version) || !Array.isArray(data.dailyTasks) || !Array.isArray(data.weeklyTasks)) {
       showSnackbar('文件格式不匹配，不是有效的 Warframe Taskboard 备份');
       return;
     }
@@ -163,24 +165,47 @@ const Settings = {
       return;
     }
 
+    // 校验提醒数据（v2+ 才有）
+    const validReminder = (r) =>
+      typeof r.id === 'string' &&
+      typeof r.name === 'string' &&
+      typeof r.targetTime === 'string' &&
+      typeof r.isCompleted === 'boolean';
+
+    const hasReminders = data.version >= 2 && Array.isArray(data.reminders);
+    if (hasReminders && !data.reminders.every(validReminder)) {
+      showSnackbar('备份文件中存在无效的提醒数据');
+      return;
+    }
+
     // 确认对话框
+    const reminderCount = hasReminders ? data.reminders.length : 0;
+    const reminderText = reminderCount > 0 ? `和 ${reminderCount} 个提醒事项` : '';
     const confirmed = await this._confirmDialog(
       '导入确认',
-      `即将覆盖当前 ${data.dailyTasks.length} 个日常任务和 ${data.weeklyTasks.length} 个周常任务。当前数据将丢失，是否继续？`
+      `即将覆盖当前 ${data.dailyTasks.length} 个日常任务和 ${data.weeklyTasks.length} 个周常任务${reminderText}。当前数据将丢失，是否继续？`
     );
     if (!confirmed) return;
 
     // 覆写数据
     Store.saveDailyTasks(data.dailyTasks);
     Store.saveWeeklyTasks(data.weeklyTasks);
-
-    // 通知 taskboard 刷新
-    if (window.App && window.App.taskboard) {
-      // 重新加载内存数据
-      window.App._reloadTaskboard();
+    if (hasReminders) {
+      Store.saveReminders(data.reminders);
     }
 
-    showSnackbar(`已导入 ${data.dailyTasks.length} 日常 + ${data.weeklyTasks.length} 周常`);
+    // 通知刷新
+    if (window.App) {
+      if (window.App.taskboard) {
+        window.App._reloadTaskboard();
+      }
+      if (window.App.reminder) {
+        window.App._reloadReminder();
+      }
+    }
+
+    const reminderMsg = reminderCount > 0 ? ` + ${reminderCount} 提醒` : '';
+    showSnackbar(`已导入 ${data.dailyTasks.length} 日常 + ${data.weeklyTasks.length} 周常${reminderMsg}`);
   },
 
   // =============================================================

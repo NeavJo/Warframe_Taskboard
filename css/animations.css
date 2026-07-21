@@ -1,0 +1,20 @@
+/* =============================================================
+   Animations — 动画关键帧
+   ============================================================= */
+
+/* 旋转加载动画 */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 侧边栏触发按钮发光动画 */
+@keyframes triggerGlow {
+  0%, 100% { box-shadow: 0 0 8px var(--gold-glow); }
+  50% { box-shadow: 0 0 18px rgba(212, 175, 55, 0.5), 0 0 30px rgba(212, 175, 55, 0.2); }
+}
+
+/* 提醒卡片脉冲动画 */
+@keyframes reminderPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 216, 77, 0.15); }
+  50% { box-shadow: 0 0 22px rgba(255, 216, 77, 0.35); }
+}

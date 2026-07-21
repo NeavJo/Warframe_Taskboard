@@ -12,6 +12,7 @@ const Taskboard = {
     weeklyTasks: [],
     isManageMode: false,
     isLoaded: false,
+    clockTimer: null,
   },
 
   /** DOM 引用 */
@@ -32,21 +33,21 @@ const Taskboard = {
     container.innerHTML = `
       <div class="taskboard-page" id="taskboard-page">
         <!-- 窄屏头部 -->
-        <div class="taskboard-header" id="tb-header">
+        <div class="taskboard-header page-header" id="tb-header">
           <div class="header-row" id="tb-header-row">
             <button class="nav-trigger-inline" onclick="window.App.openDrawer()" aria-label="打开导航菜单">
-              <span class="material-icons" style="font-size:22px;">dashboard</span>
+              <span class="material-icons mi-md">dashboard</span>
             </button>
             <div>
-              <div style="font-size:18px;font-weight:900;letter-spacing:3px;color:var(--gold);text-shadow:0 0 12px var(--gold);">WARFRAME</div>
-              <div style="font-size:10px;letter-spacing:2px;color:var(--text-secondary);">TASKBOARD / 日常 · 周常 看板</div>
+              <div class="page-brand-title">WARFRAME</div>
+              <div class="page-brand-sub">TASKBOARD / 日常 · 周常 看板</div>
             </div>
-            <div style="flex:1;"></div>
+            <div class="page-spacer"></div>
             <button class="wf-btn manage-btn" id="tb-manage-btn">管理</button>
           </div>
           <div class="header-meta" id="tb-header-meta">
-            <div style="font-size:13px;letter-spacing:1.5px;color:var(--text-secondary);" id="tb-date-text"></div>
-            <div style="font-size:12px;font-variant-numeric:tabular-nums;color:var(--blue);letter-spacing:1.2px;margin-top:4px;" id="tb-countdown-text"></div>
+            <div class="taskboard-meta-text" id="tb-date-text"></div>
+            <div class="taskboard-countdown-text" id="tb-countdown-text"></div>
           </div>
         </div>
 
@@ -71,7 +72,7 @@ const Taskboard = {
         <!-- 加载状态 -->
         <div class="loading-view" id="tb-loading">
           <div class="spinner"></div>
-          <div style="color:var(--text-secondary);letter-spacing:2px;font-size:12px;">加载中…</div>
+          <div class="loading-text">加载中…</div>
         </div>
       </div>
     `;
@@ -104,15 +105,16 @@ const Taskboard = {
     });
 
     // 管理按钮
-    this._els.manageBtn.addEventListener('click', () => {
-      this._state.isManageMode = !this._state.isManageMode;
-      this._els.manageBtn.textContent = this._state.isManageMode ? '管理中' : '管理';
-      if (this._state.isManageMode) this._els.manageBtn.classList.add('active');
-      else this._els.manageBtn.classList.remove('active');
-      this._refreshPanels();
-    });
+    this._els.manageBtn.addEventListener('click', () => this._toggleManageMode());
 
     return this._bootstrap();
+  },
+
+  /**
+   * 切换管理模式并同步按钮状态
+   */
+  _toggleManageMode() {
+    this.setManageMode(!this._state.isManageMode);
   },
 
   // =============================================================
@@ -143,10 +145,8 @@ const Taskboard = {
     // 启动倒计时
     this._startClock();
 
-    // 更新管理按钮状态
-    this._els.manageBtn.textContent = this._state.isManageMode ? '管理中' : '管理';
-    if (this._state.isManageMode) this._els.manageBtn.classList.add('active');
-    else this._els.manageBtn.classList.remove('active');
+    // 同步管理按钮状态
+    this._syncManageBtn();
   },
 
   // =============================================================
@@ -164,13 +164,7 @@ const Taskboard = {
 
   _renderPanels() {
     const isManage = this._state.isManageMode;
-    const callbacks = {
-      onToggle: (task) => this._toggleTask(task),
-      onEdit: (task, isDaily) => this._openEditDialog(task, isDaily),
-      onDelete: (task, isDaily) => this._deleteTask(task, isDaily),
-      onAddTask: (isDaily) => this._openAddDialog(isDaily),
-      onReorderItem: (from, to, isDaily) => this._onReorder(from, to, isDaily),
-    };
+    const S = this; // 避免 this 丢失
 
     // 创建日常面板
     const dailyOpts = {
@@ -179,11 +173,11 @@ const Taskboard = {
       accent: '#FFD84D',
       tasks: this._state.dailyTasks,
       callbacks: {
-        onToggle: (t) => callbacks.onToggle(t),
-        onEdit: (t) => callbacks.onEdit(t, true),
-        onDelete: (t) => callbacks.onDelete(t, true),
-        onAddTask: () => callbacks.onAddTask(true),
-        onReorderItem: (from, to) => callbacks.onReorderItem(from, to, true),
+        onToggle: (t) => S._toggleTask(t),
+        onEdit: (t) => S._openEditDialog(t, true),
+        onDelete: (t) => S._deleteTask(t, true),
+        onAddTask: () => S._openAddDialog(true),
+        onReorderItem: (from, to) => S._onReorder(from, to, true),
       },
       isManageMode: isManage,
     };
@@ -195,11 +189,11 @@ const Taskboard = {
       accent: '#1FB6FF',
       tasks: this._state.weeklyTasks,
       callbacks: {
-        onToggle: (t) => callbacks.onToggle(t),
-        onEdit: (t) => callbacks.onEdit(t, false),
-        onDelete: (t) => callbacks.onDelete(t, false),
-        onAddTask: () => callbacks.onAddTask(false),
-        onReorderItem: (from, to) => callbacks.onReorderItem(from, to, false),
+        onToggle: (t) => S._toggleTask(t),
+        onEdit: (t) => S._openEditDialog(t, false),
+        onDelete: (t) => S._deleteTask(t, false),
+        onAddTask: () => S._openAddDialog(false),
+        onReorderItem: (from, to) => S._onReorder(from, to, false),
       },
       isManageMode: isManage,
     };
@@ -224,13 +218,7 @@ const Taskboard = {
   },
 
   _refreshPanels() {
-    // 重新创建面板
     this._renderPanels();
-    this._updateHeaderStats();
-  },
-
-  _updateHeaderStats() {
-    // 面板内部已经通过 createTaskPanel 更新进度
   },
 
   // =============================================================
@@ -291,7 +279,14 @@ const Taskboard = {
       this._els.countdownText.textContent = countdownText(now);
     };
     update();
-    setInterval(update, 1000);
+    this._state.clockTimer = setInterval(update, 1000);
+  },
+
+  _stopClock() {
+    if (this._state.clockTimer) {
+      clearInterval(this._state.clockTimer);
+      this._state.clockTimer = null;
+    }
   },
 
   // =============================================================
@@ -300,13 +295,12 @@ const Taskboard = {
 
   setManageMode(enabled) {
     this._state.isManageMode = enabled;
-    this._els.manageBtn.textContent = enabled ? '管理中' : '管理';
-    if (enabled) this._els.manageBtn.classList.add('active');
-    else this._els.manageBtn.classList.remove('active');
+    this._syncManageBtn();
     this._refreshPanels();
   },
 
-  getManageMode() {
-    return this._state.isManageMode;
+  _syncManageBtn() {
+    this._els.manageBtn.textContent = this._state.isManageMode ? '管理中' : '管理';
+    this._els.manageBtn.classList.toggle('active', this._state.isManageMode);
   },
 };

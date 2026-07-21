@@ -1,0 +1,625 @@
+/* =============================================================
+   Components — 通用组件样式
+   ============================================================= */
+
+/* ----- 按钮样式系统 ----- */
+
+.wf-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--bg-border);
+  border-radius: 6px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.wf-btn:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--gold-dim);
+  color: var(--gold);
+  box-shadow: 0 0 6px var(--gold-glow);
+}
+
+.wf-btn.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.wf-btn:active {
+  transform: scale(0.93);
+}
+
+/* 图标按钮 */
+.wf-icon-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+/* 侧栏导航按钮 */
+.wf-btn.sidebar-tile {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 14px;
+  background: transparent;
+  border-color: transparent;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.wf-btn.sidebar-tile:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--gold-dim);
+}
+
+.wf-btn.sidebar-tile.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold);
+}
+
+/* 管理按钮 */
+.wf-btn.manage-btn {
+  padding: 8px 12px;
+}
+
+.wf-btn.primary {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #000;
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.wf-btn.primary:hover {
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.wf-btn.outline {
+  background: transparent;
+  border-color: var(--bg-border);
+  color: var(--text-primary);
+}
+
+.wf-btn.outline:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--gold-dim);
+  color: var(--gold);
+}
+
+/* ----- 任务面板 ----- */
+
+.task-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+}
+
+.panel-header {
+  padding: 16px 18px;
+  background: linear-gradient(135deg, var(--bg-surface), var(--bg-surface-alt));
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+}
+
+.panel-header .header-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-header .accent-bar {
+  width: 4px;
+  height: 22px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.panel-header .subtitle-text {
+  font-size: 11px;
+  letter-spacing: 3px;
+  font-weight: 700;
+}
+
+.panel-header .header-top .spacer {
+  flex: 1;
+}
+
+.panel-header .counter {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-header .title-text {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-top: 6px;
+}
+
+.panel-header .progress-bar {
+  margin-top: 12px;
+  height: 6px;
+  background: var(--bg-primary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.panel-header .progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* 面板内新增按钮（管理模式下显示） */
+.panel-add-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1.5px solid var(--card-accent);
+  background: color-mix(in srgb, var(--card-accent) 15%, transparent);
+  color: var(--card-accent);
+  cursor: pointer;
+  font-size: 20px;
+  margin-left: 10px;
+}
+
+.panel-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 14px;
+  padding: 2px 0;
+}
+
+.panel-list.drag-active .task-card {
+  cursor: default;
+}
+
+/* ----- 任务卡片 ----- */
+
+.task-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: all 0.22s ease;
+  cursor: pointer;
+}
+
+.task-card:hover {
+  border-color: var(--text-muted);
+}
+
+.task-card.completed {
+  background: rgba(212, 175, 55, 0.06);
+  border-color: rgba(212, 175, 55, 0.7);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.18);
+}
+
+.task-card .drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 42px;
+  font-size: 20px;
+  cursor: grab;
+  color: rgba(212, 175, 55, 0.5);
+  flex-shrink: 0;
+}
+
+.task-card .drag-handle:active {
+  cursor: grabbing;
+}
+
+.task-card .icon-badge {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.task-card .icon-badge.default {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--bg-border);
+  color: var(--text-secondary);
+}
+
+.task-card .icon-badge.done {
+  background: color-mix(in srgb, var(--card-accent) 12%, transparent);
+  border: 1px solid var(--card-accent);
+  color: var(--text-secondary);
+}
+
+.task-card .task-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-card .task-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-card.completed .task-name {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+  text-decoration-color: var(--text-muted);
+}
+
+.task-card .task-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.task-card.completed .task-desc {
+  color: var(--text-muted);
+}
+
+.task-card .task-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.task-card .action-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid;
+  font-size: 16px;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.15s;
+}
+
+.task-card .action-btn.edit {
+  color: var(--blue);
+  border-color: var(--blue);
+  background: rgba(31, 182, 255, 0.1);
+}
+
+.task-card .action-btn.edit:hover {
+  background: rgba(31, 182, 255, 0.2);
+}
+
+.task-card .action-btn.delete {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(229, 83, 75, 0.1);
+}
+
+.task-card .action-btn.delete:hover {
+  background: rgba(229, 83, 75, 0.2);
+}
+
+.task-card .check-badge {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1.5px solid var(--bg-border);
+  flex-shrink: 0;
+  transition: all 0.22s;
+  font-size: 16px;
+}
+
+.task-card.completed .check-badge {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: #000;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.55);
+}
+
+/* ----- 任务编辑器对话框 ----- */
+
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s;
+}
+
+.dialog-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dialog-box {
+  width: min(480px, calc(100vw - 40px));
+  max-height: min(700px, calc(100vh - 80px));
+  background: #121418;
+  border: 1.5px solid var(--gold);
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform 0.2s;
+}
+
+.dialog-overlay.open .dialog-box {
+  transform: scale(1);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px 12px;
+}
+
+.dialog-header .bar {
+  width: 4px;
+  height: 24px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+.dialog-header .title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  flex: 1;
+}
+
+.dialog-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.dialog-close:hover {
+  color: var(--text-primary);
+}
+
+.dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.dialog-body .field-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.dialog-body .field-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.dialog-body .field-input:focus {
+  border-color: var(--gold);
+}
+
+.dialog-body .field-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* 通用可选择项（图标 / 颜色选项共用） */
+.selectable {
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1.5px solid var(--bg-border);
+}
+
+.selectable:hover {
+  border-color: var(--gold-dim);
+}
+
+.selectable.selected {
+  border-color: var(--gold);
+  background: rgba(212, 175, 55, 0.15);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.dialog-body .icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dialog-body .icon-option {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 22px;
+  color: var(--text-secondary);
+}
+
+.dialog-body .color-row {
+  display: flex;
+  gap: 12px;
+}
+
+.dialog-body .color-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border-width: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.dialog-body .color-swatch.selected {
+  border-color: #fff;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.dialog-divider {
+  height: 1px;
+  background: var(--bg-border);
+}
+
+.dialog-footer {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px 16px;
+}
+
+.dialog-footer .wf-btn {
+  flex: 1;
+  height: 44px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+/* ----- Snackbar ----- */
+
+.snackbar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--bg-border);
+  border-radius: 6px;
+  padding: 12px 24px;
+  color: var(--text-primary);
+  font-size: 13px;
+  letter-spacing: 1px;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+}
+
+.snackbar.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ----- 加载 / 初始状态 ----- */
+
+.loading-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 16px;
+}
+
+.loading-view .loading-text {
+  color: var(--text-secondary);
+  letter-spacing: 2px;
+  font-size: 12px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--bg-border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ----- 触摸拖拽排序 ----- */
+
+.task-card.touch-dragging {
+  position: fixed !important;
+  z-index: 1000;
+  opacity: 0.95;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: none;
+  pointer-events: none;
+}
+
+.drag-placeholder {
+  background: rgba(212, 175, 55, 0.06);
+  border: 2px dashed var(--gold-dim);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.panel-list.no-scroll {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
+/* 移动端：拖拽手柄禁止浏览器拦截触摸事件，滑动即可触发拖拽 */
+@media (hover: none) and (pointer: coarse) {
+  .task-card .drag-handle {
+    touch-action: none;
+  }
+}

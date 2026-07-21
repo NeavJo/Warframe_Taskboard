@@ -8,8 +8,17 @@
   <!-- Material Icons (Google Fonts) -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <!-- 样式 -->
-  <link rel="stylesheet" href="css/style.css">
+  <!-- 样式（按加载顺序：主题 → 动画 → 布局 → 组件 → 页面 → 响应式） -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <!-- 页面样式（按需新增页面文件即可） -->
+  <link rel="stylesheet" href="css/pages/taskboard.css">
+  <link rel="stylesheet" href="css/pages/browser.css">
+  <link rel="stylesheet" href="css/pages/settings.css">
+  <link rel="stylesheet" href="css/pages/reminder.css">
+  <link rel="stylesheet" href="css/responsive.css">
 
   <!-- 预加载字体（可选） -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,12 +43,16 @@
 
       <!-- 右侧：日期 + 倒计时 + 管理按钮 -->
       <div class="header-right" id="header-right">
-        <div style="text-align:right;">
-          <div style="display:flex;align-items:center;gap:16px;justify-content:flex-end;">
-            <span style="font-size:13px;letter-spacing:1.5px;color:var(--text-secondary);" id="wide-date-text"></span>
+        <div class="header-right-inner">
+          <div class="header-right-top">
+            <span class="header-date-text" id="wide-date-text"></span>
             <button class="wf-btn manage-btn" id="wide-manage-btn">管理</button>
+            <button class="wf-btn primary" id="wide-reminder-add-btn">
+              <span class="material-icons mi-sm">add</span>
+              <span>新增提醒</span>
+            </button>
           </div>
-          <div style="font-size:12px;font-variant-numeric:tabular-nums;color:var(--blue);letter-spacing:1.2px;margin-top:4px;text-align:right;" id="wide-countdown-text"></div>
+          <div class="header-countdown-text" id="wide-countdown-text"></div>
         </div>
       </div>
     </header>
@@ -60,6 +73,8 @@
       <main class="content-panel" id="content-panel">
         <!-- 看板页 -->
         <div class="page-view active" id="page-taskboard"></div>
+        <!-- 提醒页 -->
+        <div class="page-view" id="page-reminder"></div>
         <!-- 浏览器页 -->
         <div class="page-view" id="page-browser"></div>
         <!-- 设置页 -->
@@ -101,6 +116,7 @@
   <script src="js/store.js"></script>
   <script src="js/components.js"></script>
   <script src="js/taskboard.js"></script>
+  <script src="js/reminder.js"></script>
   <script src="js/browser.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/main.js"></script>

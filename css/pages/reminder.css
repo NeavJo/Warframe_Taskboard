@@ -1,0 +1,298 @@
+/* =============================================================
+   Reminder Page — 提醒页
+   ============================================================= */
+
+.reminder-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.reminder-header {
+  display: none;
+  padding: 16px 24px 14px;
+  background: linear-gradient(135deg, #0E141C, #13181F);
+}
+
+.reminder-header .header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reminder-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.reminder-list {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.reminder-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+}
+
+.reminder-empty .empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1.5px solid var(--gold-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: var(--gold-dim);
+}
+
+.reminder-empty .empty-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+
+.reminder-empty .empty-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.reminder-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: all 0.22s ease;
+  cursor: default;
+  position: relative;
+}
+
+.reminder-card:hover {
+  border-color: var(--text-muted);
+}
+
+.reminder-card.active {
+  background: color-mix(in srgb, var(--yellow) 6%, transparent);
+  border-color: var(--yellow);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--yellow) 20%, transparent);
+  cursor: pointer;
+  animation: reminderPulse 2s ease-in-out infinite;
+}
+
+.reminder-card.completed {
+  background: color-mix(in srgb, var(--success) 6%, transparent);
+  border-color: color-mix(in srgb, var(--success) 50%, transparent);
+  opacity: 0.75;
+}
+
+.reminder-card .icon-badge {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.reminder-card .icon-badge.default {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--bg-border);
+  color: var(--text-secondary);
+}
+
+.reminder-card .icon-badge.active {
+  border: 1px solid var(--card-accent);
+  background: color-mix(in srgb, var(--card-accent) 12%, transparent);
+  color: var(--card-accent);
+}
+
+.reminder-card .icon-badge.done {
+  border: 1px solid var(--card-accent);
+  background: color-mix(in srgb, var(--card-accent) 12%, transparent);
+  color: var(--success);
+}
+
+.reminder-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.reminder-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reminder-card.completed .reminder-name {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+  text-decoration-color: var(--text-muted);
+}
+
+.reminder-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.reminder-card.completed .reminder-desc {
+  color: var(--text-muted);
+}
+
+.reminder-time-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.reminder-time-row .time-icon {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.reminder-time-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.reminder-status {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+.reminder-status.status-pending {
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
+  color: var(--blue);
+  border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent);
+}
+
+.reminder-status.status-active {
+  background: color-mix(in srgb, var(--yellow) 15%, transparent);
+  color: var(--yellow);
+  border: 1px solid var(--yellow);
+}
+
+.reminder-status.status-completed {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+  border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
+}
+
+.reminder-card .check-badge {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1.5px solid var(--bg-border);
+  flex-shrink: 0;
+  transition: all 0.22s;
+  font-size: 16px;
+  align-self: center;
+}
+
+.reminder-card.completed .check-badge {
+  border-color: var(--success);
+  background: var(--success);
+  color: #000;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--success) 40%, transparent);
+}
+
+.reminder-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 16px;
+  opacity: 0;
+  transition: all 0.15s;
+}
+
+.reminder-card:hover .reminder-delete {
+  opacity: 1;
+}
+
+.reminder-delete:hover {
+  color: var(--danger);
+  background: rgba(229, 83, 75, 0.1);
+}
+
+/* 快捷小时按钮 */
+.quick-hour-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-hour-btn {
+  padding: 6px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.quick-hour-btn:hover {
+  border-color: var(--gold-dim);
+  color: var(--gold);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.quick-hour-btn.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.datetime-row {
+  display: flex;
+  gap: 12px;
+}

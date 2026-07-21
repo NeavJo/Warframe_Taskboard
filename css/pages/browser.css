@@ -1,0 +1,135 @@
+/* =============================================================
+   Browser Page — 内置浏览器页
+   ============================================================= */
+
+.browser-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.browser-toolbar {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #0E141C, #13181F);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.browser-toolbar .toolbar-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.browser-toolbar .toolbar-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.browser-toolbar .toolbar-trigger {
+  margin-left: -6px;
+}
+
+.browser-toolbar .site-icon {
+  font-size: 20px;
+}
+
+.browser-toolbar .toolbar-brand {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+.browser-toolbar .toolbar-hint {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+}
+
+.browser-toolbar .site-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.browser-toolbar .site-tabs::-webkit-scrollbar {
+  height: 2px;
+}
+
+.browser-toolbar .site-tabs::-webkit-scrollbar-thumb {
+  background: var(--bg-border);
+  border-radius: 1px;
+}
+
+.browser-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.browser-controls .url-bar {
+  flex: 1;
+  max-width: 260px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--bg-border);
+  border-radius: 6px;
+}
+
+.browser-controls .url-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 11px;
+  outline: none;
+  letter-spacing: 0.5px;
+}
+
+.browser-controls .url-bar .link-icon {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.browser-view {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 障眼法：覆盖 iframe 右侧滚动条区域，保留滚轮滚动 */
+.browser-view::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 17px;
+  height: 100%;
+  background: var(--bg-primary);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.browser-view iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
+
+.browser-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+}

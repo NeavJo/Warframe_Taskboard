@@ -1,9 +1,7 @@
 /**
  * components.js — 可复用 UI 组件工厂
- * 对应 Flutter 版：TaskCard, TaskPanel, _PanelHeader, WfButtonShell, WfIconButton
+ * 对应 Flutter 版：TaskCard, TaskPanel, _PanelHeader, WfButtonShell
  * 以及 TaskEditorDialog
- *
- * 所有组件都是函数，返回 DOM 节点。
  */
 
 // =============================================================
@@ -22,20 +20,10 @@ function mi(name, extraClass = '') {
 
 /**
  * 创建通用按钮 (对应 WfButtonShell)
- * @param {Object} opts
- * @param {string} opts.text - 按钮文字
- * @param {string} opts.icon - Material icon 名称（可选）
- * @param {string} opts.accent - 强调色 CSS 类: 'gold' | 'blue' | 'yellow'
- * @param {boolean} opts.active - 是否选中态
- * @param {Function} opts.onClick - 点击回调
- * @param {string} opts.className - 额外 CSS 类
- * @param {boolean} opts.primary - 主按钮样式（金色实底）
- * @param {boolean} opts.outline - 次按钮样式（透明灰边）
  */
 function createBtn(opts = {}) {
   const btn = document.createElement('button');
   const classes = ['wf-btn'];
-  if (opts.accent && opts.accent !== 'gold') classes.push(`accent-${opts.accent}`);
   if (opts.active) classes.push('active');
   if (opts.className) classes.push(opts.className);
   if (opts.primary) classes.push('primary');
@@ -43,9 +31,7 @@ function createBtn(opts = {}) {
   btn.className = classes.join(' ');
   btn.type = 'button';
 
-  if (opts.icon) {
-    btn.appendChild(mi(opts.icon));
-  }
+  if (opts.icon) btn.appendChild(mi(opts.icon));
   if (opts.text) {
     const span = document.createElement('span');
     span.textContent = opts.text;
@@ -61,29 +47,12 @@ function createBtn(opts = {}) {
   return btn;
 }
 
-/**
- * 图标按钮 (对应 WfIconButton)
- */
-function createIconBtn(iconName, onClick, opts = {}) {
-  return createBtn({
-    icon: iconName,
-    onClick,
-    className: 'wf-icon-btn ' + (opts.className || ''),
-    accent: opts.accent,
-    active: opts.active,
-  });
-}
-
 // =============================================================
 // 任务卡片 (对应 TaskCard)
 // =============================================================
 
 /**
  * 创建单条任务卡片
- * @param {Object} task - TaskItem: { id, name, description, icon, accent, isCompleted }
- * @param {Object} callbacks - { onToggle, onEdit, onDelete, onDragStart }
- * @param {boolean} isManageMode
- * @param {boolean} showDragHandle
  */
 function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = false) {
   const card = document.createElement('div');
@@ -96,7 +65,7 @@ function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = 
   if (showDragHandle) {
     const handle = document.createElement('div');
     handle.className = 'drag-handle';
-    handle.innerHTML = '&#9776;'; // ☰
+    handle.innerHTML = '&#9776;';
     handle.addEventListener('mousedown', (e) => {
       e.stopPropagation();
       card.draggable = true;
@@ -108,10 +77,6 @@ function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = 
   // --- 图标徽章 ---
   const badge = document.createElement('div');
   badge.className = 'icon-badge ' + (task.isCompleted ? 'done' : 'default');
-  badge.style.borderColor = task.isCompleted ? task.accent : '';
-  badge.style.background = task.isCompleted
-    ? task.accent + '1F'
-    : '';
   badge.appendChild(mi(task.icon || 'check_circle_outline'));
   card.appendChild(badge);
 
@@ -151,7 +116,6 @@ function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = 
 
     card.appendChild(actions);
 
-    // 拖拽事件
     card.addEventListener('dragstart', (e) => {
       e.dataTransfer.setData('text/plain', task.id);
       card.classList.add('dragging');
@@ -166,14 +130,11 @@ function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = 
   // --- 完成勾选框 ---
   const checkBadge = document.createElement('div');
   checkBadge.className = 'check-badge';
-  if (task.isCompleted) {
-    checkBadge.appendChild(mi('check'));
-  }
+  if (task.isCompleted) checkBadge.appendChild(mi('check'));
   card.appendChild(checkBadge);
 
   // --- 点击整卡切换完成 ---
   card.addEventListener('click', (e) => {
-    // 不触发于点击操作按钮时
     if (e.target.closest('.action-btn') || e.target.closest('.drag-handle')) return;
     callbacks.onToggle?.();
   });
@@ -187,8 +148,6 @@ function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = 
 
 /**
  * 创建任务面板容器
- * @param {Object} opts - { title, subtitle, accent, tasks, callbacks, isManageMode }
- * @param {number} taskType - 0=日常, 1=周常 (用于拖拽区分)
  */
 function createTaskPanel(opts, taskType) {
   const panel = document.createElement('div');
@@ -199,11 +158,10 @@ function createTaskPanel(opts, taskType) {
   const total = tasks.length;
   const progress = total === 0 ? 0 : completed / total;
 
-  // --- 面板头部 (_PanelHeader) ---
+  // --- 面板头部 ---
   const header = document.createElement('div');
   header.className = 'panel-header';
 
-  // 第一行
   const topRow = document.createElement('div');
   topRow.className = 'header-top';
 
@@ -231,11 +189,8 @@ function createTaskPanel(opts, taskType) {
   // 管理模式下显示新增按钮
   if (isManageMode && callbacks.onAddTask) {
     const addBtn = document.createElement('button');
-    addBtn.style.cssText = `
-      width:28px; height:28px; display:flex; align-items:center; justify-content:center;
-      border-radius:4px; border:1.5px solid ${accent}; background:${accent}26;
-      color:${accent}; cursor:pointer; font-size:20px; margin-left:10px;
-    `;
+    addBtn.className = 'panel-add-btn';
+    addBtn.style.setProperty('--card-accent', accent);
     addBtn.innerHTML = '&#43;';
     addBtn.title = '新增任务';
     addBtn.addEventListener('click', (e) => {
@@ -247,13 +202,11 @@ function createTaskPanel(opts, taskType) {
 
   header.appendChild(topRow);
 
-  // 第二行：标题
   const titleEl = document.createElement('div');
   titleEl.className = 'title-text';
   titleEl.textContent = title;
   header.appendChild(titleEl);
 
-  // 第三行：进度条
   const barContainer = document.createElement('div');
   barContainer.className = 'progress-bar';
   const fill = document.createElement('div');
@@ -272,11 +225,9 @@ function createTaskPanel(opts, taskType) {
 
   const reorderCb = callbacks.onReorderItem;
 
-  // 填充任务列表
   function renderTasks() {
     while (list.firstChild) list.removeChild(list.firstChild);
-    const currentTasks = opts.tasks;
-    currentTasks.forEach((task, index) => {
+    opts.tasks.forEach((task, index) => {
       const card = createTaskCard(task, {
         onToggle: () => callbacks.onToggle?.(task),
         onEdit: () => callbacks.onEdit?.(task),
@@ -303,8 +254,7 @@ function createTaskPanel(opts, taskType) {
       if (!card) return;
       const idx = parseInt(card.dataset.index);
       if (isNaN(idx)) return;
-      // 视觉指示
-      Array.from(list.children).forEach(c => c.style.borderBottom = '');
+      Array.from(list.children).forEach(c => { c.style.borderTop = ''; c.style.borderBottom = ''; });
       if (idx > parseInt(list.dataset.dragFrom)) {
         card.style.borderBottom = `2px solid ${accent}`;
       } else {
@@ -335,7 +285,111 @@ function createTaskPanel(opts, taskType) {
     });
   }
 
-  // 存储 render 方法以便外部调用（当数据变更时）
+  // --- 触摸拖拽排序 (移动端: 在手柄上滑动即拖拽，无需长按) ---
+  if (isManageMode && reorderCb && window.matchMedia('(any-pointer: coarse)').matches) {
+    let dragState = null;
+
+    list.addEventListener('touchstart', (e) => {
+      const handle = e.target.closest('.drag-handle');
+      if (!handle) return;
+      const card = handle.closest('.task-card');
+      if (!card) return;
+      const touch = e.touches[0];
+      // 只记录起始状态，不启动定时器，不立即拖拽
+      dragState = {
+        card,
+        fromIndex: parseInt(card.dataset.index),
+        startY: touch.clientY,
+        startX: touch.clientX,
+        isDragging: false,
+      };
+    }, { passive: true });
+
+    list.addEventListener('touchmove', (e) => {
+      if (!dragState) return;
+      const touch = e.touches[0];
+
+      if (!dragState.isDragging) {
+        // 手指在手柄上滑动超过 8px 即进入拖拽模式，无需等待
+        const dy = Math.abs(touch.clientY - dragState.startY);
+        const dx = Math.abs(touch.clientX - dragState.startX);
+        if (dy < 8 && dx < 8) return;
+
+        dragState.isDragging = true;
+        const card = dragState.card;
+        const rect = card.getBoundingClientRect();
+        dragState.startRect = rect;
+
+        card.classList.add('touch-dragging');
+        card.style.left = rect.left + 'px';
+        card.style.top = rect.top + 'px';
+        card.style.width = rect.width + 'px';
+
+        const placeholder = document.createElement('div');
+        placeholder.className = 'drag-placeholder';
+        placeholder.style.height = rect.height + 'px';
+        dragState.placeholder = placeholder;
+        card.parentNode.insertBefore(placeholder, card);
+
+        list.classList.add('no-scroll');
+
+        if (navigator.vibrate) navigator.vibrate(20);
+      }
+
+      e.preventDefault();
+
+      const { card, startRect } = dragState;
+      card.style.top = (touch.clientY - startRect.height / 2) + 'px';
+
+      const siblings = Array.from(list.children).filter(
+        c => c !== card && !c.classList.contains('drag-placeholder')
+      );
+
+      let newIndex = dragState.fromIndex;
+      for (let i = 0; i < siblings.length; i++) {
+        const sRect = siblings[i].getBoundingClientRect();
+        if (touch.clientY < sRect.top + sRect.height / 2) {
+          newIndex = parseInt(siblings[i].dataset.index);
+          break;
+        }
+        if (i === siblings.length - 1) {
+          newIndex = parseInt(siblings[i].dataset.index);
+        }
+      }
+
+      dragState.currentIndex = newIndex;
+
+      const targetCard = siblings.find(c => parseInt(c.dataset.index) === newIndex);
+      if (targetCard) {
+        list.insertBefore(dragState.placeholder, targetCard);
+      } else if (siblings.length > 0) {
+        list.appendChild(dragState.placeholder);
+      }
+    }, { passive: false });
+
+    const endTouchDrag = () => {
+      if (!dragState) return;
+      if (dragState.isDragging) {
+        const { fromIndex, currentIndex } = dragState;
+        if (dragState.placeholder) dragState.placeholder.remove();
+        list.classList.remove('no-scroll');
+        if (dragState.card) dragState.card.classList.remove('touch-dragging');
+        dragState = null;
+        if (currentIndex !== undefined && currentIndex !== fromIndex) {
+          reorderCb(fromIndex, currentIndex);
+        } else {
+          renderTasks();
+        }
+      } else {
+        dragState = null;
+      }
+    };
+
+    list.addEventListener('touchend', endTouchDrag);
+    list.addEventListener('touchcancel', endTouchDrag);
+  }
+
+  // 存储 render 方法以便外部调用
   panel._renderTasks = renderTasks;
   panel._renderHeader = () => {
     const newCompleted = opts.tasks.filter(t => t.isCompleted).length;
@@ -353,11 +407,44 @@ function createTaskPanel(opts, taskType) {
 // 任务编辑器对话框 (对应 TaskEditorDialog)
 // =============================================================
 
+// 可选图标列表
+const TASK_ICONS = [
+  'check_circle_outline', 'flash_on', 'card_giftcard', 'bolt',
+  'diamond_outlined', 'gavel', 'castle', 'storefront',
+  'shield', 'star', 'track_changes', 'rocket',
+  'military_tech', 'key', 'crisis_alert',
+];
+
+// 主题色选项
+const ACCENT_COLORS = ['#D4AF37', '#1FB6FF', '#FFD84D', '#3FB950', '#E5534B'];
+
+/**
+ * 通用：创建单选选择器（图标/颜色等）
+ * 返回 { container, getSelected }
+ */
+function createOptionSelector(options, getLabel, isSelected) {
+  const container = document.createElement('div');
+  let selectedIndex = options.findIndex(isSelected);
+  if (selectedIndex < 0) selectedIndex = 0;
+
+  options.forEach((opt, i) => {
+    const el = getLabel(opt, i);
+    el.classList.add('selectable');
+    if (i === selectedIndex) el.classList.add('selected');
+    el.addEventListener('click', () => {
+      container.querySelectorAll('.selectable').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedIndex = i;
+    });
+    container.appendChild(el);
+  });
+
+  container.getSelected = () => options[selectedIndex];
+  return container;
+}
+
 /**
  * 创建任务编辑对话框
- * @param {Object} task - 编辑模式传入已有 task，新增模式传 null
- * @param {boolean} isDaily - 用于决定默认强调色
- * @param {Function} onSubmit - (task) => void
  */
 function createTaskEditorDialog(task, isDaily, onSubmit) {
   const isEdit = !!task;
@@ -385,15 +472,12 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   closeBtn.addEventListener('click', close);
   header.appendChild(closeBtn);
   box.appendChild(header);
-
-  // 分隔线
   box.appendChild(dividerEl());
 
   // --- 表体 ---
   const body = document.createElement('div');
   body.className = 'dialog-body';
 
-  // 名称
   body.appendChild(fieldLabel('任务名称'));
   const nameInput = document.createElement('input');
   nameInput.className = 'field-input';
@@ -403,7 +487,6 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   body.appendChild(nameInput);
   body.appendChild(sizedBox(16));
 
-  // 描述
   body.appendChild(fieldLabel('任务描述'));
   const descInput = document.createElement('textarea');
   descInput.className = 'field-input field-textarea';
@@ -416,34 +499,14 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   body.appendChild(fieldLabel('选择图标'));
   const iconGrid = document.createElement('div');
   iconGrid.className = 'icon-grid';
-  let selectedIcon = task?.icon || 'check_circle_outline';
-
-  // 所有图标选项（带边框）
-  AVAILABLE_ICON_NAMES.forEach(iconName => {
+  const initialIcon = task?.icon || 'check_circle_outline';
+  const iconSelector = createOptionSelector(TASK_ICONS, (iconName) => {
     const opt = document.createElement('div');
     opt.className = 'icon-option';
-    if (iconName === selectedIcon) opt.classList.add('selected');
-    // 用边框模拟 WfButtonShell
-    opt.style.border = iconName === selectedIcon
-      ? `1.5px solid var(--gold)`
-      : `1.5px solid var(--bg-border)`;
-    opt.style.background = iconName === selectedIcon
-      ? 'rgba(212,175,55,0.15)'
-      : '';
     opt.appendChild(mi(iconName));
-    opt.addEventListener('click', () => {
-      iconGrid.querySelectorAll('.icon-option').forEach(el => {
-        el.classList.remove('selected');
-        el.style.border = '1.5px solid var(--bg-border)';
-        el.style.background = '';
-      });
-      opt.classList.add('selected');
-      opt.style.border = '1.5px solid var(--gold)';
-      opt.style.background = 'rgba(212,175,55,0.15)';
-      selectedIcon = iconName;
-    });
-    iconGrid.appendChild(opt);
-  });
+    return opt;
+  }, (iconName) => iconName === initialIcon);
+  iconGrid.appendChild(iconSelector);
   body.appendChild(iconGrid);
   body.appendChild(sizedBox(16));
 
@@ -451,47 +514,31 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   body.appendChild(fieldLabel('主题色'));
   const colorRow = document.createElement('div');
   colorRow.className = 'color-row';
-  const accentColors = ['#D4AF37', '#1FB6FF', '#FFD84D', '#3FB950', '#E5534B'];
-  let selectedAccent = task?.accent || defaultAccent;
-
-  accentColors.forEach(c => {
+  const initialColor = task?.accent || defaultAccent;
+  const colorSelector = createOptionSelector(ACCENT_COLORS, (c) => {
     const swatch = document.createElement('div');
     swatch.className = 'color-swatch';
     swatch.style.background = c;
     swatch.style.color = c;
-    if (c === selectedAccent) {
-      swatch.classList.add('selected');
-      swatch.innerHTML = '&#10003;';
-      swatch.style.color = '#000';
-    }
-    swatch.addEventListener('click', () => {
-      colorRow.querySelectorAll('.color-swatch').forEach(el => {
-        el.classList.remove('selected');
-        el.textContent = '';
-        el.style.color = el.style.background;
-      });
-      swatch.classList.add('selected');
-      swatch.innerHTML = '&#10003;';
-      swatch.style.color = '#000';
-      selectedAccent = c;
-    });
-    colorRow.appendChild(swatch);
-  });
+    swatch.innerHTML = '&#10003;';
+    return swatch;
+  }, (c) => c === initialColor);
+  colorRow.appendChild(colorSelector);
   body.appendChild(colorRow);
 
   box.appendChild(body);
-
-  // 分隔线
   box.appendChild(dividerEl());
 
   // --- 底部按钮 ---
   const footer = document.createElement('div');
   footer.className = 'dialog-footer';
 
-  const cancelBtn = createBtn({ text: '取消', outline: true, onClick: close });
-  footer.appendChild(cancelBtn);
-
-  const submitBtn = createBtn({
+  footer.appendChild(createBtn({
+    text: '取消',
+    outline: true,
+    onClick: close,
+  }));
+  footer.appendChild(createBtn({
     text: isEdit ? '保存修改' : '创建任务',
     primary: true,
     onClick: () => {
@@ -500,24 +547,21 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
         showSnackbar('请输入任务名称');
         return;
       }
-      const result = {
+      onSubmit({
         id: isEdit ? task.id : Store.generateId(),
         name,
         description: descInput.value.trim(),
-        icon: selectedIcon,
-        accent: selectedAccent,
+        icon: iconSelector.getSelected(),
+        accent: colorSelector.getSelected(),
         isCompleted: isEdit ? task.isCompleted : false,
-      };
-      onSubmit(result);
+      });
       close();
     },
-  });
-  footer.appendChild(submitBtn);
+  }));
 
   box.appendChild(footer);
   overlay.appendChild(box);
 
-  // 点击遮罩层关闭
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) close();
   });
@@ -527,7 +571,6 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
     setTimeout(() => overlay.remove(), 200);
   }
 
-  // 自动打开
   requestAnimationFrame(() => overlay.classList.add('open'));
 
   return overlay;

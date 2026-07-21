@@ -37,28 +37,26 @@ const Browser = {
     container.innerHTML = `
       <div class="browser-page">
         <!-- 窄屏内置工具栏 -->
-        <div class="browser-toolbar" id="br-toolbar">
+        <div class="browser-toolbar page-header" id="br-toolbar">
           <div class="toolbar-top">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <button class="nav-trigger-inline" onclick="window.App.openDrawer()" aria-label="打开导航菜单" style="margin-left:-6px;">
-                <span class="material-icons" style="font-size:22px;">dashboard</span>
+            <div class="toolbar-brand-group">
+              <button class="nav-trigger-inline toolbar-trigger" onclick="window.App.openDrawer()" aria-label="打开导航菜单">
+                <span class="material-icons mi-md">dashboard</span>
               </button>
-              <span class="material-icons" id="br-site-icon" style="font-size:20px;color:${PRESET_SITES[IFRAME_SITE_INDEX].accent};text-shadow:0 0 6px ${PRESET_SITES[IFRAME_SITE_INDEX].accent};">public</span>
-              <span style="font-size:14px;font-weight:800;letter-spacing:3px;">内置浏览器</span>
+              <span class="material-icons site-icon" id="br-site-icon" style="color:${PRESET_SITES[IFRAME_SITE_INDEX].accent};text-shadow:0 0 6px ${PRESET_SITES[IFRAME_SITE_INDEX].accent};">public</span>
+              <span class="toolbar-brand">内置浏览器</span>
             </div>
-            <div style="flex:1;"></div>
-            <span style="font-size:10px;letter-spacing:1.5px;color:var(--text-muted);">Cookie 持久化</span>
+            <div class="page-spacer"></div>
+            <span class="toolbar-hint">Cookie 持久化</span>
           </div>
           <div class="site-tabs" id="br-site-tabs"></div>
         </div>
-
-        <div class="glow-divider" style="background:linear-gradient(90deg,transparent,var(--blue),var(--gold),transparent);"></div>
 
         <!-- iframe 视图 -->
         <div class="browser-view" id="br-view">
           <div class="browser-loading" id="br-loading">
             <div class="spinner"></div>
-            <div style="color:var(--text-secondary);letter-spacing:2px;font-size:12px;">WebView 初始化中…</div>
+            <div class="loading-text">WebView 初始化中…</div>
           </div>
           <iframe id="br-frame" style="display:none;"></iframe>
         </div>
@@ -91,7 +89,6 @@ const Browser = {
       const isIframe = site.iframe;
       const btn = createBtn({
         text: site.name,
-        accent: site.accent === '#FFD84D' ? 'yellow' : site.accent === '#D4AF37' ? 'gold' : 'blue',
         active: isIframe,
         onClick: () => this._handleSiteClick(i),
       });

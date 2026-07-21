@@ -1,0 +1,322 @@
+/* =============================================================
+   Layout — 应用外壳与布局框架
+   ============================================================= */
+
+/* ----- App Shell ----- */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  height: calc(var(--vh, 1vh) * 100);
+  width: 100vw;
+}
+
+/* ----- Header (宽屏顶栏) ----- */
+.app-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 24px 14px;
+  background: linear-gradient(135deg, #0E141C, #13181F);
+  border-bottom: 1px solid var(--bg-border);
+  flex-shrink: 0;
+}
+
+.app-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.app-header .brand-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2A3340, #0A0E14);
+  border: 1.5px solid var(--gold);
+  box-shadow: 0 0 10px var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.app-header .brand-text h1 {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  color: var(--gold);
+  text-shadow: 0 0 12px var(--gold);
+  line-height: 1.2;
+}
+
+.app-header .brand-text .subtitle {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.app-header .header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.app-header .header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-header .header-right-inner {
+  text-align: right;
+}
+
+.app-header .header-right-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: flex-end;
+}
+
+.app-header .header-date-text {
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+}
+
+.app-header .header-countdown-text {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--blue);
+  letter-spacing: 1.2px;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* 通用 Material 图标尺寸 */
+.mi-sm { font-size: 16px; }
+.mi-md { font-size: 22px; }
+
+/* 通用页面头部（窄屏各页面共用） */
+.page-spacer { flex: 1; }
+.page-brand-title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--gold);
+  text-shadow: 0 0 12px var(--gold);
+}
+.page-brand-sub {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+}
+
+/*
+ * 页面头部模板：任何元素加上 .page-header 类，
+ * 底部会自动渲染一条金→蓝渐变彩线作为分割。
+ * 新增页面只需 header 套用此类，无需手动插入 <div class="glow-divider">。
+ */
+.page-header {
+  position: relative;
+  border-bottom: none; /* 彩线由 ::after 提供，避免双线 */
+}
+
+.page-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--blue), transparent);
+  pointer-events: none;
+}
+
+/* 浏览器页特殊：蓝→金渐变（保留原视觉） */
+.page-header.browser-toolbar::after {
+  background: linear-gradient(90deg, transparent, var(--blue), var(--gold), transparent);
+}
+
+/* ----- Glow Divider ----- */
+.glow-divider {
+  height: 1px;
+  width: 100%;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--blue), transparent);
+}
+
+/* ----- Main Content Area ----- */
+.main-area {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ----- Sidebar (宽屏左侧导航) ----- */
+.sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, #0E141C, #0A0E14);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 8px;
+}
+
+.sidebar-footer {
+  padding: 12px 20px 20px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+}
+
+/* ----- Content Panel (页面容器) ----- */
+.content-panel {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-view {
+  flex: 1;
+  overflow: auto;
+  display: none;
+}
+
+.page-view.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ----- 窄屏抽屉侧栏 ----- */
+
+/* 行内触发按钮（在页面头部中的那个） */
+.nav-trigger-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2A3340, #0A0E14);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px var(--gold-glow);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.nav-trigger-inline:hover,
+.nav-trigger-inline:active {
+  animation: triggerGlow 1.2s ease-in-out infinite;
+  transform: scale(1.05);
+}
+
+/* 抽屉遮罩层 */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
+}
+
+.drawer-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 抽屉面板 */
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  background: linear-gradient(180deg, #0E141C, #0A0E14);
+  border-right: 1px solid var(--bg-border);
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-overlay.open .drawer-panel {
+  transform: translateX(0);
+}
+
+/* 抽屉头部 */
+.drawer-header {
+  padding: 20px 20px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--bg-border);
+}
+
+.drawer-header .drawer-brand {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-shadow: 0 0 8px var(--gold);
+}
+
+.drawer-header .drawer-version {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+}
+
+/* 抽屉导航列表 */
+.drawer-nav {
+  flex: 1;
+  padding: 12px 8px;
+  overflow-y: auto;
+}
+
+.drawer-nav .wf-btn {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 14px;
+  background: transparent;
+  border-color: transparent;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.drawer-nav .wf-btn:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--gold-dim);
+}
+
+.drawer-nav .wf-btn.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold);
+}
+
+.drawer-footer {
+  padding: 12px 20px 20px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--bg-border);
+}
