@@ -77,7 +77,7 @@ const Reminder = {
     const now = Date.now();
     const before = this._state.reminders.length;
     this._state.reminders = this._state.reminders.filter(r => {
-      if (r.isCompleted) return true;
+      if (!r.isCompleted) return true;
       const targetTime = new Date(r.targetTime).getTime();
       return now - targetTime <= REMINDER_AUTO_DELETE_MS;
     });
@@ -275,7 +275,7 @@ const Reminder = {
 
     // 单次过滤：同时完成过期检测和清理
     const filtered = this._state.reminders.filter(r =>
-      r.isCompleted || now - new Date(r.targetTime).getTime() <= REMINDER_AUTO_DELETE_MS
+      !r.isCompleted || now - new Date(r.targetTime).getTime() <= REMINDER_AUTO_DELETE_MS
     );
 
     if (filtered.length !== this._state.reminders.length) {
