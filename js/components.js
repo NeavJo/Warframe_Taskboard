@@ -410,7 +410,7 @@ function createTaskPanel(opts, taskType) {
 // 可选图标列表
 const TASK_ICONS = [
   'check_circle_outline', 'flash_on', 'card_giftcard', 'bolt',
-  'diamond_outlined', 'gavel', 'castle', 'storefront',
+  'auto_awesome', 'gavel', 'castle', 'storefront',
   'shield', 'star', 'track_changes', 'rocket',
   'military_tech', 'key', 'crisis_alert',
 ];

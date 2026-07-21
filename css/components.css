@@ -491,6 +491,12 @@
   gap: 8px;
 }
 
+.dialog-body .icon-grid > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .dialog-body .icon-option {
   width: 44px;
   height: 44px;
@@ -503,6 +509,11 @@
 }
 
 .dialog-body .color-row {
+  display: flex;
+  gap: 12px;
+}
+
+.dialog-body .color-row > div {
   display: flex;
   gap: 12px;
 }
