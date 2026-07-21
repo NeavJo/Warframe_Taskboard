@@ -15,7 +15,7 @@ const LAST_URL_KEY = 'wf_browser_last_url';
 const PRESET_SITES = [
   { name: '灰机 Wiki',  url: 'https://warframe.huijiwiki.com/wiki/Mainpage', accent: '#FFD84D', iframe: true },
   { name: 'wf.wiki 导航', url: 'https://wf.wiki',                          accent: '#D4AF37', iframe: false },
-  { name: 'Warframe Market', url: 'https://warframe.market',                accent: '#1FB6FF', iframe: false },
+  { name: 'Warframe Market', url: 'https://warframe.market/zh-hans/',                accent: '#1FB6FF', iframe: false },
 ];
 
 /** iframe 默认加载站点的索引（首个 iframe: true 的项） */
