@@ -177,7 +177,7 @@
           <div class="drawer-version">TASKBOARD</div>
         </div>
         <div class="drawer-nav" id="drawer-nav"></div>
-        <div class="drawer-footer">WIN · v0.1.0</div>
+        <div class="drawer-footer"></div>
       `;
       overlay.appendChild(panel);
       this._els.drawerPanel = panel;

@@ -47,7 +47,7 @@ const Browser = {
               <span class="toolbar-brand">内置浏览器</span>
             </div>
             <div class="page-spacer"></div>
-            <span class="toolbar-hint">Cookie 持久化</span>
+            <span class="toolbar-hint"></span>
           </div>
           <div class="site-tabs" id="br-site-tabs"></div>
         </div>
