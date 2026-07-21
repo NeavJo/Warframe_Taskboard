@@ -18,7 +18,7 @@
     { label: '看板', icon: 'dashboard', activeIcon: 'dashboard', pageId: 'page-taskboard' },
     { label: '提醒', icon: 'notifications', activeIcon: 'notifications', pageId: 'page-reminder' },
     { label: '仲裁', icon: 'gavel', activeIcon: 'gavel', pageId: 'page-arbitration' },
-    { label: '浏览器', icon: 'public', activeIcon: 'public', pageId: 'page-browser' },
+    { label: '浏览器（wiki）', icon: 'public', activeIcon: 'public', pageId: 'page-browser' },
     { label: '设置', icon: 'settings', activeIcon: 'settings', pageId: 'page-settings' },
   ];
 
