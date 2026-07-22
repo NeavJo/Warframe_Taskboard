@@ -164,7 +164,14 @@ const Taskboard = {
 
   _renderPanels() {
     const isManage = this._state.isManageMode;
-    const S = this; // 避免 this 丢失
+
+    const buildCallbacks = (isDaily) => ({
+      onToggle: (t) => this._toggleTask(t),
+      onEdit: (t) => this._openEditDialog(t, isDaily),
+      onDelete: (t) => this._deleteTask(t, isDaily),
+      onAddTask: () => this._openAddDialog(isDaily),
+      onReorderItem: (from, to) => this._onReorder(from, to, isDaily),
+    });
 
     // 创建日常面板
     const dailyOpts = {
@@ -172,13 +179,7 @@ const Taskboard = {
       subtitle: 'DAILY',
       accent: '#FFD84D',
       tasks: this._state.dailyTasks,
-      callbacks: {
-        onToggle: (t) => S._toggleTask(t),
-        onEdit: (t) => S._openEditDialog(t, true),
-        onDelete: (t) => S._deleteTask(t, true),
-        onAddTask: () => S._openAddDialog(true),
-        onReorderItem: (from, to) => S._onReorder(from, to, true),
-      },
+      callbacks: buildCallbacks(true),
       isManageMode: isManage,
     };
 
@@ -188,13 +189,7 @@ const Taskboard = {
       subtitle: 'WEEKLY',
       accent: '#1FB6FF',
       tasks: this._state.weeklyTasks,
-      callbacks: {
-        onToggle: (t) => S._toggleTask(t),
-        onEdit: (t) => S._openEditDialog(t, false),
-        onDelete: (t) => S._deleteTask(t, false),
-        onAddTask: () => S._openAddDialog(false),
-        onReorderItem: (from, to) => S._onReorder(from, to, false),
-      },
+      callbacks: buildCallbacks(false),
       isManageMode: isManage,
     };
 
@@ -207,14 +202,11 @@ const Taskboard = {
     this._els.dailyWrapper.appendChild(this._dailyPanel);
     this._els.weeklyWrapper.appendChild(this._weeklyPanel);
 
-    // 放至单栏 Tab
+    // 放至单栏 Tab（独立 DOM）
     clearEl(this._els.tabDaily);
     clearEl(this._els.tabWeekly);
-    // 为 Tab 版创建独立面板（可复用面板数据但需独立 DOM）
-    const dailyTabOpts = { ...dailyOpts, callbacks: { ...dailyOpts.callbacks } };
-    const weeklyTabOpts = { ...weeklyOpts, callbacks: { ...weeklyOpts.callbacks } };
-    this._els.tabDaily.appendChild(createTaskPanel(dailyTabOpts, 0));
-    this._els.tabWeekly.appendChild(createTaskPanel(weeklyTabOpts, 1));
+    this._els.tabDaily.appendChild(createTaskPanel({ ...dailyOpts, callbacks: buildCallbacks(true) }, 0));
+    this._els.tabWeekly.appendChild(createTaskPanel({ ...weeklyOpts, callbacks: buildCallbacks(false) }, 1));
   },
 
   _refreshPanels() {
@@ -280,13 +272,6 @@ const Taskboard = {
     };
     update();
     this._state.clockTimer = setInterval(update, 1000);
-  },
-
-  _stopClock() {
-    if (this._state.clockTimer) {
-      clearInterval(this._state.clockTimer);
-      this._state.clockTimer = null;
-    }
   },
 
   // =============================================================

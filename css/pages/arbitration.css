@@ -41,10 +41,6 @@
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 .arbi-loading .loading-text {
   font-size: 14px;
   color: var(--text-secondary);
@@ -102,7 +98,7 @@
   color: var(--gold);
   font-size: 28px;
   flex-shrink: 0;
-  background: rgba(212, 175, 55, 0.08);
+  background: color-mix(in srgb, var(--gold) 8%, transparent);
 }
 
 .arbi-current-info {
@@ -210,7 +206,7 @@
 }
 
 .arbi-badge {
-  background: rgba(212, 175, 55, 0.15);
+  background: color-mix(in srgb, var(--gold) 15%, transparent);
   color: var(--gold);
   padding: 2px 8px;
   border-radius: 10px;
@@ -241,7 +237,7 @@
 
 .arbi-hv-card.active {
   border-color: var(--yellow);
-  box-shadow: 0 0 12px rgba(255, 216, 77, 0.15);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--yellow) 15%, transparent);
 }
 
 .arbi-hv-card.past {
@@ -302,15 +298,15 @@
 }
 
 .arbi-hv-status[data-status="active"] {
-  background: rgba(255, 216, 77, 0.15);
+  background: color-mix(in srgb, var(--yellow) 15%, transparent);
   color: var(--yellow);
   border: 1px solid var(--yellow);
 }
 
 .arbi-hv-status[data-status="upcoming"] {
-  background: rgba(31, 182, 255, 0.12);
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
   color: var(--blue);
-  border: 1px solid rgba(31, 182, 255, 0.3);
+  border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent);
 }
 
 .arbi-hv-status[data-status="past"] {
@@ -361,11 +357,11 @@
 }
 
 .arbi-upcoming-row.high-value {
-  background: rgba(212, 175, 55, 0.04);
+  background: color-mix(in srgb, var(--gold) 4%, transparent);
 }
 
 .arbi-upcoming-row.high-value:hover {
-  background: rgba(212, 175, 55, 0.08);
+  background: color-mix(in srgb, var(--gold) 8%, transparent);
 }
 
 .arbi-upcoming-time {
@@ -470,7 +466,7 @@
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background: rgba(212, 175, 55, 0.2);
+  background: color-mix(in srgb, var(--gold) 20%, transparent);
   border-color: var(--gold);
 }
 

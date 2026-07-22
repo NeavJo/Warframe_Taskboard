@@ -136,6 +136,7 @@ const ArbiData = {
     const now = nowTs || Math.floor(Date.now() / 1000);
     const node = this._getNodeAt(now);
     if (!node) return null;
+    const startTime = this._getHourStart(now);
     return {
       nodeKey: node.nodeKey,
       name: node.nameZh,
@@ -145,8 +146,8 @@ const ArbiData = {
       tier: this._state.tierMap[node.nodeKey] || '未评级',
       minLevel: node.minEnemyLevel,
       maxLevel: node.maxEnemyLevel,
-      startTime: this._getHourStart(now),
-      endTime: this._getHourStart(now) + this._state.schedule.stepSec,
+      startTime,
+      endTime: startTime + this._state.schedule.stepSec,
     };
   },
 
@@ -248,14 +249,5 @@ const ArbiData = {
   formatTime(ts) {
     const d = new Date(ts * 1000);
     return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  },
-
-  formatDateTime(ts) {
-    const d = new Date(ts * 1000);
-    const now = new Date();
-    const isToday = d.toDateString() === now.toDateString();
-    const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    if (isToday) return `今天 ${timeStr}`;
-    return `${d.getMonth() + 1}/${d.getDate()} ${timeStr}`;
   },
 };

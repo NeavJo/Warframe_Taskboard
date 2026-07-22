@@ -226,7 +226,7 @@ function createTaskPanel(opts, taskType) {
   const reorderCb = callbacks.onReorderItem;
 
   function renderTasks() {
-    while (list.firstChild) list.removeChild(list.firstChild);
+    clearEl(list);
     opts.tasks.forEach((task, index) => {
       const card = createTaskCard(task, {
         onToggle: () => callbacks.onToggle?.(task),
@@ -247,6 +247,13 @@ function createTaskPanel(opts, taskType) {
   // --- 拖拽排序 (HTML5 Drag & Drop) ---
   if (isManageMode && reorderCb) {
     let dragOverIndex = -1;
+    const clearBorders = () => {
+      const cards = list.children;
+      for (let i = 0; i < cards.length; i++) {
+        cards[i].style.borderTop = '';
+        cards[i].style.borderBottom = '';
+      }
+    };
 
     list.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -254,7 +261,7 @@ function createTaskPanel(opts, taskType) {
       if (!card) return;
       const idx = parseInt(card.dataset.index);
       if (isNaN(idx)) return;
-      Array.from(list.children).forEach(c => { c.style.borderTop = ''; c.style.borderBottom = ''; });
+      clearBorders();
       if (idx > parseInt(list.dataset.dragFrom)) {
         card.style.borderBottom = `2px solid ${accent}`;
       } else {
@@ -265,10 +272,7 @@ function createTaskPanel(opts, taskType) {
 
     list.addEventListener('drop', (e) => {
       e.preventDefault();
-      Array.from(list.children).forEach(c => {
-        c.style.borderTop = '';
-        c.style.borderBottom = '';
-      });
+      clearBorders();
       const from = parseInt(list.dataset.dragFrom);
       if (!isNaN(from) && from !== dragOverIndex && dragOverIndex >= 0) {
         reorderCb(from, dragOverIndex);
@@ -388,16 +392,6 @@ function createTaskPanel(opts, taskType) {
     list.addEventListener('touchend', endTouchDrag);
     list.addEventListener('touchcancel', endTouchDrag);
   }
-
-  // 存储 render 方法以便外部调用
-  panel._renderTasks = renderTasks;
-  panel._renderHeader = () => {
-    const newCompleted = opts.tasks.filter(t => t.isCompleted).length;
-    const newTotal = opts.tasks.length;
-    const newProgress = newTotal === 0 ? 0 : newCompleted / newTotal;
-    counter.textContent = `${newCompleted} / ${newTotal}`;
-    fill.style.width = (newProgress * 100) + '%';
-  };
 
   panel.appendChild(list);
   return panel;

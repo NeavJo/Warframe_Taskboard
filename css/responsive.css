@@ -112,5 +112,19 @@
   .reminder-content { padding: 12px; }
   .reminder-card { padding: 12px; gap: 10px; }
   .reminder-name { font-size: 14px; }
-  .reminder-delete { opacity: 1; }
+
+  /* 缩窄新增按钮为图标按钮，防止管理中按钮溢出边界 */
+  #rm-add-btn {
+    padding: 8px;
+    gap: 0;
+  }
+  #rm-add-btn > span:last-child {
+    display: none;
+  }
+
+  /* 移动端编辑/新增对话框缩短至2/3 */
+  .dialog-box {
+    max-height: calc(100vh * 2 / 3);
+    width: calc(100vw - 24px);
+  }
 }

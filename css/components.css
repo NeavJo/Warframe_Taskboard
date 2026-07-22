@@ -70,11 +70,6 @@
   border-color: var(--gold);
 }
 
-/* 管理按钮 */
-.wf-btn.manage-btn {
-  padding: 8px 12px;
-}
-
 .wf-btn.primary {
   background: var(--gold);
   border-color: var(--gold);
@@ -291,14 +286,15 @@
   color: var(--text-muted);
 }
 
-.task-card .task-actions {
+.task-card .task-actions,
+.reminder-actions {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
 }
 
-.task-card .action-btn {
+.action-btn {
   width: 28px;
   height: 28px;
   display: flex;
@@ -312,24 +308,24 @@
   transition: all 0.15s;
 }
 
-.task-card .action-btn.edit {
+.action-btn.edit {
   color: var(--blue);
   border-color: var(--blue);
-  background: rgba(31, 182, 255, 0.1);
+  background: color-mix(in srgb, var(--blue) 10%, transparent);
 }
 
-.task-card .action-btn.edit:hover {
-  background: rgba(31, 182, 255, 0.2);
+.action-btn.edit:hover {
+  background: color-mix(in srgb, var(--blue) 20%, transparent);
 }
 
-.task-card .action-btn.delete {
+.action-btn.delete {
   color: var(--danger);
   border-color: var(--danger);
-  background: rgba(229, 83, 75, 0.1);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 
-.task-card .action-btn.delete:hover {
-  background: rgba(229, 83, 75, 0.2);
+.action-btn.delete:hover {
+  background: color-mix(in srgb, var(--danger) 20%, transparent);
 }
 
 .task-card .check-badge {

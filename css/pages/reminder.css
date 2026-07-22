@@ -247,7 +247,7 @@
   letter-spacing: 1px;
   padding: 2px 8px;
   border-radius: 4px;
-  margin-left: auto;
+  white-space: nowrap;
 }
 
 .reminder-status.status-pending {
@@ -279,7 +279,22 @@
   flex-shrink: 0;
   transition: all 0.22s;
   font-size: 16px;
-  align-self: center;
+}
+
+.reminder-right-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-shrink: 0;
+  align-self: stretch;
+  gap: 8px;
+}
+
+.reminder-right-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .reminder-card.completed .check-badge {
@@ -287,34 +302,6 @@
   background: var(--success);
   color: #000;
   box-shadow: 0 0 10px color-mix(in srgb, var(--success) 40%, transparent);
-}
-
-.reminder-delete {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-radius: 4px;
-  font-size: 16px;
-  opacity: 0;
-  transition: all 0.15s;
-}
-
-.reminder-card:hover .reminder-delete {
-  opacity: 1;
-}
-
-.reminder-delete:hover {
-  color: var(--danger);
-  background: rgba(229, 83, 75, 0.1);
 }
 
 /* 快捷小时按钮 */

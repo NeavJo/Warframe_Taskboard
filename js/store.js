@@ -15,7 +15,7 @@ function buildDefaultDailyTasks() {
     { id: 'sortie', name: '突击 (Sortie)', description: '完成今日 3 轮突击任务', icon: 'flash_on', accent: '#FFD84D', isCompleted: false },
     { id: 'daily_tribute', name: '每日献礼签到', description: '每日登录献礼 / Tribute 奖励', icon: 'card_giftcard', accent: '#D4AF37', isCompleted: false },
     { id: 'eidolon_culling', name: '大傻 / 三傻 夜灵捕获', description: '夜灵平原捕获 Teralyst / Gantulyst / Hydrolyst', icon: 'bolt', accent: '#1FB6FF', isCompleted: false },
-    { id: 'void_fissure', name: '执政官裂缝 / 虚空裂缝', description: '完成今日虚空裂缝任务', icon: 'diamond_outlined', accent: '#D4AF37', isCompleted: false },
+    { id: 'void_fissure', name: '执政官裂缝 / 虚空裂缝', description: '完成今日虚空裂缝任务', icon: 'auto_awesome', accent: '#D4AF37', isCompleted: false },
   ];
 }
 

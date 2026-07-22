@@ -11,6 +11,7 @@ const Reminder = {
   _state: {
     reminders: [],
     isLoaded: false,
+    isManageMode: false,
   },
 
   _els: {},
@@ -30,10 +31,11 @@ const Reminder = {
               <div class="page-brand-sub">REMINDER / 定时提醒</div>
             </div>
             <div class="page-spacer"></div>
-            <button class="wf-btn primary" id="rm-add-btn">
+            <button class="wf-btn primary" id="rm-add-btn" style="display:none;">
               <span class="material-icons mi-sm">add</span>
               <span>新增</span>
             </button>
+            <button class="wf-btn manage-btn" id="rm-manage-btn">管理</button>
           </div>
         </div>
 
@@ -54,10 +56,12 @@ const Reminder = {
     this._els.list = document.getElementById('rm-list');
     this._els.empty = document.getElementById('rm-empty');
     this._els.addBtn = document.getElementById('rm-add-btn');
+    this._els.manageBtn = document.getElementById('rm-manage-btn');
 
     this._state.reminders = Store.loadReminders();
 
     this._els.addBtn.addEventListener('click', () => this._openAddDialog());
+    this._els.manageBtn.addEventListener('click', () => this._toggleManageMode());
 
     this._state.isLoaded = true;
     this._renderList();
@@ -148,35 +152,61 @@ const Reminder = {
     timeText.textContent = this._formatTargetTime(reminder.targetTime);
     timeRow.appendChild(timeText);
 
-    const statusBadge = document.createElement('span');
-    statusBadge.className = 'reminder-status';
-    timeRow.appendChild(statusBadge);
-
     info.appendChild(timeRow);
     card.appendChild(info);
 
+    // 右侧列：顶部按钮 + 底部状态徽章
+    const rightCol = document.createElement('div');
+    rightCol.className = 'reminder-right-col';
+
+    const topGroup = document.createElement('div');
+    topGroup.className = 'reminder-right-top';
+
+    // 管理模式下显示编辑+删除按钮（临时卡片只显示删除）
+    if (this._state.isManageMode) {
+      const actions = document.createElement('div');
+      actions.className = 'reminder-actions';
+
+      if (!reminder.isTemp) {
+        const editBtn = document.createElement('button');
+        editBtn.className = 'action-btn edit';
+        editBtn.title = '编辑';
+        editBtn.appendChild(mi('edit'));
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this._openEditorDialog(reminder);
+        });
+        actions.appendChild(editBtn);
+      }
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'action-btn delete';
+      delBtn.title = '删除';
+      delBtn.appendChild(mi('delete'));
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._deleteReminder(reminder);
+      });
+      actions.appendChild(delBtn);
+
+      topGroup.appendChild(actions);
+    }
+
     const checkBadge = document.createElement('div');
     checkBadge.className = 'check-badge';
-    card.appendChild(checkBadge);
+    topGroup.appendChild(checkBadge);
 
-    const delBtn = document.createElement('button');
-    delBtn.className = 'reminder-delete';
-    delBtn.title = '删除';
-    delBtn.appendChild(mi('close'));
-    delBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this._deleteReminder(reminder);
-    });
-    card.appendChild(delBtn);
+    rightCol.appendChild(topGroup);
+
+    const statusBadge = document.createElement('span');
+    statusBadge.className = 'reminder-status';
+    rightCol.appendChild(statusBadge);
+
+    card.appendChild(rightCol);
 
     card.addEventListener('click', (e) => {
-      if (e.target.closest('.reminder-delete')) return;
-      if (reminder.isCompleted) return;
-      const now = Date.now();
-      const targetTime = new Date(reminder.targetTime).getTime();
-      if (now >= targetTime) {
-        this._toggleComplete(reminder);
-      }
+      if (e.target.closest('.action-btn')) return;
+      this._toggleComplete(reminder);
     });
 
     const refs = { card, statusBadge, nameEl, checkBadge, iconBadge };
@@ -209,15 +239,12 @@ const Reminder = {
     if (reminder.isCompleted) {
       statusBadge.textContent = '已完成';
       statusBadge.className = 'reminder-status status-completed';
-    } else if (isActive) {
+    } else if (isActive || diffMs <= 0) {
       statusBadge.textContent = '已激活';
       statusBadge.className = 'reminder-status status-active';
-    } else if (diffMs > 0) {
+    } else {
       statusBadge.textContent = this._formatCountdown(diffMs);
       statusBadge.className = 'reminder-status status-pending';
-    } else {
-      statusBadge.textContent = '已激活';
-      statusBadge.className = 'reminder-status status-active';
     }
   },
 
@@ -228,15 +255,14 @@ const Reminder = {
   _formatTargetTime(isoString) {
     const d = new Date(isoString);
     const now = new Date();
-    const isToday = d.toDateString() === now.toDateString();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const isTomorrow = d.toDateString() === tomorrow.toDateString();
+    const todayStr = now.toDateString();
+    const dStr = d.toDateString();
+    const tomorrowStr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toDateString();
 
     const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
-    if (isToday) return `今天 ${timeStr}`;
-    if (isTomorrow) return `明天 ${timeStr}`;
+    if (dStr === todayStr) return `今天 ${timeStr}`;
+    if (dStr === tomorrowStr) return `明天 ${timeStr}`;
     return `${d.getMonth() + 1}月${d.getDate()}日 ${timeStr}`;
   },
 
@@ -262,13 +288,6 @@ const Reminder = {
   _startTimer() {
     if (this._timerInterval) clearInterval(this._timerInterval);
     this._timerInterval = setInterval(() => this._onTick(), 1000);
-  },
-
-  _stopTimer() {
-    if (this._timerInterval) {
-      clearInterval(this._timerInterval);
-      this._timerInterval = null;
-    }
   },
 
   _onTick() {
@@ -318,6 +337,26 @@ const Reminder = {
       this._persist();
       this._renderList();
     }
+  },
+
+  // =============================================================
+  // 管理模式
+  // =============================================================
+
+  _toggleManageMode() {
+    this.setManageMode(!this._state.isManageMode);
+  },
+
+  setManageMode(enabled) {
+    this._state.isManageMode = enabled;
+    this._syncManageBtn();
+    this._els.addBtn.style.display = enabled ? '' : 'none';
+    this._renderList();
+  },
+
+  _syncManageBtn() {
+    this._els.manageBtn.textContent = this._state.isManageMode ? '管理中' : '管理';
+    this._els.manageBtn.classList.toggle('active', this._state.isManageMode);
   },
 
   // =============================================================

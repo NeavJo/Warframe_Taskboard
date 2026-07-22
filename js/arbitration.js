@@ -7,7 +7,6 @@ const Arbitration = {
 
   _els: {},
   _timerInterval: null,
-  _cardEls: {},
 
   init(container) {
     container.innerHTML = `
@@ -66,6 +65,7 @@ const Arbitration = {
     this._els.hvCount = document.getElementById('arbi-hv-count');
     this._els.upcoming = document.getElementById('arbi-upcoming');
     this._els.settingsBtn = document.getElementById('arbi-settings-btn');
+    this._els.countdown = null;
 
     this._state.autoAddEnabled = this._loadAutoAddSetting();
 
@@ -139,6 +139,7 @@ const Arbitration = {
         </div>
       </div>
     `;
+    this._els.countdown = document.getElementById('arbi-countdown');
   },
 
   _renderHighValue() {
@@ -233,16 +234,15 @@ const Arbitration = {
 
     if (current) {
       const remainingSec = current.endTime - now;
-      const countdownEl = document.getElementById('arbi-countdown');
-      if (countdownEl) {
+      if (this._els.countdown) {
         if (remainingSec > 3600) {
           const h = Math.floor(remainingSec / 3600);
           const m = Math.floor((remainingSec % 3600) / 60);
-          countdownEl.textContent = `${h}时${m}分`;
+          this._els.countdown.textContent = `${h}时${m}分`;
         } else if (remainingSec > 60) {
-          countdownEl.textContent = `${Math.ceil(remainingSec / 60)} 分钟`;
+          this._els.countdown.textContent = `${Math.ceil(remainingSec / 60)} 分钟`;
         } else {
-          countdownEl.textContent = `${remainingSec} 秒`;
+          this._els.countdown.textContent = `${remainingSec} 秒`;
         }
       }
 
@@ -272,7 +272,6 @@ const Arbitration = {
     }
 
     const now = Date.now();
-    const autoDeleteMs = 30 * 60 * 1000;
     const existing = Store.loadReminders();
 
     let addedCount = 0;
@@ -280,15 +279,12 @@ const Arbitration = {
     hvList.forEach((item) => {
       const targetTime = item.startTime * 1000;
 
-      if (now - targetTime > autoDeleteMs) return;
+      if (now - targetTime > REMINDER_AUTO_DELETE_MS) return;
 
       const tempId = `arbi_temp_${item.startTime}`;
-      const exists = existing.some(r => r.id === tempId);
-      if (exists) return;
+      if (existing.some(r => r.id === tempId)) return;
 
-      const tierColor = ArbiData.getTierColor(item.tier);
-
-      const reminder = {
+      existing.push({
         id: tempId,
         name: `${item.mission} - ${item.name}（临时）`,
         description: `${item.tier}级 · ${item.system} · ${item.faction} · 等级 ${item.minLevel}-${item.maxLevel}`,
@@ -301,17 +297,13 @@ const Arbitration = {
         tempType: ARBI_TEMP_REMINDER_TAG,
         arbiNodeKey: item.nodeKey,
         arbiTier: item.tier,
-      };
-
-      existing.push(reminder);
+      });
       addedCount++;
     });
 
     if (addedCount > 0) {
       Store.saveReminders(existing);
-      if (window.App && window.App.reminder) {
-        window.App.reminder.reloadFromStore();
-      }
+      window.App?.reminder?.reloadFromStore();
       showSnackbar(`已自动添加 ${addedCount} 个仲裁任务提醒`);
     }
 

@@ -15,11 +15,11 @@
   // =============================================================
 
   const NAV_ITEMS = [
-    { label: '看板', icon: 'dashboard', activeIcon: 'dashboard', pageId: 'page-taskboard' },
-    { label: '提醒', icon: 'notifications', activeIcon: 'notifications', pageId: 'page-reminder' },
-    { label: '仲裁', icon: 'gavel', activeIcon: 'gavel', pageId: 'page-arbitration' },
-    { label: '浏览器（wiki）', icon: 'public', activeIcon: 'public', pageId: 'page-browser' },
-    { label: '设置', icon: 'settings', activeIcon: 'settings', pageId: 'page-settings' },
+    { label: '看板', icon: 'dashboard', pageId: 'page-taskboard' },
+    { label: '提醒', icon: 'notifications', pageId: 'page-reminder' },
+    { label: '仲裁', icon: 'gavel', pageId: 'page-arbitration' },
+    { label: '浏览器（wiki）', icon: 'public', pageId: 'page-browser' },
+    { label: '设置', icon: 'settings', pageId: 'page-settings' },
   ];
 
   // =============================================================
@@ -29,6 +29,7 @@
   const App = {
     _currentIndex: 0,
     _isManageMode: false,
+    _isReminderManageMode: false,
 
     // DOM 引用
     _els: {},
@@ -54,7 +55,6 @@
       this._els.wideDateText = document.getElementById('wide-date-text');
       this._els.wideCountdownText = document.getElementById('wide-countdown-text');
       this._els.wideManageBtn = document.getElementById('wide-manage-btn');
-      this._els.wideReminderAddBtn = document.getElementById('wide-reminder-add-btn');
       this._els.pages = {
         taskboard: document.getElementById('page-taskboard'),
         reminder: document.getElementById('page-reminder'),
@@ -88,14 +88,9 @@
       // 初始化设置页
       Settings.init(this._els.pages.settings);
 
-      // 绑定宽屏管理按钮
+      // 绑定宽屏管理按钮（看板/提醒页共用）
       this._els.wideManageBtn.addEventListener('click', () => {
         this._toggleManageMode();
-      });
-
-      // 绑定宽屏新增提醒按钮
-      this._els.wideReminderAddBtn.addEventListener('click', () => {
-        if (this.reminder) this.reminder._openAddDialog();
       });
 
       // 启动宽屏时钟
@@ -257,9 +252,12 @@
       // 更新宽屏顶栏中间区域
       this._updateWideHeaderCenter(index);
 
-      // 右上角主操作按钮互斥切换：看板页→管理，提醒页→新增提醒，其他页隐藏
-      this._els.wideManageBtn.style.display = (index === 0) ? '' : 'none';
-      this._els.wideReminderAddBtn.style.display = (index === 1) ? '' : 'none';
+      // 右上角管理按钮：看板页和提醒页显示，其他页隐藏
+      const showManage = (index === 0 || index === 1);
+      this._els.wideManageBtn.style.display = showManage ? '' : 'none';
+
+      // 同步管理按钮状态（根据当前页面的管理模式）
+      if (showManage) this._syncWideManageBtn();
     },
 
     // =============================================================
@@ -270,13 +268,8 @@
       const center = this._els.headerCenter;
       clearEl(center);
 
-      if (index === 0) {
-        return;
-      }
-
-      if (index === 1) {
-        return;
-      }
+      // 看板(0) / 提醒(1) 无需顶栏中部控件
+      if (index === 0 || index === 1) return;
 
       if (index === 3) {
         const template = document.getElementById('browser-controls-template');
@@ -334,10 +327,24 @@
     // =============================================================
 
     _toggleManageMode() {
-      this._isManageMode = !this._isManageMode;
-      this.taskboard.setManageMode(this._isManageMode);
-      this._els.wideManageBtn.textContent = this._isManageMode ? '管理中' : '管理';
-      this._els.wideManageBtn.classList.toggle('active', this._isManageMode);
+      if (this._currentIndex === 0) {
+        this._isManageMode = !this._isManageMode;
+        this.taskboard.setManageMode(this._isManageMode);
+      } else if (this._currentIndex === 1) {
+        this._isReminderManageMode = !this._isReminderManageMode;
+        this.reminder.setManageMode(this._isReminderManageMode);
+      }
+      this._syncWideManageBtn();
+    },
+
+    _syncWideManageBtn() {
+      const isManage = this._currentIndex === 0
+        ? this._isManageMode
+        : this._currentIndex === 1
+          ? (this._isReminderManageMode || false)
+          : false;
+      this._els.wideManageBtn.textContent = isManage ? '管理中' : '管理';
+      this._els.wideManageBtn.classList.toggle('active', isManage);
     },
 
     // =============================================================
@@ -351,7 +358,7 @@
         this._els.wideCountdownText.textContent = countdownText(now);
       };
       update();
-      setInterval(update, 1000);
+      this._wideClockTimer = setInterval(update, 1000);
     },
   };
 
