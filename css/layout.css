@@ -17,7 +17,9 @@
   display: flex;
   align-items: center;
   padding: 16px 24px 14px;
-  background: linear-gradient(135deg, #0E141C, #13181F);
+  background: var(--orokin-texture), linear-gradient(135deg, #0E141C, #13181F);
+  background-size: var(--orokin-texture-size), 100% 100%;
+  box-shadow: var(--orokin-inset);
   border-bottom: 1px solid var(--bg-border);
   flex-shrink: 0;
 }
@@ -29,18 +31,42 @@
 }
 
 .app-header .brand-badge {
+  position: relative;
   width: 44px;
   height: 44px;
   border-radius: 50%;
   background: radial-gradient(circle, #2A3340, #0A0E14);
-  border: 1.5px solid var(--gold);
-  box-shadow: 0 0 10px var(--gold);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
   color: var(--gold);
   flex-shrink: 0;
+  z-index: 0;
+}
+
+.app-header .brand-badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #E8E8E8, #A8A8A8, #FFFFFF, #8A8A8A, #E8E8E8);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  z-index: -1;
+}
+
+.app-header .brand-badge::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.35), transparent 70%);
+  z-index: -2;
+  pointer-events: none;
 }
 
 .app-header .brand-text h1 {
@@ -137,6 +163,7 @@
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--gold), var(--blue), transparent);
   pointer-events: none;
+  animation: glowLineBreathe 3.5s ease-in-out infinite;
 }
 
 /* 浏览器页特殊：蓝→金渐变（保留原视觉） */
@@ -150,6 +177,7 @@
   width: 100%;
   flex-shrink: 0;
   background: linear-gradient(90deg, transparent, var(--gold), var(--blue), transparent);
+  animation: glowLineBreathe 3.5s ease-in-out infinite;
 }
 
 /* ----- Main Content Area ----- */
@@ -162,7 +190,9 @@
 /* ----- Sidebar (宽屏左侧导航) ----- */
 .sidebar {
   width: var(--sidebar-width);
-  background: linear-gradient(180deg, #0E141C, #0A0E14);
+  background: var(--orokin-texture), linear-gradient(180deg, #0E141C, #0A0E14);
+  background-size: var(--orokin-texture-size), 100% 100%;
+  box-shadow: var(--orokin-inset);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -203,6 +233,7 @@
 
 /* 行内触发按钮（在页面头部中的那个） */
 .nav-trigger-inline {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -210,17 +241,40 @@
   height: 44px;
   border-radius: 50%;
   background: radial-gradient(circle, #2A3340, #0A0E14);
-  border: 1.5px solid var(--gold);
+  border: none;
   color: var(--gold);
   cursor: pointer;
   flex-shrink: 0;
-  box-shadow: 0 0 8px var(--gold-glow);
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  transition: transform 0.2s ease;
+  z-index: 0;
+}
+
+.nav-trigger-inline::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #E8E8E8, #A8A8A8, #FFFFFF, #8A8A8A, #E8E8E8);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  z-index: -1;
+}
+
+.nav-trigger-inline::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.35), transparent 70%);
+  z-index: -2;
+  pointer-events: none;
+  animation: triggerGlow 2s ease-in-out infinite;
 }
 
 .nav-trigger-inline:hover,
 .nav-trigger-inline:active {
-  animation: triggerGlow 1.2s ease-in-out infinite;
   transform: scale(1.05);
 }
 
@@ -250,7 +304,9 @@
   left: 0;
   bottom: 0;
   width: 260px;
-  background: linear-gradient(180deg, #0E141C, #0A0E14);
+  background: var(--orokin-texture), linear-gradient(180deg, #0E141C, #0A0E14);
+  background-size: var(--orokin-texture-size), 100% 100%;
+  box-shadow: var(--orokin-inset);
   border-right: 1px solid var(--bg-border);
   z-index: 1000;
   transform: translateX(-100%);
@@ -298,19 +354,16 @@
   justify-content: flex-start;
   padding: 14px;
   background: transparent;
-  border-color: transparent;
   font-size: 14px;
   letter-spacing: 2px;
 }
 
-.drawer-nav .wf-btn:hover {
-  background: rgba(212, 175, 55, 0.08);
-  border-color: var(--gold-dim);
+.drawer-nav .wf-btn:hover:not(.active) {
+  background: transparent;
 }
 
 .drawer-nav .wf-btn.active {
-  background: rgba(212, 175, 55, 0.15);
-  border-color: var(--gold);
+  background: transparent;
 }
 
 .drawer-footer {

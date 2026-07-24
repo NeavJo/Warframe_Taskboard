@@ -13,6 +13,7 @@ const Taskboard = {
     isManageMode: false,
     isLoaded: false,
     clockTimer: null,
+    currentTab: 'daily',
   },
 
   /** DOM 引用 */
@@ -64,8 +65,8 @@ const Taskboard = {
             <button class="tab-btn weekly-tab" data-tab="weekly">周常 · WEEKLY</button>
           </div>
           <div class="taskboard-tab-view" id="tb-tab-view">
-            <div class="tab-panel active" id="tab-daily"></div>
-            <div class="tab-panel" id="tab-weekly"></div>
+            <div class="tab-panel active" id="tab-daily" data-tab="daily"></div>
+            <div class="tab-panel" id="tab-weekly" data-tab="weekly"></div>
           </div>
         </div>
 
@@ -96,11 +97,59 @@ const Taskboard = {
     const tabBtns = this._els.tabbar.querySelectorAll('.tab-btn');
     tabBtns.forEach(btn => {
       btn.addEventListener('click', () => {
+        const targetTab = btn.dataset.tab;
+        const currentActive = this._els.tabView.querySelector('.tab-panel.active');
+        const targetPanel = document.getElementById(`tab-${targetTab}`);
+
+        if (currentActive === targetPanel) return;
+
+        const tabOrder = ['daily', 'weekly'];
+        const currentIdx = tabOrder.indexOf(currentActive?.dataset?.tab || this._state.currentTab || 'daily');
+        const targetIdx = tabOrder.indexOf(targetTab);
+        const goRight = targetIdx > currentIdx;
+
         tabBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const tab = btn.dataset.tab;
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        document.getElementById(`tab-${tab}`).classList.add('active');
+        this._state.currentTab = targetTab;
+
+        // 清理上一次未完成的动画
+        clearTimeout(this._tabAnimTimer);
+        this._els.tabView.querySelectorAll('.tab-panel').forEach(p => {
+          p.style.transition = '';
+          p.style.transform = '';
+          p.style.opacity = '';
+        });
+
+        // 旧面板滑出
+        if (currentActive) {
+          currentActive.classList.remove('active');
+          currentActive.style.transition = '';
+          currentActive.style.transform = goRight ? 'translateX(-100%)' : 'translateX(100%)';
+          currentActive.style.opacity = '0';
+        }
+
+        // 新面板：先无 transition 地放到入口位置
+        targetPanel.style.transition = 'none';
+        targetPanel.style.transform = goRight ? 'translateX(100%)' : 'translateX(-100%)';
+        targetPanel.style.opacity = '0';
+
+        // 强制 reflow，确保浏览器记录初始状态
+        void targetPanel.offsetHeight;
+
+        // 启用 transition，过渡到 active 位置
+        targetPanel.style.transition = '';
+        targetPanel.style.transform = '';
+        targetPanel.style.opacity = '';
+        targetPanel.classList.add('active');
+
+        // 动画结束后清理旧面板 inline style
+        this._tabAnimTimer = setTimeout(() => {
+          if (currentActive) {
+            currentActive.style.transform = '';
+            currentActive.style.opacity = '';
+            currentActive.style.transition = '';
+          }
+        }, 450);
       });
     });
 
@@ -165,6 +214,19 @@ const Taskboard = {
   _renderPanels() {
     const isManage = this._state.isManageMode;
 
+    // 读取旧进度条的当前进度，用于过渡动画的起始值
+    const getOldProgress = (container) => {
+      if (!container) return null;
+      const oldFill = container.querySelector('.progress-fill');
+      if (!oldFill) return null;
+      const w = parseFloat(oldFill.style.width);
+      return isNaN(w) ? null : w / 100;
+    };
+    const oldDailyProgress = getOldProgress(this._els.dailyWrapper) ?? getOldProgress(this._dailyPanel);
+    const oldWeeklyProgress = getOldProgress(this._els.weeklyWrapper) ?? getOldProgress(this._weeklyPanel);
+    const oldTabDailyProgress = getOldProgress(this._els.tabDaily) ?? oldDailyProgress;
+    const oldTabWeeklyProgress = getOldProgress(this._els.tabWeekly) ?? oldWeeklyProgress;
+
     const buildCallbacks = (isDaily) => ({
       onToggle: (t) => this._toggleTask(t),
       onEdit: (t) => this._openEditDialog(t, isDaily),
@@ -193,8 +255,8 @@ const Taskboard = {
       isManageMode: isManage,
     };
 
-    this._dailyPanel = createTaskPanel(dailyOpts, 0);
-    this._weeklyPanel = createTaskPanel(weeklyOpts, 1);
+    this._dailyPanel = createTaskPanel(dailyOpts, 0, oldDailyProgress);
+    this._weeklyPanel = createTaskPanel(weeklyOpts, 1, oldWeeklyProgress);
 
     // 放至双栏
     clearEl(this._els.dailyWrapper);
@@ -205,8 +267,8 @@ const Taskboard = {
     // 放至单栏 Tab（独立 DOM）
     clearEl(this._els.tabDaily);
     clearEl(this._els.tabWeekly);
-    this._els.tabDaily.appendChild(createTaskPanel({ ...dailyOpts, callbacks: buildCallbacks(true) }, 0));
-    this._els.tabWeekly.appendChild(createTaskPanel({ ...weeklyOpts, callbacks: buildCallbacks(false) }, 1));
+    this._els.tabDaily.appendChild(createTaskPanel({ ...dailyOpts, callbacks: buildCallbacks(true) }, 0, oldTabDailyProgress));
+    this._els.tabWeekly.appendChild(createTaskPanel({ ...weeklyOpts, callbacks: buildCallbacks(false) }, 1, oldTabWeeklyProgress));
   },
 
   _refreshPanels() {

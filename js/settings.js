@@ -27,8 +27,8 @@ const Settings = {
 
         <div class="settings-cards">
           <!-- 导出卡片 -->
-          <div class="settings-card">
-            <div class="settings-card-icon gold">
+          <div class="wf-card silver settings-card" style="--card-chamfer:11px">
+            <div class="wf-chip gold settings-card-icon">
               <span class="material-icons">download</span>
             </div>
             <div class="settings-card-body">
@@ -44,8 +44,8 @@ const Settings = {
           </div>
 
           <!-- 导入卡片 -->
-          <div class="settings-card">
-            <div class="settings-card-icon blue">
+          <div class="wf-card silver settings-card" style="--card-chamfer:11px">
+            <div class="wf-chip blue settings-card-icon">
               <span class="material-icons">upload</span>
             </div>
             <div class="settings-card-body">
@@ -229,7 +229,7 @@ const Settings = {
       overlay.className = 'dialog-overlay';
 
       const box = document.createElement('div');
-      box.className = 'dialog-box';
+      box.className = 'wf-card gold dialog-box';
       box.style.maxWidth = '420px';
 
       // 头部

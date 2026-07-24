@@ -67,38 +67,31 @@
   align-items: center;
   gap: 18px;
   padding: 20px 24px;
-  background: var(--bg-surface);
-  border: 1px solid var(--bg-border);
-  border-radius: 8px;
-  transition: border-color 0.2s;
+  transition: all var(--transition-normal);
 }
 
-.settings-card:hover {
-  border-color: var(--text-muted);
-}
-
+/* 继承 .wf-chip 基底，仅定义尺寸和颜色修饰 */
 .settings-card-icon {
   width: 48px;
   height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  border: 1px solid;
   flex-shrink: 0;
   font-size: 24px;
+  --chip-chamfer: 8px;
+  --chip-inset: 1.5px;
+  --card-fill-tint: 12%;
 }
 
 .settings-card-icon.gold {
-  background: rgba(212, 175, 55, 0.12);
-  border-color: var(--gold);
-  color: var(--gold);
+  color: var(--gold-bright);
+  filter: drop-shadow(0 0 6px var(--gold-glow));
 }
 
 .settings-card-icon.blue {
-  background: rgba(31, 182, 255, 0.12);
-  border-color: var(--blue);
-  color: var(--blue);
+  color: var(--blue-bright);
+  filter: drop-shadow(0 0 6px var(--blue-glow));
 }
 
 .settings-card .wf-btn {

@@ -40,14 +40,21 @@
   }
 
   .taskboard-tab-view .tab-panel {
-    display: none;
+    position: absolute;
+    inset: 0;
     height: 100%;
-    overflow: auto;
+    overflow-y: auto;
     padding: 8px 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease;
+    will-change: transform, opacity;
   }
 
   .taskboard-tab-view .tab-panel.active {
-    display: block;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
   }
 
   /* 窄屏 浏览器 */

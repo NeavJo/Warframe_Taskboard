@@ -119,12 +119,11 @@ const Reminder = {
 
   _createReminderCard(reminder) {
     const card = document.createElement('div');
-    card.className = 'reminder-card';
+    card.className = 'wf-card silver flow reminder-card';
     if (reminder.isTemp) card.classList.add('temp-reminder');
-    card.style.setProperty('--card-accent', reminder.accent);
 
     const iconBadge = document.createElement('div');
-    iconBadge.className = 'icon-badge';
+    iconBadge.className = 'wf-chip silver icon-badge';
     iconBadge.appendChild(mi(reminder.icon || 'notifications'));
     card.appendChild(iconBadge);
 
@@ -169,7 +168,7 @@ const Reminder = {
 
       if (!reminder.isTemp) {
         const editBtn = document.createElement('button');
-        editBtn.className = 'action-btn edit';
+        editBtn.className = 'wf-chip blue action-btn edit';
         editBtn.title = '编辑';
         editBtn.appendChild(mi('edit'));
         editBtn.addEventListener('click', (e) => {
@@ -180,7 +179,7 @@ const Reminder = {
       }
 
       const delBtn = document.createElement('button');
-      delBtn.className = 'action-btn delete';
+      delBtn.className = 'wf-chip danger action-btn delete';
       delBtn.title = '删除';
       delBtn.appendChild(mi('delete'));
       delBtn.addEventListener('click', (e) => {
@@ -193,13 +192,13 @@ const Reminder = {
     }
 
     const checkBadge = document.createElement('div');
-    checkBadge.className = 'check-badge';
+    checkBadge.className = 'wf-chip silver check-badge';
     topGroup.appendChild(checkBadge);
 
     rightCol.appendChild(topGroup);
 
     const statusBadge = document.createElement('span');
-    statusBadge.className = 'reminder-status';
+    statusBadge.className = 'wf-chip reminder-status';
     rightCol.appendChild(statusBadge);
 
     card.appendChild(rightCol);
@@ -225,26 +224,32 @@ const Reminder = {
     const diffMs = targetTime - now;
     const isActive = !reminder.isCompleted && diffMs <= 0;
 
-    // 更新卡片类
+    // 更新卡片类 + 颜色变体
     card.classList.toggle('completed', reminder.isCompleted);
     card.classList.toggle('active', isActive);
+    // 同步 wf-card 颜色变体
+    card.classList.remove('green', 'yellow', 'blue');
+    if (reminder.isTemp) card.classList.add('blue');
+    else if (reminder.isCompleted) card.classList.add('green');
+    if (isActive) card.classList.add('yellow');
 
-    // 更新图标徽章类（视觉由 CSS 处理，无需手动设 style）
-    iconBadge.className = 'icon-badge ' + (reminder.isCompleted ? 'done' : isActive ? 'active' : 'default');
+    // 更新图标徽章类（保留 wf-chip silver 基底，只切换状态类）
+    iconBadge.className = 'wf-chip silver icon-badge ' + (reminder.isCompleted ? 'done' : isActive ? 'active' : 'default');
 
     // 更新勾选徽章
     checkBadge.innerHTML = reminder.isCompleted ? '<span class="material-icons">check</span>' : '';
 
-    // 更新状态标签
+    // 更新状态标签（文本必须包在 span 内，才能被 .wf-chip > * { z-index: 2 } 提升到伪元素之上）
+    statusBadge.className = 'wf-chip reminder-status';
     if (reminder.isCompleted) {
-      statusBadge.textContent = '已完成';
-      statusBadge.className = 'reminder-status status-completed';
+      statusBadge.innerHTML = '<span>已完成</span>';
+      statusBadge.dataset.status = 'completed';
     } else if (isActive || diffMs <= 0) {
-      statusBadge.textContent = '已激活';
-      statusBadge.className = 'reminder-status status-active';
+      statusBadge.innerHTML = '<span>已激活</span>';
+      statusBadge.dataset.status = 'active';
     } else {
-      statusBadge.textContent = this._formatCountdown(diffMs);
-      statusBadge.className = 'reminder-status status-pending';
+      statusBadge.innerHTML = `<span>${this._formatCountdown(diffMs)}</span>`;
+      statusBadge.dataset.status = 'pending';
     }
   },
 
@@ -378,7 +383,7 @@ const Reminder = {
     overlay.className = 'dialog-overlay';
 
     const box = document.createElement('div');
-    box.className = 'dialog-box';
+    box.className = 'wf-card gold dialog-box';
 
     const header = document.createElement('div');
     header.className = 'dialog-header';
@@ -390,8 +395,8 @@ const Reminder = {
     title.textContent = isEdit ? '编辑提醒' : '新增提醒';
     header.appendChild(title);
     const closeBtn = document.createElement('button');
-    closeBtn.className = 'dialog-close';
-    closeBtn.innerHTML = '&#10005;';
+    closeBtn.className = 'wf-chip silver dialog-close';
+    closeBtn.innerHTML = '<span>&#10005;</span>';
     closeBtn.addEventListener('click', close);
     header.appendChild(closeBtn);
     box.appendChild(header);
@@ -473,7 +478,7 @@ const Reminder = {
     const initialIcon = reminder?.icon || 'notifications';
     const iconSelector = createOptionSelector(reminderIcons, (iconName) => {
       const opt = document.createElement('div');
-      opt.className = 'icon-option';
+      opt.className = 'wf-chip silver icon-option';
       opt.appendChild(mi(iconName));
       return opt;
     }, (iconName) => iconName === initialIcon);
@@ -487,10 +492,9 @@ const Reminder = {
     const initialColor = reminder?.accent || defaultAccent;
     const colorSelector = createOptionSelector(ACCENT_COLORS, (c) => {
       const swatch = document.createElement('div');
-      swatch.className = 'color-swatch';
-      swatch.style.background = c;
-      swatch.style.color = c;
-      swatch.innerHTML = '&#10003;';
+      swatch.className = 'wf-chip color-swatch';
+      swatch.style.setProperty('--swatch-color', c);
+      swatch.innerHTML = '<span>&#10003;</span>';
       return swatch;
     }, (c) => c === initialColor);
     colorRow.appendChild(colorSelector);

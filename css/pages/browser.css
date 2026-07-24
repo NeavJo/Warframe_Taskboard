@@ -11,7 +11,9 @@
 
 .browser-toolbar {
   padding: 12px 16px;
-  background: linear-gradient(135deg, #0E141C, #13181F);
+  background: var(--orokin-texture), linear-gradient(135deg, #0E141C, #13181F);
+  background-size: var(--orokin-texture-size), 100% 100%;
+  box-shadow: var(--orokin-inset);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -79,7 +81,9 @@
   align-items: center;
   gap: 6px;
   padding: 0 8px;
-  background: var(--bg-surface);
+  background: var(--orokin-texture), var(--bg-surface);
+  background-size: var(--orokin-texture-size), 100% 100%;
+  box-shadow: var(--orokin-inset);
   border: 1.5px solid var(--bg-border);
   border-radius: 6px;
 }

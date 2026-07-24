@@ -34,13 +34,13 @@ const Arbitration = {
           </div>
 
           <div class="arbi-main" id="arbi-main" style="display:none;">
-            <div class="arbi-current-card" id="arbi-current"></div>
+            <div class="wf-card gold flow arbi-current-card" id="arbi-current" style="--card-chamfer:14px"></div>
 
             <div class="arbi-section">
               <div class="arbi-section-title">
                 <span class="material-icons">schedule</span>
-                <span>今日高价值任务（自动添加提醒）</span>
-                <span class="arbi-badge" id="arbi-hv-count"></span>
+                <span id="arbi-hv-title">今日高价值任务</span>
+                <span class="wf-chip arbi-badge" id="arbi-hv-count"></span>
               </div>
               <div class="arbi-hv-list" id="arbi-hv-list"></div>
             </div>
@@ -68,6 +68,7 @@ const Arbitration = {
     this._els.countdown = null;
 
     this._state.autoAddEnabled = this._loadAutoAddSetting();
+    this._updateHvTitle();
 
     this._els.settingsBtn.addEventListener('click', () => this._openSettingsDialog());
 
@@ -83,6 +84,13 @@ const Arbitration = {
   _saveAutoAddSetting(enabled) {
     this._state.autoAddEnabled = enabled;
     localStorage.setItem('wf_arbi_auto_add', enabled ? 'true' : 'false');
+    this._updateHvTitle();
+  },
+
+  _updateHvTitle() {
+    const el = document.getElementById('arbi-hv-title');
+    if (!el) return;
+    el.textContent = this._state.autoAddEnabled ? '今日高价值任务（自动添加提醒）' : '今日高价值任务';
   },
 
   async _loadData() {
@@ -118,13 +126,13 @@ const Arbitration = {
     this._els.current.innerHTML = `
       <div class="arbi-current-label">当前仲裁</div>
       <div class="arbi-current-main">
-        <div class="arbi-current-icon" style="border-color: ${tierColor}; color: ${tierColor};">
+        <div class="wf-chip arbi-current-icon" style="--card-accent: ${tierColor}; --card-accent-deep: color-mix(in srgb, ${tierColor} 40%, transparent); color: ${tierColor};">
           <span class="material-icons">gavel</span>
         </div>
         <div class="arbi-current-info">
           <div class="arbi-current-name">${current.name}</div>
           <div class="arbi-current-meta">
-            <span class="arbi-tag" style="color: ${tierColor}; border-color: ${tierColor};">${current.tier}</span>
+            <span class="wf-chip arbi-tag" style="--card-accent: ${tierColor}; --card-accent-deep: color-mix(in srgb, ${tierColor} 40%, transparent); --card-fill-tint: 12%; color: ${tierColor};"><span>${current.tier}</span></span>
             <span class="arbi-meta-item">${current.mission}</span>
             <span class="arbi-meta-dot">·</span>
             <span class="arbi-meta-item">${current.system}</span>
@@ -144,11 +152,11 @@ const Arbitration = {
 
   _renderHighValue() {
     const hvList = ArbiData.getTodaysHighValueArbitrations();
-    this._els.hvCount.textContent = hvList.length;
+    this._els.hvCount.innerHTML = `<span>${hvList.length}</span>`;
 
     if (hvList.length === 0) {
       this._els.hvList.innerHTML = `
-        <div class="arbi-empty-tip">
+        <div class="wf-card silver arbi-empty-tip" style="--card-chamfer:9px">
           <span class="material-icons">info_outline</span>
           <span>今日暂无高价值仲裁任务</span>
         </div>
@@ -165,9 +173,9 @@ const Arbitration = {
       const isActive = now >= item.startTime && now < item.endTime;
 
       const card = document.createElement('div');
-      card.className = 'arbi-hv-card';
+      card.className = 'wf-card silver arbi-hv-card';
       if (isPast) card.classList.add('past');
-      if (isActive) card.classList.add('active');
+      if (isActive) { card.classList.add('active', 'flow'); }
 
       card.innerHTML = `
         <div class="arbi-hv-time">
@@ -178,14 +186,14 @@ const Arbitration = {
         <div class="arbi-hv-info">
           <div class="arbi-hv-name">${item.name}</div>
           <div class="arbi-hv-meta">
-            <span class="arbi-tag small" style="color: ${tierColor}; border-color: ${tierColor};">${item.tier}</span>
+            <span class="wf-chip arbi-tag small" style="--card-accent: ${tierColor}; --card-accent-deep: color-mix(in srgb, ${tierColor} 40%, transparent); --card-fill-tint: 12%; color: ${tierColor};"><span>${item.tier}</span></span>
             <span class="arbi-meta-item small">${item.mission}</span>
             <span class="arbi-meta-dot">·</span>
             <span class="arbi-meta-item small">${item.system}</span>
           </div>
         </div>
-        <div class="arbi-hv-status" data-status="${isPast ? 'past' : isActive ? 'active' : 'upcoming'}">
-          ${isPast ? '已结束' : isActive ? '进行中' : '待开始'}
+        <div class="wf-chip arbi-hv-status" data-status="${isPast ? 'past' : isActive ? 'active' : 'upcoming'}">
+          <span>${isPast ? '已结束' : isActive ? '进行中' : '待开始'}</span>
         </div>
       `;
 
@@ -202,15 +210,14 @@ const Arbitration = {
       const isHv = ArbiData.isHighValue(item.tier);
 
       const row = document.createElement('div');
-      row.className = 'arbi-upcoming-row';
-      if (isHv) row.classList.add('high-value');
+      row.className = isHv ? 'wf-card gold arbi-upcoming-row high-value' : 'arbi-upcoming-row';
 
       row.innerHTML = `
         <div class="arbi-upcoming-time">${ArbiData.formatTime(item.startTime)}</div>
         <div class="arbi-upcoming-dot" style="background: ${tierColor};"></div>
         <div class="arbi-upcoming-name">${item.name}</div>
         <div class="arbi-upcoming-meta">
-          <span class="arbi-tag tiny" style="color: ${tierColor}; border-color: ${tierColor};">${item.tier}</span>
+          <span class="wf-chip arbi-tag tiny" style="--card-accent: ${tierColor}; --card-accent-deep: color-mix(in srgb, ${tierColor} 40%, transparent); --card-fill-tint: 12%; color: ${tierColor};"><span>${item.tier}</span></span>
           <span>${item.mission}</span>
           <span class="arbi-meta-dot">·</span>
           <span>${item.system}</span>
@@ -315,7 +322,7 @@ const Arbitration = {
     overlay.className = 'dialog-overlay';
 
     const box = document.createElement('div');
-    box.className = 'dialog-box';
+    box.className = 'wf-card gold dialog-box';
 
     const header = document.createElement('div');
     header.className = 'dialog-header';
@@ -327,8 +334,8 @@ const Arbitration = {
     title.textContent = '仲裁设置';
     header.appendChild(title);
     const closeBtn = document.createElement('button');
-    closeBtn.className = 'dialog-close';
-    closeBtn.innerHTML = '&#10005;';
+    closeBtn.className = 'wf-chip silver dialog-close';
+    closeBtn.innerHTML = '<span>&#10005;</span>';
     closeBtn.addEventListener('click', close);
     header.appendChild(closeBtn);
     box.appendChild(header);
@@ -347,7 +354,14 @@ const Arbitration = {
       </div>
       <label class="toggle-switch">
         <input type="checkbox" id="arbi-auto-add-toggle" ${this._state.autoAddEnabled ? 'checked' : ''}>
-        <span class="toggle-slider"></span>
+        <div class="toggle-track">
+          <svg viewBox="0 0 50 22" preserveAspectRatio="none">
+            <path class="border-bright" d="M 0.5 0.5 L 44.5 0.5 L 49.5 5.5 L 49.5 21.5 L 5.5 21.5 L 0.5 16.5 Z" />
+            <path class="border-flow-path" d="M 0.5 0.5 L 44.5 0.5 L 49.5 5.5" />
+            <path class="border-flow-path" d="M 0.5 16.5 L 5.5 21.5 L 49.5 21.5" />
+          </svg>
+          <div class="toggle-inner"><div class="toggle-handle"></div></div>
+        </div>
       </label>
     `;
     body.appendChild(settingRow);

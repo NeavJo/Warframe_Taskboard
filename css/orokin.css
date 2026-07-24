@@ -1,0 +1,158 @@
+/* =============================================================
+   Orokin — 奥罗金科技风格核心工具类
+   契形几何 + 精密金边 + 暗金流光 + 拟物底质
+   ============================================================= */
+
+/* ----- CSS 变量 ----- */
+:root {
+  --chamfer-sm: 4px;
+  --chamfer-md: 8px;
+  --chamfer-lg: 12px;
+  --chamfer-xl: 16px;
+
+  --gold-bright: #ffe680;
+  --gold-mid: #d4af37;
+  --gold-deep: #8a6d1b;
+
+  --blue-bright: #80d4ff;
+  --blue-mid: #1fb6ff;
+  --blue-deep: #0a5a8a;
+
+  /* 流光动效全局控制 */
+  --orokin-flow-duration: 9.4s;   /* 7.5s ÷ 0.8 = 9.375s ≈ 9.4s (0.8x 速度) */
+  --orokin-flow-beam: 120;        /* 光束长度（原 80，加长 50% 增强可见度） */
+  --orokin-flow-gap: 760;         /* 间隔长度（原 800，略微缩短让流光更频繁） */
+  --orokin-flow-stroke: 1.8;      /* 描边宽度（原 1.4，加粗增强可见度） */
+}
+
+/* ----- SVG 边框覆盖层（始终在最底层，作为边框装饰） ----- */
+.orokin-svg-border {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  overflow: visible !important;
+}
+
+/* 静态金边 */
+.orokin-border-static {
+  fill: none;
+  stroke: url(#gold-bright-gradient);
+  stroke-width: 1.0;
+  vector-effect: non-scaling-stroke;
+}
+
+.orokin-border-static.blue {
+  stroke: url(#blue-bright-gradient);
+}
+
+/* 静态银边（未完成卡片用） */
+.orokin-border-static.silver {
+  stroke: url(#silver-bright-gradient);
+}
+
+/* 沿折线路径流动的暗金光束 */
+.orokin-border-flow {
+  fill: none;
+  stroke: url(#gold-flow-gradient);
+  stroke-width: var(--orokin-flow-stroke);
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: var(--orokin-flow-beam) var(--orokin-flow-gap);
+  stroke-dashoffset: var(--orokin-flow-beam);
+  will-change: stroke-dashoffset;
+  animation: orokinStrokeFlow var(--orokin-flow-duration) cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+  filter: drop-shadow(0 0 3px rgba(255, 214, 102, 0.6));
+}
+
+.orokin-border-flow.blue {
+  stroke: url(#blue-flow-gradient);
+  filter: drop-shadow(0 0 3px rgba(128, 212, 255, 0.6));
+}
+
+/* 银白色金属光泽流光（未完成卡片用） */
+.orokin-border-flow.silver {
+  stroke: url(#silver-flow-gradient);
+  filter: drop-shadow(0 0 3px rgba(200, 210, 220, 0.5));
+}
+
+@keyframes orokinStrokeFlow {
+  0% { stroke-dashoffset: var(--orokin-flow-beam); }
+  35% { stroke-dashoffset: -500; }
+  100% { stroke-dashoffset: -500; }
+}
+
+/* 底部流光（从左下沿底边流向右下再到右边） */
+.orokin-border-flow-bottom {
+  animation-delay: 0s;
+}
+
+/* 顶部流光（从左上沿顶边流向右上再到右边） */
+.orokin-border-flow-top {
+  animation-delay: 0s;
+}
+
+/* ----- 拟物材质化基础层（内部） ----- */
+.orokin-inner {
+  position: absolute;
+  inset: 1px;
+  z-index: 1;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(26, 30, 40, 0.92) 0%, rgba(10, 12, 16, 0.98) 100%);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
+}
+
+.orokin-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(45deg, rgba(212, 175, 55, 0.02) 25%, transparent 25%, transparent 50%, rgba(212, 175, 55, 0.02) 50%, rgba(212, 175, 55, 0.02) 75%, transparent 75%, transparent),
+    linear-gradient(-45deg, rgba(0, 0, 0, 0.15) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.15) 75%, transparent 75%, transparent);
+  background-size: 6px 6px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.orokin-inner::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 40%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* 蓝色调内部（周常用） */
+.orokin-inner.blue::before {
+  background-image:
+    linear-gradient(45deg, rgba(31, 182, 255, 0.02) 25%, transparent 25%, transparent 50%, rgba(31, 182, 255, 0.02) 50%, rgba(31, 182, 255, 0.02) 75%, transparent 75%, transparent),
+    linear-gradient(-45deg, rgba(0, 0, 0, 0.15) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.15) 75%, transparent 75%, transparent);
+}
+
+/* ----- 内容层（位于拟物层之上，z-index 更高） ----- */
+.orokin-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* ----- 装饰铆点 ----- */
+.orokin-corner-decor {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--gold-bright);
+  z-index: 4;
+  box-shadow: 0 0 6px var(--gold-bright);
+  pointer-events: none;
+}
+
+.orokin-corner-decor.blue {
+  background: var(--blue-bright);
+  box-shadow: 0 0 6px var(--blue-bright);
+}
+
+.orokin-corner-tl { top: 0; left: 0; }
+.orokin-corner-tr { top: 0; right: 0; }
+.orokin-corner-bl { bottom: 0; left: 0; }
+.orokin-corner-br { bottom: 0; right: 0; }

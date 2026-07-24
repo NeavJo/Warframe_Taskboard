@@ -8,7 +8,9 @@
 .arbi-header {
   display: none;
   padding: 16px 24px 14px;
-  background: linear-gradient(135deg, #0E141C, #13181F);
+  background: var(--orokin-texture), linear-gradient(135deg, #0E141C, #13181F);
+  background-size: var(--orokin-texture-size), 100% 100%;
+  box-shadow: var(--orokin-inset);
 }
 
 .arbi-header .header-row {
@@ -33,18 +35,22 @@
 }
 
 .arbi-loading .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--bg-border);
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--bg-border);
   border-top-color: var(--gold);
+  border-right-color: var(--gold-dim);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.9s linear infinite;
+  filter: drop-shadow(0 0 8px var(--gold-glow));
 }
 
 .arbi-loading .loading-text {
-  font-size: 14px;
-  color: var(--text-secondary);
-  letter-spacing: 1px;
+  font-size: 13px;
+  color: var(--gold-dim);
+  letter-spacing: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .arbi-main {
@@ -53,23 +59,8 @@
 }
 
 .arbi-current-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--bg-border);
-  border-radius: 10px;
   padding: 20px;
   margin-bottom: 24px;
-  position: relative;
-  overflow: hidden;
-}
-
-.arbi-current-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--gold), var(--yellow), var(--gold));
 }
 
 .arbi-current-label {
@@ -93,12 +84,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  border: 2px solid var(--gold);
-  color: var(--gold);
+  color: var(--gold-bright);
   font-size: 28px;
   flex-shrink: 0;
-  background: color-mix(in srgb, var(--gold) 8%, transparent);
+  filter: drop-shadow(0 0 6px var(--gold-glow));
+  --chip-chamfer: 8px;
+  --chip-inset: 1.5px;
+  --card-accent: var(--gold-bright);
+  --card-accent-deep: var(--gold-deep);
+  --card-fill-tint: 10%;
 }
 
 .arbi-current-info {
@@ -122,27 +116,30 @@
   margin-bottom: 8px;
 }
 
+/* 继承 .wf-chip 基底，尺寸按大中小分级 */
 .arbi-tag {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 8px;
-  border: 1px solid;
-  border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
+  --chip-chamfer: 4px;
+  --chip-inset: 1px;
+  padding: 4px 10px;
 }
 
 .arbi-tag.small {
-  padding: 1px 6px;
   font-size: 10px;
+  --chip-chamfer: 3px;
+  padding: 2px 8px;
 }
 
 .arbi-tag.tiny {
-  padding: 1px 5px;
   font-size: 9px;
   letter-spacing: 0.5px;
+  --chip-chamfer: 2px;
+  padding: 1px 6px;
 }
 
 .arbi-meta-item {
@@ -205,11 +202,15 @@
   color: var(--gold-dim);
 }
 
+/* 继承 .wf-chip 基底，金色契形计数徽章 */
 .arbi-badge {
-  background: color-mix(in srgb, var(--gold) 15%, transparent);
+  --chip-chamfer: 3px;
+  --chip-inset: 1px;
+  --card-accent: var(--gold);
+  --card-accent-deep: var(--gold-dim);
+  --card-fill-tint: 15%;
   color: var(--gold);
   padding: 2px 8px;
-  border-radius: 10px;
   font-size: 11px;
   font-weight: 700;
 }
@@ -225,19 +226,15 @@
   align-items: center;
   gap: 14px;
   padding: 12px 14px;
-  background: var(--bg-surface);
-  border: 1px solid var(--bg-border);
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
-.arbi-hv-card:hover {
-  border-color: var(--text-muted);
-}
-
+/* 激活态：黄色流光边框 */
 .arbi-hv-card.active {
-  border-color: var(--yellow);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--yellow) 15%, transparent);
+  --card-accent: var(--yellow);
+  --card-accent-deep: var(--yellow-dim);
+  --card-fill-tint: 6%;
+  filter: drop-shadow(0 0 8px rgba(255, 216, 77, 0.25));
 }
 
 .arbi-hv-card.past {
@@ -288,31 +285,36 @@
   flex-wrap: wrap;
 }
 
+/* 继承 .wf-chip 基底，状态颜色通过 data-status 驱动 */
 .arbi-hv-status {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
-  padding: 4px 10px;
-  border-radius: 4px;
   flex-shrink: 0;
+  --chip-chamfer: 4px;
+  --chip-inset: 1px;
+  padding: 4px 10px;
 }
 
 .arbi-hv-status[data-status="active"] {
-  background: color-mix(in srgb, var(--yellow) 15%, transparent);
+  --card-accent: var(--yellow);
+  --card-accent-deep: var(--yellow-dim);
+  --card-fill-tint: 15%;
   color: var(--yellow);
-  border: 1px solid var(--yellow);
 }
 
 .arbi-hv-status[data-status="upcoming"] {
-  background: color-mix(in srgb, var(--blue) 12%, transparent);
+  --card-accent: var(--blue);
+  --card-accent-deep: color-mix(in srgb, var(--blue) 30%, transparent);
+  --card-fill-tint: 12%;
   color: var(--blue);
-  border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent);
 }
 
 .arbi-hv-status[data-status="past"] {
-  background: var(--bg-surface-alt);
+  --card-accent: var(--text-muted);
+  --card-accent-deep: var(--bg-border);
+  --card-fill-tint: 0%;
   color: var(--text-muted);
-  border: 1px solid var(--bg-border);
 }
 
 .arbi-empty-tip {
@@ -323,9 +325,6 @@
   padding: 24px;
   color: var(--text-muted);
   font-size: 13px;
-  background: var(--bg-surface);
-  border: 1px solid var(--bg-border);
-  border-radius: 8px;
 }
 
 .arbi-empty-tip .material-icons {
@@ -333,10 +332,14 @@
 }
 
 .arbi-upcoming-list {
-  background: var(--bg-surface);
-  border: 1px solid var(--bg-border);
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   overflow: hidden;
+  /* 普通行列表容器本身不再作为 wf-card，仅高价值行使用 wf-card gold */
+  background: transparent;
+  border: none;
+  --card-chamfer: 0px;
 }
 
 .arbi-upcoming-row {
@@ -353,15 +356,21 @@
 }
 
 .arbi-upcoming-row:hover {
-  background: var(--bg-surface-alt);
+  background: var(--orokin-texture), var(--bg-surface-alt);
+  background-size: var(--orokin-texture-size), 100% 100%;
 }
 
+/* 高价值行：使用 .wf-card gold 小卡片，自带契形金边框 */
 .arbi-upcoming-row.high-value {
-  background: color-mix(in srgb, var(--gold) 4%, transparent);
+  --card-chamfer: 8px;
+  --card-fill-tint: 4%;
+  border-bottom: none;
+  margin: 3px 0;
+  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.2));
 }
 
 .arbi-upcoming-row.high-value:hover {
-  background: color-mix(in srgb, var(--gold) 8%, transparent);
+  --card-fill-tint: 8%;
 }
 
 .arbi-upcoming-time {
@@ -430,10 +439,16 @@
   line-height: 1.5;
 }
 
+/* ---------------------------------------------------------------
+   NJOrokinUI 风格契形开关条
+   结构：label.toggle-switch > input + .toggle-track
+         .toggle-track > svg.wf-border-svg + .toggle-inner > .toggle-handle
+   --------------------------------------------------------------- */
 .toggle-switch {
   position: relative;
-  width: 44px;
-  height: 24px;
+  display: inline-block;
+  width: 50px;
+  height: 22px;
   flex-shrink: 0;
   cursor: pointer;
 }
@@ -444,35 +459,95 @@
   height: 0;
 }
 
-.toggle-slider {
+.toggle-track {
   position: absolute;
   inset: 0;
-  background: var(--bg-surface-alt);
-  border: 1px solid var(--bg-border);
-  border-radius: 12px;
-  transition: all 0.2s ease;
 }
 
-.toggle-slider::before {
+.toggle-track svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.toggle-track .border-bright {
+  fill: none;
+  stroke: url(#gold-bright-gradient);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.toggle-track .border-flow-path {
+  fill: none;
+  stroke: url(#shadow-flow-gradient);
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 80 800;
+  stroke-dashoffset: 80;
+  animation: toggleStrokeFlow 7.5s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
+@keyframes toggleStrokeFlow {
+  0% { stroke-dashoffset: 80; }
+  35% { stroke-dashoffset: -450; }
+  100% { stroke-dashoffset: -450; }
+}
+
+.toggle-inner {
+  position: absolute;
+  inset: 1px;
+  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
+  padding: 2px;
+  background: linear-gradient(135deg, rgba(26, 30, 40, 0.92) 0%, rgba(10, 12, 16, 0.98) 100%);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+
+/* 碳纤维微纹理 */
+.toggle-inner::before {
   content: '';
   position: absolute;
-  left: 2px;
-  top: 2px;
-  width: 18px;
-  height: 18px;
+  inset: 0;
+  background-image:
+    linear-gradient(45deg, rgba(212, 175, 55, 0.02) 25%, transparent 25%, transparent 50%, rgba(212, 175, 55, 0.02) 50%, rgba(212, 175, 55, 0.02) 75%, transparent 75%, transparent),
+    linear-gradient(-45deg, rgba(0, 0, 0, 0.15) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.15) 75%, transparent 75%, transparent);
+  background-size: 6px 6px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* 玻璃镜面反光 */
+.toggle-inner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.toggle-handle {
+  position: relative;
+  width: 16px;
+  height: 100%;
   background: var(--text-muted);
-  border-radius: 50%;
-  transition: all 0.2s ease;
+  clip-path: polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 3px 100%, 0 calc(100% - 3px));
+  transition: transform 0.2s ease, background 0.2s ease;
+  z-index: 1;
 }
 
-.toggle-switch input:checked + .toggle-slider {
-  background: color-mix(in srgb, var(--gold) 20%, transparent);
-  border-color: var(--gold);
+.toggle-switch input:checked + .toggle-track .toggle-inner {
+  background: linear-gradient(135deg, rgba(40, 34, 16, 0.92) 0%, rgba(18, 15, 6, 0.98) 100%);
 }
 
-.toggle-switch input:checked + .toggle-slider::before {
-  transform: translateX(20px);
-  background: var(--gold);
+.toggle-switch input:checked + .toggle-track .toggle-handle {
+  transform: translateX(26px);
+  background: var(--gold-bright);
 }
 
 @media (max-width: 899px) {

@@ -30,6 +30,32 @@
   --danger: #E5534B;
 
   --sidebar-width: 220px;
+
+  /* ----- 拟物材质全局纹理（碳纤维 + 玻璃反光） ----- */
+  --orokin-texture:
+    linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%),
+    linear-gradient(45deg, rgba(212,175,55,0.02) 25%, transparent 25%, transparent 50%, rgba(212,175,55,0.02) 50%, rgba(212,175,55,0.02) 75%, transparent 75%, transparent),
+    linear-gradient(-45deg, rgba(0,0,0,0.15) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.15) 75%, transparent 75%, transparent);
+  --orokin-texture-size: 100% 100%, 6px 6px, 6px 6px;
+  --orokin-inset: inset 0 0 12px rgba(0, 0, 0, 0.8);
+
+  /* ----- 过渡动画时间（统一管理，便于调整节奏） ----- */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.22s ease;
+  --transition-slow: 0.3s ease;
+
+  /* ----- 卡片颜色系统 -----
+     使用方式：
+       1. 给元素加 .wf-card 基底类
+       2. 覆盖 --card-accent / --card-accent-deep / --card-chamfer / --card-fill-tint
+       3. 加 .flow 修饰符启用流光
+     预设变体类：.silver / .gold / .yellow / .blue / .green
+  */
+  --card-accent: #b8c4d0;                /* 主色调（亮） */
+  --card-accent-deep: #3a4048;            /* 暗边色 */
+  --card-fill-tint: 0%;                   /* 内填充色调比例 */
+  --card-chamfer: 10px;                   /* 外切角 */
+  --card-inset: 1px;                      /* 内填充层缩进 */
 }
 
 /* ----- Reset & Base ----- */
@@ -45,7 +71,7 @@ html, body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: "STZhongsong", "华文中宋", "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   font-size: 14px;

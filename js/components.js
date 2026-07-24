@@ -5,6 +5,70 @@
  */
 
 // =============================================================
+// 辅助：Orokin 风格 SVG 边框
+// =============================================================
+
+/**
+ * 创建 Orokin 风格 SVG 边框（契形 + 金边 + 流光）
+ * @param {Object} opts - 配置项
+ * @param {number} opts.width - viewBox 宽度
+ * @param {number} opts.height - viewBox 高度
+ * @param {number} opts.chamfer - 切角大小
+ * @param {'gold'|'blue'} opts.color - 颜色主题
+ * @param {number} opts.flowDelay - 流光延迟(秒)
+ * @param {boolean} opts.hasFlow - 是否有流光动画
+ * @returns {SVGElement}
+ */
+function createOrokinBorder(opts = {}) {
+  const {
+    width = 400,
+    height = 100,
+    chamfer = 12,
+    color = 'gold',
+    flowDelay = 0,
+    hasFlow = true,
+  } = opts;
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('class', 'orokin-svg-border');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+
+  // 契形路径（闭合，用于静态边框）
+  const pathD = `M ${0.5} ${0.5} L ${width - chamfer - 0.5} ${0.5} L ${width - 0.5} ${chamfer + 0.5} L ${width - 0.5} ${height - 0.5} L ${chamfer + 0.5} ${height - 0.5} L ${0.5} ${height - chamfer - 0.5} Z`;
+
+  // 静态金边
+  const staticPath = document.createElementNS(svgNS, 'path');
+  const staticClass = color === 'blue' ? 'blue' : color === 'silver' ? 'silver' : '';
+  staticPath.setAttribute('class', `orokin-border-static ${staticClass}`);
+  staticPath.setAttribute('d', pathD);
+  svg.appendChild(staticPath);
+
+  if (hasFlow) {
+    const flowClass = color === 'blue' ? 'blue' : color === 'silver' ? 'silver' : '';
+    // 顶部流光路径（从左上角沿顶边到右上角，再沿右边斜角向下）
+    const topFlowD = `M ${0.5} ${0.5} L ${width - chamfer - 0.5} ${0.5} L ${width - 0.5} ${chamfer + 0.5}`;
+    const topFlow = document.createElementNS(svgNS, 'path');
+    topFlow.setAttribute('class', `orokin-border-flow ${flowClass}`);
+    topFlow.setAttribute('d', topFlowD);
+    if (flowDelay) topFlow.style.animationDelay = `${flowDelay}s`;
+    svg.appendChild(topFlow);
+
+    // 底部流光路径（从左下角沿左边斜角向上，再沿底边到右下角）
+    const bottomFlowD = `M ${0.5} ${height - chamfer - 0.5} L ${chamfer + 0.5} ${height - 0.5} L ${width - 0.5} ${height - 0.5}`;
+    const bottomFlow = document.createElementNS(svgNS, 'path');
+    bottomFlow.setAttribute('class', `orokin-border-flow ${flowClass}`);
+    bottomFlow.setAttribute('d', bottomFlowD);
+    if (flowDelay) bottomFlow.style.animationDelay = `${flowDelay}s`;
+    svg.appendChild(bottomFlow);
+  }
+
+  return svg;
+}
+
+// =============================================================
 // 辅助：获取 Material Icon 的 span
 // =============================================================
 function mi(name, extraClass = '') {
@@ -56,10 +120,20 @@ function createBtn(opts = {}) {
  */
 function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = false) {
   const card = document.createElement('div');
-  card.className = 'task-card' + (task.isCompleted ? ' completed' : '');
+  card.className = 'wf-card silver task-card' + (task.isCompleted ? ' completed' : '');
   card.dataset.taskId = task.id;
-  card.style.setProperty('--card-accent', task.accent);
   card.draggable = isManageMode;
+
+  // SVG 边框（已完成卡片有金色流光，未完成卡片有银白色金属光泽流光）
+  const cardBorder = createOrokinBorder({
+    width: 400,
+    height: 80,
+    chamfer: 10,
+    color: task.isCompleted ? 'gold' : 'silver',
+    flowDelay: Math.random() * 4,
+    hasFlow: true,
+  });
+  card.appendChild(cardBorder);
 
   // --- 拖拽手柄 ---
   if (showDragHandle) {
@@ -76,7 +150,7 @@ function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = 
 
   // --- 图标徽章 ---
   const badge = document.createElement('div');
-  badge.className = 'icon-badge ' + (task.isCompleted ? 'done' : 'default');
+  badge.className = 'wf-chip silver icon-badge ' + (task.isCompleted ? 'done' : 'default');
   badge.appendChild(mi(task.icon || 'check_circle_outline'));
   card.appendChild(badge);
 
@@ -103,13 +177,13 @@ function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = 
     actions.className = 'task-actions';
 
     const editBtn = document.createElement('button');
-    editBtn.className = 'action-btn edit';
+    editBtn.className = 'wf-chip blue action-btn edit';
     editBtn.appendChild(mi('edit'));
     editBtn.addEventListener('click', (e) => { e.stopPropagation(); callbacks.onEdit?.(); });
     actions.appendChild(editBtn);
 
     const delBtn = document.createElement('button');
-    delBtn.className = 'action-btn delete';
+    delBtn.className = 'wf-chip danger action-btn delete';
     delBtn.appendChild(mi('delete'));
     delBtn.addEventListener('click', (e) => { e.stopPropagation(); callbacks.onDelete?.(); });
     actions.appendChild(delBtn);
@@ -129,7 +203,7 @@ function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = 
 
   // --- 完成勾选框 ---
   const checkBadge = document.createElement('div');
-  checkBadge.className = 'check-badge';
+  checkBadge.className = 'wf-chip silver check-badge';
   if (task.isCompleted) checkBadge.appendChild(mi('check'));
   card.appendChild(checkBadge);
 
@@ -149,7 +223,7 @@ function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = 
 /**
  * 创建任务面板容器
  */
-function createTaskPanel(opts, taskType) {
+function createTaskPanel(opts, taskType, initialProgress) {
   const panel = document.createElement('div');
   panel.className = 'task-panel';
 
@@ -158,9 +232,25 @@ function createTaskPanel(opts, taskType) {
   const total = tasks.length;
   const progress = total === 0 ? 0 : completed / total;
 
+  // 判断颜色主题（日常=金色，周常=蓝色）
+  const isDaily = taskType === 0;
+  const borderColor = isDaily ? 'gold' : 'blue';
+
   // --- 面板头部 ---
   const header = document.createElement('div');
-  header.className = 'panel-header';
+  header.className = 'wf-card panel-header' + (isDaily ? ' theme-gold' : ' theme-blue');
+  header.style.setProperty('--accent', accent);
+
+  // SVG 金边 + 流光
+  const headerBorder = createOrokinBorder({
+    width: 500,
+    height: 140,
+    chamfer: 12,
+    color: borderColor,
+    flowDelay: taskType * 1.5,
+    hasFlow: true,
+  });
+  header.appendChild(headerBorder);
 
   const topRow = document.createElement('div');
   topRow.className = 'header-top';
@@ -189,9 +279,9 @@ function createTaskPanel(opts, taskType) {
   // 管理模式下显示新增按钮
   if (isManageMode && callbacks.onAddTask) {
     const addBtn = document.createElement('button');
-    addBtn.className = 'panel-add-btn';
+    addBtn.className = 'wf-chip panel-add-btn';
     addBtn.style.setProperty('--card-accent', accent);
-    addBtn.innerHTML = '&#43;';
+    addBtn.innerHTML = '<span>&#43;</span>';
     addBtn.title = '新增任务';
     addBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -211,11 +301,15 @@ function createTaskPanel(opts, taskType) {
   barContainer.className = 'progress-bar';
   const fill = document.createElement('div');
   fill.className = 'progress-fill';
-  fill.style.width = (progress * 100) + '%';
-  fill.style.background = accent;
-  fill.style.boxShadow = `0 0 6px ${accent}`;
+  fill.style.width = (initialProgress != null ? initialProgress * 100 : 0) + '%';
+  fill.style.setProperty('--card-accent', accent);
   barContainer.appendChild(fill);
   header.appendChild(barContainer);
+
+  // 下一帧设置目标宽度，触发灵动变速过渡动画
+  requestAnimationFrame(() => {
+    fill.style.width = (progress * 100) + '%';
+  });
 
   panel.appendChild(header);
 
@@ -448,7 +542,7 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   overlay.className = 'dialog-overlay';
 
   const box = document.createElement('div');
-  box.className = 'dialog-box';
+  box.className = 'wf-card gold dialog-box';
 
   // --- 头部 ---
   const header = document.createElement('div');
@@ -461,9 +555,9 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   title.textContent = isEdit ? '编辑任务' : '新增任务';
   header.appendChild(title);
   const closeBtn = document.createElement('button');
-  closeBtn.className = 'dialog-close';
-  closeBtn.innerHTML = '&#10005;';
-  closeBtn.addEventListener('click', close);
+    closeBtn.className = 'wf-chip silver dialog-close';
+    closeBtn.innerHTML = '<span>&#10005;</span>';
+    closeBtn.addEventListener('click', close);
   header.appendChild(closeBtn);
   box.appendChild(header);
   box.appendChild(dividerEl());
@@ -473,20 +567,26 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   body.className = 'dialog-body';
 
   body.appendChild(fieldLabel('任务名称'));
+  const nameWrap = document.createElement('div');
+  nameWrap.className = 'wf-chip silver field-wrap';
   const nameInput = document.createElement('input');
   nameInput.className = 'field-input';
   nameInput.placeholder = '输入任务名称...';
   nameInput.value = task?.name || '';
   nameInput.autofocus = true;
-  body.appendChild(nameInput);
+  nameWrap.appendChild(nameInput);
+  body.appendChild(nameWrap);
   body.appendChild(sizedBox(16));
 
   body.appendChild(fieldLabel('任务描述'));
+  const descWrap = document.createElement('div');
+  descWrap.className = 'wf-chip silver field-wrap';
   const descInput = document.createElement('textarea');
   descInput.className = 'field-input field-textarea';
   descInput.placeholder = '输入任务描述...';
   descInput.value = task?.description || '';
-  body.appendChild(descInput);
+  descWrap.appendChild(descInput);
+  body.appendChild(descWrap);
   body.appendChild(sizedBox(16));
 
   // 图标选择器
@@ -496,7 +596,7 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   const initialIcon = task?.icon || 'check_circle_outline';
   const iconSelector = createOptionSelector(TASK_ICONS, (iconName) => {
     const opt = document.createElement('div');
-    opt.className = 'icon-option';
+    opt.className = 'wf-chip silver icon-option';
     opt.appendChild(mi(iconName));
     return opt;
   }, (iconName) => iconName === initialIcon);
@@ -511,10 +611,8 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   const initialColor = task?.accent || defaultAccent;
   const colorSelector = createOptionSelector(ACCENT_COLORS, (c) => {
     const swatch = document.createElement('div');
-    swatch.className = 'color-swatch';
-    swatch.style.background = c;
-    swatch.style.color = c;
-    swatch.innerHTML = '&#10003;';
+    swatch.className = 'wf-chip color-swatch';
+    swatch.style.setProperty('--swatch-color', c);
     return swatch;
   }, (c) => c === initialColor);
   colorRow.appendChild(colorSelector);

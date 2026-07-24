@@ -12,7 +12,9 @@
 .reminder-header {
   display: none;
   padding: 16px 24px 14px;
-  background: linear-gradient(135deg, #0E141C, #13181F);
+  background: var(--orokin-texture), linear-gradient(135deg, #0E141C, #13181F);
+  background-size: var(--orokin-texture-size), 100% 100%;
+  box-shadow: var(--orokin-inset);
 }
 
 .reminder-header .header-row {
@@ -43,16 +45,33 @@
 }
 
 .reminder-empty .empty-icon {
-  width: 72px;
-  height: 72px;
+  position: relative;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
-  background: rgba(212, 175, 55, 0.08);
-  border: 1.5px solid var(--gold-dim);
+  background: var(--orokin-texture), radial-gradient(circle, color-mix(in srgb, var(--gold) 10%, var(--bg-surface)), var(--bg-surface));
+  background-size: var(--orokin-texture-size), 100% 100%;
+  box-shadow: var(--orokin-inset), 0 0 24px var(--gold-glow);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
-  color: var(--gold-dim);
+  font-size: 34px;
+  color: var(--gold);
+  filter: drop-shadow(0 0 6px var(--gold-glow));
+}
+
+.reminder-empty .empty-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 1.5px;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold-bright), var(--gold-deep));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
 }
 
 .reminder-empty .empty-text {
@@ -73,80 +92,45 @@
   align-items: flex-start;
   gap: 14px;
   padding: 14px;
-  background: var(--bg-surface);
-  border: 1px solid var(--bg-border);
-  border-radius: 8px;
   margin-bottom: 12px;
-  transition: all 0.22s ease;
+  transition: all var(--transition-normal);
   cursor: default;
   position: relative;
 }
 
-.reminder-card:hover {
-  border-color: var(--text-muted);
-}
-
+/* 激活态：黄色流光边框 + 脉冲外发光 */
 .reminder-card.active {
-  background: color-mix(in srgb, var(--yellow) 6%, transparent);
-  border-color: var(--yellow);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--yellow) 20%, transparent);
+  --card-accent: var(--yellow);
+  --card-accent-deep: var(--yellow-dim);
+  --card-fill-tint: 6%;
   cursor: pointer;
   animation: reminderPulse 2s ease-in-out infinite;
 }
 
 .reminder-card.completed {
-  background: color-mix(in srgb, var(--success) 6%, transparent);
-  border-color: color-mix(in srgb, var(--success) 50%, transparent);
+  --card-accent: color-mix(in srgb, var(--success) 70%, #ffffff);
+  --card-accent-deep: color-mix(in srgb, var(--success) 30%, transparent);
+  --card-fill-tint: 6%;
   opacity: 0.75;
 }
 
+/* 临时提醒：蓝色调 + 流光 */
 .reminder-card.temp-reminder {
-  background: rgba(26, 92, 255, 0.08);
-  border-color: rgba(26, 92, 255, 0.3);
-}
-
-.reminder-card.temp-reminder:hover {
-  border-color: rgba(26, 92, 255, 0.6);
+  --card-accent: #4d8cff;
+  --card-accent-deep: rgba(26, 92, 255, 0.4);
+  --card-fill-tint: 8%;
 }
 
 .reminder-card.temp-reminder.active {
-  background: rgba(26, 92, 255, 0.15);
-  border-color: #1a5cff;
-  box-shadow: 0 0 18px rgba(26, 92, 255, 0.25);
+  --card-accent: #1a5cff;
+  --card-accent-deep: rgba(26, 92, 255, 0.4);
+  --card-fill-tint: 15%;
   animation: tempReminderPulse 2s ease-in-out infinite;
 }
 
-@keyframes tempReminderPulse {
-  0%, 100% {
-    box-shadow: 0 0 18px rgba(26, 92, 255, 0.25);
-  }
-  50% {
-    box-shadow: 0 0 28px rgba(26, 92, 255, 0.4);
-  }
-}
-
 .reminder-card.temp-reminder.completed {
-  background: rgba(26, 92, 255, 0.06);
-  border-color: rgba(26, 92, 255, 0.25);
+  --card-fill-tint: 6%;
   opacity: 0.65;
-}
-
-.reminder-card.temp-reminder .icon-badge.default {
-  border-color: rgba(26, 92, 255, 0.3);
-  background: rgba(26, 92, 255, 0.1);
-  color: #1a5cff;
-}
-
-.reminder-card.temp-reminder .icon-badge.active {
-  border-color: #1a5cff;
-  background: rgba(26, 92, 255, 0.15);
-  color: #1a5cff;
-}
-
-.reminder-card.temp-reminder .icon-badge.done {
-  border-color: #1a5cff;
-  background: rgba(26, 92, 255, 0.15);
-  color: var(--success);
 }
 
 .reminder-card.temp-reminder .reminder-name {
@@ -157,32 +141,57 @@
   color: var(--text-secondary);
 }
 
+/* 继承 .wf-chip 基底，仅定义尺寸和状态颜色 */
 .reminder-card .icon-badge {
   width: 42px;
   height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
   font-size: 22px;
   flex-shrink: 0;
+  --chip-chamfer: 8px;
+  --chip-inset: 1px;
 }
 
 .reminder-card .icon-badge.default {
-  background: var(--bg-surface-alt);
-  border: 1px solid var(--bg-border);
   color: var(--text-secondary);
+  --card-fill-tint: 0%;
 }
 
 .reminder-card .icon-badge.active {
-  border: 1px solid var(--card-accent);
-  background: color-mix(in srgb, var(--card-accent) 12%, transparent);
-  color: var(--card-accent);
+  --card-accent: var(--yellow);
+  --card-accent-deep: var(--yellow-dim);
+  --card-fill-tint: 12%;
+  color: var(--yellow);
 }
 
 .reminder-card .icon-badge.done {
-  border: 1px solid var(--card-accent);
-  background: color-mix(in srgb, var(--card-accent) 12%, transparent);
+  --card-accent: color-mix(in srgb, var(--success) 70%, #ffffff);
+  --card-accent-deep: color-mix(in srgb, var(--success) 30%, transparent);
+  --card-fill-tint: 12%;
+  color: var(--success);
+}
+
+/* 临时提醒：蓝色调覆盖（需在通用规则之后，同特异度靠源顺序胜出） */
+.reminder-card.temp-reminder .icon-badge.default {
+  --card-accent: #4d8cff;
+  --card-accent-deep: rgba(26, 92, 255, 0.4);
+  --card-fill-tint: 8%;
+  color: #4d8cff;
+}
+
+.reminder-card.temp-reminder .icon-badge.active {
+  --card-accent: #1a5cff;
+  --card-accent-deep: rgba(26, 92, 255, 0.4);
+  --card-fill-tint: 15%;
+  color: #1a5cff;
+}
+
+.reminder-card.temp-reminder .icon-badge.done {
+  --card-accent: #1a5cff;
+  --card-accent-deep: rgba(26, 92, 255, 0.4);
+  --card-fill-tint: 10%;
   color: var(--success);
 }
 
@@ -241,44 +250,52 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* 继承 .wf-chip 基底，状态颜色通过 data-status 驱动 */
 .reminder-status {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
-  padding: 2px 8px;
-  border-radius: 4px;
+  flex-shrink: 0;
+  --chip-chamfer: 4px;
+  --chip-inset: 1px;
+  padding: 4px 10px;
   white-space: nowrap;
 }
 
-.reminder-status.status-pending {
-  background: color-mix(in srgb, var(--blue) 12%, transparent);
+.reminder-status[data-status="pending"] {
+  --card-accent: var(--blue);
+  --card-accent-deep: color-mix(in srgb, var(--blue) 30%, transparent);
+  --card-fill-tint: 12%;
   color: var(--blue);
-  border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent);
 }
 
-.reminder-status.status-active {
-  background: color-mix(in srgb, var(--yellow) 15%, transparent);
+.reminder-status[data-status="active"] {
+  --card-accent: var(--yellow);
+  --card-accent-deep: var(--yellow-dim);
+  --card-fill-tint: 15%;
   color: var(--yellow);
-  border: 1px solid var(--yellow);
 }
 
-.reminder-status.status-completed {
-  background: color-mix(in srgb, var(--success) 12%, transparent);
+.reminder-status[data-status="completed"] {
+  --card-accent: color-mix(in srgb, var(--success) 70%, #ffffff);
+  --card-accent-deep: color-mix(in srgb, var(--success) 30%, transparent);
+  --card-fill-tint: 12%;
   color: var(--success);
-  border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
 }
 
+/* 继承 .wf-chip 基底，仅定义尺寸和完成态颜色 */
 .reminder-card .check-badge {
   width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  border: 1.5px solid var(--bg-border);
   flex-shrink: 0;
-  transition: all 0.22s;
+  transition: all var(--transition-normal);
   font-size: 16px;
+  --chip-chamfer: 6px;
+  --chip-inset: 1.5px;
+  --card-fill-tint: 0%;
 }
 
 .reminder-right-col {
@@ -298,10 +315,11 @@
 }
 
 .reminder-card.completed .check-badge {
-  border-color: var(--success);
-  background: var(--success);
+  --card-accent: color-mix(in srgb, var(--success) 70%, #ffffff);
+  --card-accent-deep: color-mix(in srgb, var(--success) 30%, transparent);
+  --card-fill-tint: 100%;
   color: #000;
-  box-shadow: 0 0 10px color-mix(in srgb, var(--success) 40%, transparent);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--success) 40%, transparent));
 }
 
 /* 快捷小时按钮 */
@@ -313,7 +331,9 @@
 
 .quick-hour-btn {
   padding: 6px 12px;
-  background: var(--bg-surface);
+  background: var(--orokin-texture), var(--bg-surface);
+  background-size: var(--orokin-texture-size), 100% 100%;
+  box-shadow: var(--orokin-inset);
   border: 1px solid var(--bg-border);
   border-radius: 6px;
   color: var(--text-secondary);
@@ -321,17 +341,19 @@
   font-weight: 600;
   letter-spacing: 0.5px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--transition-fast);
 }
 
 .quick-hour-btn:hover {
   border-color: var(--gold-dim);
   color: var(--gold);
-  background: rgba(212, 175, 55, 0.08);
+  background: var(--orokin-texture), color-mix(in srgb, var(--gold) 8%, var(--bg-surface));
+  background-size: var(--orokin-texture-size), 100% 100%;
 }
 
 .quick-hour-btn.active {
-  background: rgba(212, 175, 55, 0.15);
+  background: var(--orokin-texture), color-mix(in srgb, var(--gold) 15%, var(--bg-surface));
+  background-size: var(--orokin-texture-size), 100% 100%;
   border-color: var(--gold);
   color: var(--gold);
 }

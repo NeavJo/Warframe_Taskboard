@@ -13,8 +13,32 @@
   50% { box-shadow: 0 0 18px rgba(212, 175, 55, 0.5), 0 0 30px rgba(212, 175, 55, 0.2); }
 }
 
-/* 提醒卡片脉冲动画 */
+/* 提醒卡片脉冲动画（clip-path 裁切 box-shadow，改用 drop-shadow 外发光） */
 @keyframes reminderPulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(255, 216, 77, 0.15); }
-  50% { box-shadow: 0 0 22px rgba(255, 216, 77, 0.35); }
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(255, 216, 77, 0.2)); }
+  50% { filter: drop-shadow(0 0 16px rgba(255, 216, 77, 0.4)); }
+}
+
+@keyframes tempReminderPulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(26, 92, 255, 0.25)); }
+  50% { filter: drop-shadow(0 0 16px rgba(26, 92, 255, 0.45)); }
+}
+
+/* 卡片契形边框流光扫过 */
+@keyframes cardBorderFlow {
+  0%   { background-position: 100% 0; }
+  60%  { background-position: -50% 0; }
+  100% { background-position: -50% 0; }
+}
+
+/* 顶栏彩条呼吸灯动画 */
+@keyframes glowLineBreathe {
+  0%, 100% {
+    opacity: 0.6;
+    box-shadow: 0 0 4px rgba(212, 175, 55, 0.3), 0 0 8px rgba(31, 182, 255, 0.2);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6), 0 0 16px rgba(31, 182, 255, 0.4), 0 0 24px rgba(212, 175, 55, 0.15);
+  }
 }

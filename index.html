@@ -8,8 +8,9 @@
   <!-- Material Icons (Google Fonts) -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <!-- 样式（按加载顺序：主题 → 动画 → 布局 → 组件 → 页面 → 响应式） -->
+  <!-- 样式（按加载顺序：主题 → Orokin → 动画 → 布局 → 组件 → 页面 → 响应式） -->
   <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/orokin.css">
   <link rel="stylesheet" href="css/animations.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/components.css">
@@ -26,6 +27,70 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
+  <!-- 全局 SVG 渐变资源库（Orokin 风格） -->
+  <svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
+    <defs>
+      <!-- 精密金渐变（静态金边） -->
+      <linearGradient id="gold-bright-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#8a6d1b" />
+        <stop offset="30%" stop-color="#ffe680" />
+        <stop offset="50%" stop-color="#ffffff" />
+        <stop offset="70%" stop-color="#ffe680" />
+        <stop offset="100%" stop-color="#8a6d1b" />
+      </linearGradient>
+
+      <!-- 精密蓝渐变（静态蓝边 - 周常用） -->
+      <linearGradient id="blue-bright-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0a5a8a" />
+        <stop offset="30%" stop-color="#80d4ff" />
+        <stop offset="50%" stop-color="#ffffff" />
+        <stop offset="70%" stop-color="#80d4ff" />
+        <stop offset="100%" stop-color="#0a5a8a" />
+      </linearGradient>
+
+      <!-- 暗金流光渐变（沿路径流动） -->
+      <linearGradient id="gold-flow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="rgba(158, 107, 8, 0)" />
+        <stop offset="40%" stop-color="rgba(255, 214, 102, 0.95)" />
+        <stop offset="60%" stop-color="rgba(212, 175, 55, 0.98)" />
+        <stop offset="100%" stop-color="rgba(158, 107, 8, 0)" />
+      </linearGradient>
+
+      <!-- 暗蓝流光渐变（沿路径流动 - 周常用） -->
+      <linearGradient id="blue-flow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="rgba(10, 90, 138, 0)" />
+        <stop offset="40%" stop-color="rgba(128, 212, 255, 0.95)" />
+        <stop offset="60%" stop-color="rgba(31, 182, 255, 0.98)" />
+        <stop offset="100%" stop-color="rgba(10, 90, 138, 0)" />
+      </linearGradient>
+
+      <!-- 银白金属光泽渐变（静态银边 - 未完成卡片用） -->
+      <linearGradient id="silver-bright-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#3a4048" />
+        <stop offset="30%" stop-color="#b8c4d0" />
+        <stop offset="50%" stop-color="#ffffff" />
+        <stop offset="70%" stop-color="#b8c4d0" />
+        <stop offset="100%" stop-color="#3a4048" />
+      </linearGradient>
+
+      <!-- 银白流光渐变（沿路径流动 - 未完成卡片用） -->
+      <linearGradient id="silver-flow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="rgba(120, 130, 140, 0)" />
+        <stop offset="40%" stop-color="rgba(200, 210, 220, 0.9)" />
+        <stop offset="60%" stop-color="rgba(240, 245, 250, 0.95)" />
+        <stop offset="100%" stop-color="rgba(120, 130, 140, 0)" />
+      </linearGradient>
+
+      <!-- 暗金流光渐变（沿路径流动 - 开关/控件用，NJOrokinUI 风格） -->
+      <linearGradient id="shadow-flow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="rgba(138, 109, 27, 0)" />
+        <stop offset="40%" stop-color="rgba(255, 230, 128, 0.9)" />
+        <stop offset="60%" stop-color="rgba(212, 175, 55, 0.95)" />
+        <stop offset="100%" stop-color="rgba(138, 109, 27, 0)" />
+      </linearGradient>
+    </defs>
+  </svg>
+
   <div id="app">
     <!-- ============================================================
          宽屏全局顶栏 (≥900px)
