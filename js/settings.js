@@ -26,6 +26,30 @@ const Settings = {
         </div>
 
         <div class="settings-cards">
+          <!-- 仲裁自动提醒设置卡片 -->
+          <div class="wf-card silver settings-card" style="--card-chamfer:11px">
+            <div class="wf-chip yellow settings-card-icon">
+              <span class="material-icons">auto_fix_high</span>
+            </div>
+            <div class="settings-card-body">
+              <div class="settings-card-title">每日自动添加高价值提醒</div>
+              <div class="settings-card-desc">
+                每天 0 点自动将 S/A+/A/A- 级仲裁任务添加到提醒列表，30分钟后自动删除。
+              </div>
+            </div>
+            <label class="toggle-switch" id="settings-arbi-auto-toggle">
+              <input type="checkbox" id="settings-arbi-auto-input">
+              <div class="toggle-track">
+                <svg viewBox="0 0 50 22" preserveAspectRatio="none">
+                  <path class="border-bright" d="M 0.5 0.5 L 44.5 0.5 L 49.5 5.5 L 49.5 21.5 L 5.5 21.5 L 0.5 16.5 Z" />
+                  <path class="border-flow-path" d="M 0.5 0.5 L 44.5 0.5 L 49.5 5.5" />
+                  <path class="border-flow-path" d="M 0.5 16.5 L 5.5 21.5 L 49.5 21.5" />
+                </svg>
+                <div class="toggle-inner"><div class="toggle-handle"></div></div>
+              </div>
+            </label>
+          </div>
+
           <!-- 导出卡片 -->
           <div class="wf-card silver settings-card" style="--card-chamfer:11px">
             <div class="wf-chip gold settings-card-icon">
@@ -68,6 +92,11 @@ const Settings = {
     this._els.exportBtn = document.getElementById('settings-export-btn');
     this._els.importBtn = document.getElementById('settings-import-btn');
     this._els.fileInput = document.getElementById('settings-file-input');
+    this._els.arbiAutoInput = document.getElementById('settings-arbi-auto-input');
+
+    // 读取仲裁自动添加设置（默认开启）
+    const arbiAutoAdd = localStorage.getItem('wf_arbi_auto_add');
+    this._els.arbiAutoInput.checked = arbiAutoAdd === null ? true : arbiAutoAdd === 'true';
 
     this._bindEvents();
   },
@@ -90,6 +119,17 @@ const Settings = {
       this._importData(file);
       // 重置 input 以便可重复选择同一文件
       this._els.fileInput.value = '';
+    });
+
+    // 仲裁自动添加提醒开关
+    this._els.arbiAutoInput.addEventListener('change', (e) => {
+      const enabled = e.target.checked;
+      localStorage.setItem('wf_arbi_auto_add', enabled ? 'true' : 'false');
+      // 同步仲裁页内部状态
+      if (window.App && window.App.arbitration) {
+        window.App.arbitration._state.autoAddEnabled = enabled;
+        window.App.arbitration._updateHvTitle();
+      }
     });
   },
 

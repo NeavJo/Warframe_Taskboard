@@ -475,14 +475,14 @@
 
 .toggle-track .border-bright {
   fill: none;
-  stroke: url(#gold-bright-gradient);
+  stroke: var(--gold);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
 .toggle-track .border-flow-path {
   fill: none;
-  stroke: url(#shadow-flow-gradient);
+  stroke: var(--gold-bright, #ffe680);
   stroke-width: 1.2;
   vector-effect: non-scaling-stroke;
   stroke-dasharray: 80 800;

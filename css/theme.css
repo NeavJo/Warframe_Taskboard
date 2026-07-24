@@ -11,6 +11,7 @@
   --bg-border: #2A3340;
 
   --gold: #D4AF37;
+  --gold-bright: #ffe680;
   --gold-dim: rgba(212, 175, 55, 0.6);
   --gold-glow: rgba(212, 175, 55, 0.25);
 
@@ -71,7 +72,7 @@ html, body {
 }
 
 body {
-  font-family: "STZhongsong", "华文中宋", "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
+  font-family: "STZhongsong", serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   font-size: 14px;

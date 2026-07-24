@@ -5,70 +5,6 @@
  */
 
 // =============================================================
-// 辅助：Orokin 风格 SVG 边框
-// =============================================================
-
-/**
- * 创建 Orokin 风格 SVG 边框（契形 + 金边 + 流光）
- * @param {Object} opts - 配置项
- * @param {number} opts.width - viewBox 宽度
- * @param {number} opts.height - viewBox 高度
- * @param {number} opts.chamfer - 切角大小
- * @param {'gold'|'blue'} opts.color - 颜色主题
- * @param {number} opts.flowDelay - 流光延迟(秒)
- * @param {boolean} opts.hasFlow - 是否有流光动画
- * @returns {SVGElement}
- */
-function createOrokinBorder(opts = {}) {
-  const {
-    width = 400,
-    height = 100,
-    chamfer = 12,
-    color = 'gold',
-    flowDelay = 0,
-    hasFlow = true,
-  } = opts;
-
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('class', 'orokin-svg-border');
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-  svg.setAttribute('preserveAspectRatio', 'none');
-  svg.setAttribute('aria-hidden', 'true');
-
-  // 契形路径（闭合，用于静态边框）
-  const pathD = `M ${0.5} ${0.5} L ${width - chamfer - 0.5} ${0.5} L ${width - 0.5} ${chamfer + 0.5} L ${width - 0.5} ${height - 0.5} L ${chamfer + 0.5} ${height - 0.5} L ${0.5} ${height - chamfer - 0.5} Z`;
-
-  // 静态金边
-  const staticPath = document.createElementNS(svgNS, 'path');
-  const staticClass = color === 'blue' ? 'blue' : color === 'silver' ? 'silver' : '';
-  staticPath.setAttribute('class', `orokin-border-static ${staticClass}`);
-  staticPath.setAttribute('d', pathD);
-  svg.appendChild(staticPath);
-
-  if (hasFlow) {
-    const flowClass = color === 'blue' ? 'blue' : color === 'silver' ? 'silver' : '';
-    // 顶部流光路径（从左上角沿顶边到右上角，再沿右边斜角向下）
-    const topFlowD = `M ${0.5} ${0.5} L ${width - chamfer - 0.5} ${0.5} L ${width - 0.5} ${chamfer + 0.5}`;
-    const topFlow = document.createElementNS(svgNS, 'path');
-    topFlow.setAttribute('class', `orokin-border-flow ${flowClass}`);
-    topFlow.setAttribute('d', topFlowD);
-    if (flowDelay) topFlow.style.animationDelay = `${flowDelay}s`;
-    svg.appendChild(topFlow);
-
-    // 底部流光路径（从左下角沿左边斜角向上，再沿底边到右下角）
-    const bottomFlowD = `M ${0.5} ${height - chamfer - 0.5} L ${chamfer + 0.5} ${height - 0.5} L ${width - 0.5} ${height - 0.5}`;
-    const bottomFlow = document.createElementNS(svgNS, 'path');
-    bottomFlow.setAttribute('class', `orokin-border-flow ${flowClass}`);
-    bottomFlow.setAttribute('d', bottomFlowD);
-    if (flowDelay) bottomFlow.style.animationDelay = `${flowDelay}s`;
-    svg.appendChild(bottomFlow);
-  }
-
-  return svg;
-}
-
-// =============================================================
 // 辅助：获取 Material Icon 的 span
 // =============================================================
 function mi(name, extraClass = '') {
@@ -119,21 +55,12 @@ function createBtn(opts = {}) {
  * 创建单条任务卡片
  */
 function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = false) {
+  // 未完成卡片：银色流光边框；已完成卡片：金色流光边框（统一使用CSS背景流光）
+  const colorClass = task.isCompleted ? 'gold' : 'silver';
   const card = document.createElement('div');
-  card.className = 'wf-card silver task-card' + (task.isCompleted ? ' completed' : '');
+  card.className = `wf-card ${colorClass} flow task-card${task.isCompleted ? ' completed' : ''}`;
   card.dataset.taskId = task.id;
   card.draggable = isManageMode;
-
-  // SVG 边框（已完成卡片有金色流光，未完成卡片有银白色金属光泽流光）
-  const cardBorder = createOrokinBorder({
-    width: 400,
-    height: 80,
-    chamfer: 10,
-    color: task.isCompleted ? 'gold' : 'silver',
-    flowDelay: Math.random() * 4,
-    hasFlow: true,
-  });
-  card.appendChild(cardBorder);
 
   // --- 拖拽手柄 ---
   if (showDragHandle) {
@@ -234,23 +161,12 @@ function createTaskPanel(opts, taskType, initialProgress) {
 
   // 判断颜色主题（日常=金色，周常=蓝色）
   const isDaily = taskType === 0;
-  const borderColor = isDaily ? 'gold' : 'blue';
+  const colorClass = isDaily ? 'gold' : 'blue';
 
-  // --- 面板头部 ---
+  // --- 面板头部（统一使用 CSS 背景流光） ---
   const header = document.createElement('div');
-  header.className = 'wf-card panel-header' + (isDaily ? ' theme-gold' : ' theme-blue');
+  header.className = `wf-card ${colorClass} flow panel-header`;
   header.style.setProperty('--accent', accent);
-
-  // SVG 金边 + 流光
-  const headerBorder = createOrokinBorder({
-    width: 500,
-    height: 140,
-    chamfer: 12,
-    color: borderColor,
-    flowDelay: taskType * 1.5,
-    hasFlow: true,
-  });
-  header.appendChild(headerBorder);
 
   const topRow = document.createElement('div');
   topRow.className = 'header-top';

@@ -33,6 +33,13 @@
   margin-left: -6px;
 }
 
+/* 电脑端：设置页侧边栏按钮多余，隐藏 */
+@media (min-width: 900px) {
+  .settings-title-area .nav-trigger-inline {
+    display: none;
+  }
+}
+
 .settings-title-icon {
   font-size: 22px;
   color: var(--gold);
@@ -101,6 +108,11 @@
 .settings-card .wf-btn.blue {
   border-color: var(--blue);
   color: var(--blue);
+}
+
+/* 设置页开关（仲裁自动提醒） */
+.settings-card .toggle-switch {
+  flex-shrink: 0;
 }
 
 .settings-card-body {
