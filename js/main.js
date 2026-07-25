@@ -142,21 +142,32 @@
       // 切回前台时静默同步
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-          this._silentSync();
+          this._silentSync(false);
         }
       });
 
       // 初始化时静默同步一次
-      setTimeout(() => this._silentSync(), 1500);
+      setTimeout(() => this._silentSync(false), 1500);
+
+      // 每 1 分钟无条件自动拉取一次（静默，不通知）
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          this._silentSync(true);
+        }
+      }, 60 * 1000);
     },
 
-    async _silentSync() {
+    /**
+     * 静默同步
+     * @param {boolean} silent - true=完全静默不弹提示；false=有更新时弹提示
+     */
+    async _silentSync(silent = false) {
       if (!GistSync.isConfigured()) return;
       const updated = await GistSync.checkAndSync(() => {
         // 有更新时刷新各模块
         this.reloadAll();
       });
-      if (updated && typeof showSnackbar === 'function') {
+      if (updated && !silent && typeof showSnackbar === 'function') {
         showSnackbar('已同步云端最新数据');
       }
     },
