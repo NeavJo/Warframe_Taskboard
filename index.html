@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="css/pages/settings.css">
   <link rel="stylesheet" href="css/pages/reminder.css">
   <link rel="stylesheet" href="css/pages/arbitration.css">
+  <link rel="stylesheet" href="css/pages/notes.css">
   <link rel="stylesheet" href="css/responsive.css">
 
   <!-- 预加载字体（可选） -->
@@ -61,6 +62,10 @@
         <div class="header-right-inner">
           <div class="header-right-top">
             <span class="header-date-text" id="wide-date-text"></span>
+            <button class="wf-btn primary" id="wide-add-btn" style="display:none;">
+              <span class="material-icons mi-sm">add</span>
+              <span>新建</span>
+            </button>
             <button class="wf-btn manage-btn" id="wide-manage-btn">管理</button>
           </div>
           <div class="header-countdown-text" id="wide-countdown-text"></div>
@@ -88,6 +93,8 @@
         <div class="page-view" id="page-reminder"></div>
         <!-- 仲裁页 -->
         <div class="page-view" id="page-arbitration"></div>
+        <!-- 便签页 -->
+        <div class="page-view" id="page-notes"></div>
         <!-- 浏览器页 -->
         <div class="page-view" id="page-browser"></div>
         <!-- 设置页 -->
@@ -127,12 +134,14 @@
        ============================================================ -->
   <script src="js/utils.js"></script>
   <script src="js/store.js"></script>
+  <script src="js/sync_gist.js"></script>
   <script src="js/components.js"></script>
   <script src="js/taskboard.js"></script>
   <script src="js/reminder.js"></script>
   <script src="js/arbitration_data.js"></script>
   <script src="js/arbitration.js"></script>
   <script src="js/browser.js"></script>
+  <script src="js/notes.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/main.js"></script>
 </body>

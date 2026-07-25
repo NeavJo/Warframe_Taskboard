@@ -48,6 +48,22 @@ function createBtn(opts = {}) {
 }
 
 // =============================================================
+// 辅助：颜色加深工具（计算 deep accent 色）
+// =============================================================
+function darkenAccent(hexColor, alpha = 0.4) {
+  return `color-mix(in srgb, ${hexColor} ${alpha * 100}%, transparent)`;
+}
+
+/**
+ * 为元素设置自定义主题色（覆盖 .wf-card / .wf-chip 的颜色变量）
+ */
+function setAccentColor(el, accentColor) {
+  if (!accentColor) return;
+  el.style.setProperty('--card-accent', accentColor);
+  el.style.setProperty('--card-accent-deep', darkenAccent(accentColor, 0.4));
+}
+
+// =============================================================
 // 任务卡片 (对应 TaskCard)
 // =============================================================
 
@@ -55,12 +71,12 @@ function createBtn(opts = {}) {
  * 创建单条任务卡片
  */
 function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = false) {
-  // 未完成卡片：银色流光边框；已完成卡片：金色流光边框（统一使用CSS背景流光）
-  const colorClass = task.isCompleted ? 'gold' : 'silver';
+  const accent = task.accent || '#D4AF37';
   const card = document.createElement('div');
-  card.className = `wf-card ${colorClass} flow task-card${task.isCompleted ? ' completed' : ''}`;
+  card.className = `wf-card flow task-card${task.isCompleted ? ' completed' : ''}`;
   card.dataset.taskId = task.id;
   card.draggable = isManageMode;
+  setAccentColor(card, accent);
 
   // --- 拖拽手柄 ---
   if (showDragHandle) {
@@ -77,7 +93,9 @@ function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = 
 
   // --- 图标徽章 ---
   const badge = document.createElement('div');
-  badge.className = 'wf-chip silver icon-badge ' + (task.isCompleted ? 'done' : 'default');
+  badge.className = 'wf-chip icon-badge ' + (task.isCompleted ? 'done' : 'default');
+  setAccentColor(badge, accent);
+  badge.style.color = accent;
   badge.appendChild(mi(task.icon || 'check_circle_outline'));
   card.appendChild(badge);
 
@@ -130,7 +148,8 @@ function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = 
 
   // --- 完成勾选框 ---
   const checkBadge = document.createElement('div');
-  checkBadge.className = 'wf-chip silver check-badge';
+  checkBadge.className = 'wf-chip check-badge';
+  setAccentColor(checkBadge, accent);
   if (task.isCompleted) checkBadge.appendChild(mi('check'));
   card.appendChild(checkBadge);
 
@@ -447,6 +466,28 @@ function createOptionSelector(options, getLabel, isSelected) {
   return container;
 }
 
+function createIconSelector(icons, initialIcon) {
+  return createOptionSelector(icons, (iconName) => {
+    const opt = document.createElement('div');
+    opt.className = 'wf-chip silver icon-option';
+    opt.appendChild(mi(iconName));
+    return opt;
+  }, (iconName) => iconName === initialIcon);
+}
+
+function createColorSelector(colors, initialColor) {
+  return createOptionSelector(colors, (c) => {
+    const swatch = document.createElement('div');
+    swatch.className = 'wf-chip color-swatch';
+    swatch.style.setProperty('--swatch-color', c);
+    const check = document.createElement('span');
+    check.className = 'swatch-check';
+    check.textContent = '✓';
+    swatch.appendChild(check);
+    return swatch;
+  }, (c) => c === initialColor);
+}
+
 /**
  * 创建任务编辑对话框
  */
@@ -510,12 +551,7 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   const iconGrid = document.createElement('div');
   iconGrid.className = 'icon-grid';
   const initialIcon = task?.icon || 'check_circle_outline';
-  const iconSelector = createOptionSelector(TASK_ICONS, (iconName) => {
-    const opt = document.createElement('div');
-    opt.className = 'wf-chip silver icon-option';
-    opt.appendChild(mi(iconName));
-    return opt;
-  }, (iconName) => iconName === initialIcon);
+  const iconSelector = createIconSelector(TASK_ICONS, initialIcon);
   iconGrid.appendChild(iconSelector);
   body.appendChild(iconGrid);
   body.appendChild(sizedBox(16));
@@ -525,12 +561,7 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   const colorRow = document.createElement('div');
   colorRow.className = 'color-row';
   const initialColor = task?.accent || defaultAccent;
-  const colorSelector = createOptionSelector(ACCENT_COLORS, (c) => {
-    const swatch = document.createElement('div');
-    swatch.className = 'wf-chip color-swatch';
-    swatch.style.setProperty('--swatch-color', c);
-    return swatch;
-  }, (c) => c === initialColor);
+  const colorSelector = createColorSelector(ACCENT_COLORS, initialColor);
   colorRow.appendChild(colorSelector);
   body.appendChild(colorRow);
 

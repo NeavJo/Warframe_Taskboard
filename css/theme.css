@@ -6,6 +6,7 @@
 /* ----- CSS Custom Properties (主题令牌) ----- */
 :root {
   --bg-primary: #0A0E14;
+  --bg-surface-mid: #0E141C;
   --bg-surface: #13181F;
   --bg-surface-alt: #1A232E;
   --bg-border: #2A3340;
@@ -29,6 +30,23 @@
 
   --success: #3FB950;
   --danger: #E5534B;
+
+  /* ----- 从 orokin.css 迁移的变量 ----- */
+  --chamfer-sm: 4px;
+  --chamfer-md: 8px;
+  --chamfer-lg: 12px;
+  --chamfer-xl: 16px;
+
+  --gold-deep: #8a6d1b;
+
+  --blue-bright: #80d4ff;
+  --blue-deep: #0a5a8a;
+
+  --blue-accent: #4d8cff;
+  --blue-accent-deep: rgba(26, 92, 255, 0.4);
+  --blue-accent-bright: #1a5cff;
+  --silver: #b8c4d0;
+  --text-on-accent: #000;
 
   --sidebar-width: 220px;
 

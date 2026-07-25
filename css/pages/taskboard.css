@@ -2,28 +2,7 @@
    Taskboard Page — 任务看板页
    ============================================================= */
 
-.taskboard-page {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
 /* 窄屏头部 (替代宽屏全局 header) */
-.taskboard-header {
-  display: none;
-  padding: 16px 24px 14px;
-  background: var(--orokin-texture), linear-gradient(135deg, #0E141C, #13181F);
-  background-size: var(--orokin-texture-size), 100% 100%;
-  box-shadow: var(--orokin-inset);
-}
-
-.taskboard-header .header-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .taskboard-header .header-meta {
   display: flex;
   flex-direction: column;

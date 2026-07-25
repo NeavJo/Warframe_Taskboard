@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   padding: 16px 24px 14px;
-  background: var(--orokin-texture), linear-gradient(135deg, #0E141C, #13181F);
+  background: var(--orokin-texture), linear-gradient(135deg, var(--bg-surface-mid), var(--bg-surface));
   background-size: var(--orokin-texture-size), 100% 100%;
   box-shadow: var(--orokin-inset);
   border-bottom: 1px solid var(--bg-border);
@@ -149,9 +149,21 @@
  * 底部会自动渲染一条金→蓝渐变彩线作为分割。
  * 新增页面只需 header 套用此类，无需手动插入 <div class="glow-divider">。
  */
+/* 页面头部公共样式（窄屏显示，宽屏隐藏） */
 .page-header {
+  display: none;
+  padding: 16px 24px 14px;
+  background: var(--orokin-texture), linear-gradient(135deg, var(--bg-surface-mid), var(--bg-surface));
+  background-size: var(--orokin-texture-size), 100% 100%;
+  box-shadow: var(--orokin-inset);
   position: relative;
   border-bottom: none; /* 彩线由 ::after 提供，避免双线 */
+}
+
+.page-header .header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .page-header::after {
@@ -190,7 +202,7 @@
 /* ----- Sidebar (宽屏左侧导航) ----- */
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--orokin-texture), linear-gradient(180deg, #0E141C, #0A0E14);
+  background: var(--orokin-texture), linear-gradient(180deg, var(--bg-surface-mid), var(--bg-primary));
   background-size: var(--orokin-texture-size), 100% 100%;
   box-shadow: var(--orokin-inset);
   display: flex;
@@ -220,13 +232,13 @@
 
 .page-view {
   flex: 1;
-  overflow: auto;
   display: none;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .page-view.active {
   display: flex;
-  flex-direction: column;
 }
 
 /* ----- 窄屏抽屉侧栏 ----- */
@@ -304,7 +316,7 @@
   left: 0;
   bottom: 0;
   width: 260px;
-  background: var(--orokin-texture), linear-gradient(180deg, #0E141C, #0A0E14);
+  background: var(--orokin-texture), linear-gradient(180deg, var(--bg-surface-mid), var(--bg-primary));
   background-size: var(--orokin-texture-size), 100% 100%;
   box-shadow: var(--orokin-inset);
   border-right: 1px solid var(--bg-border);

@@ -77,14 +77,32 @@ const Arbitration = {
   },
 
   _loadAutoAddSetting() {
-    const val = localStorage.getItem('wf_arbi_auto_add');
-    return val === null ? true : val === 'true';
+    const val = Store.loadArbiAutoAdd();
+    return val;
   },
 
   _saveAutoAddSetting(enabled) {
     this._state.autoAddEnabled = enabled;
-    localStorage.setItem('wf_arbi_auto_add', enabled ? 'true' : 'false');
+    Store.saveArbiAutoAdd(enabled);
     this._updateHvTitle();
+
+    if (enabled) {
+      // 打开：添加今日剩余的高价值任务提醒（强制添加，忽略今日已添加标记）
+      this._checkAndAutoAddReminders(true);
+    } else {
+      // 关闭：删除所有临时提醒卡片
+      this._clearAllTempReminders();
+    }
+  },
+
+  _clearAllTempReminders() {
+    const existing = Store.loadReminders();
+    const filtered = existing.filter(r => !r.isTemp);
+    if (filtered.length !== existing.length) {
+      Store.saveReminders(filtered);
+      window.App?.reminder?.reloadFromStore();
+      showSnackbar('已清除所有临时提醒');
+    }
   },
 
   _updateHvTitle() {
@@ -261,7 +279,7 @@ const Arbitration = {
     }
   },
 
-  _checkAndAutoAddReminders() {
+  _checkAndAutoAddReminders(force = false) {
     if (!this._state.autoAddEnabled) return;
     if (!this._state.isDataReady) return;
 
@@ -270,7 +288,7 @@ const Arbitration = {
     const todayKey = today.toISOString().split('T')[0];
     const lastAutoAdd = localStorage.getItem(ARBI_LAST_DAILY_AUTO_ADD_KEY);
 
-    if (lastAutoAdd === todayKey) return;
+    if (!force && lastAutoAdd === todayKey) return;
 
     const hvList = ArbiData.getTodaysHighValueArbitrations();
     if (hvList.length === 0) {
@@ -286,6 +304,7 @@ const Arbitration = {
     hvList.forEach((item) => {
       const targetTime = item.startTime * 1000;
 
+      // 跳过已过期的任务（超过自动删除时间）
       if (now - targetTime > REMINDER_AUTO_DELETE_MS) return;
 
       const tempId = `arbi_temp_${item.startTime}`;
@@ -301,9 +320,6 @@ const Arbitration = {
         isCompleted: false,
         createdAt: new Date().toISOString(),
         isTemp: true,
-        tempType: ARBI_TEMP_REMINDER_TAG,
-        arbiNodeKey: item.nodeKey,
-        arbiTier: item.tier,
       });
       addedCount++;
     });

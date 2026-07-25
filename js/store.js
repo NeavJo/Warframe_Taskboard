@@ -38,6 +38,8 @@ const STORE_KEYS = {
   LAST_DAILY_RESET: 'wf_last_daily_reset',
   LAST_WEEKLY_RESET: 'wf_last_weekly_reset',
   REMINDERS: 'wf_reminders_state',
+  NOTES: 'wf_notes_state',
+  ARBI_AUTO_ADD: 'wf_arbi_auto_add',
 };
 
 // =============================================================
@@ -77,6 +79,7 @@ const Store = {
    */
   saveDailyTasks(tasks) {
     this._save(STORE_KEYS.DAILY, tasks);
+    this._triggerSync();
   },
 
   /**
@@ -84,10 +87,18 @@ const Store = {
    */
   saveWeeklyTasks(tasks) {
     this._save(STORE_KEYS.WEEKLY, tasks);
+    this._triggerSync();
   },
 
   _save(key, tasks) {
-    localStorage.setItem(key, JSON.stringify(tasks));
+    try {
+      localStorage.setItem(key, JSON.stringify(tasks));
+    } catch (e) {
+      console.warn('数据保存失败 (key=' + key + '):', e);
+      if (typeof showSnackbar === 'function') {
+        showSnackbar('数据保存失败：存储空间可能已满');
+      }
+    }
   },
 
   /**
@@ -148,5 +159,91 @@ const Store = {
    */
   saveReminders(reminders) {
     this._save(STORE_KEYS.REMINDERS, reminders);
+    this._triggerSync();
+  },
+
+  // =============================================================
+  // 便签数据存储
+  // =============================================================
+
+  /**
+   * 读取便签列表
+   */
+  loadNotes() {
+    return this._load(STORE_KEYS.NOTES, () => []);
+  },
+
+  /**
+   * 保存便签列表
+   */
+  saveNotes(notes) {
+    this._save(STORE_KEYS.NOTES, notes);
+    this._triggerSync();
+  },
+
+  // =============================================================
+  // 仲裁自动添加提醒开关
+  // =============================================================
+
+  /**
+   * 读取仲裁自动添加提醒开关（默认开启）
+   */
+  loadArbiAutoAdd() {
+    const val = localStorage.getItem(STORE_KEYS.ARBI_AUTO_ADD);
+    return val === null ? true : val === 'true';
+  },
+
+  /**
+   * 保存仲裁自动添加提醒开关
+   */
+  saveArbiAutoAdd(enabled) {
+    localStorage.setItem(STORE_KEYS.ARBI_AUTO_ADD, enabled ? 'true' : 'false');
+    this._triggerSync();
+  },
+
+  // =============================================================
+  // 导出/导入全部数据
+  // =============================================================
+
+  /**
+   * 导出全部数据（用于导入导出和云端同步）
+   */
+  exportAll() {
+    return {
+      dailyTasks: this.loadDailyTasks(),
+      weeklyTasks: this.loadWeeklyTasks(),
+      reminders: this.loadReminders(),
+      notes: this.loadNotes(),
+      settings: {
+        arbiAutoAdd: this.loadArbiAutoAdd(),
+      },
+      exportTime: new Date().toISOString(),
+      version: 1,
+    };
+  },
+
+  /**
+   * 导入全部数据（覆盖式）
+   */
+  importAll(data) {
+    if (!data || typeof data !== 'object') return false;
+    if (Array.isArray(data.dailyTasks)) this.saveDailyTasks(data.dailyTasks);
+    if (Array.isArray(data.weeklyTasks)) this.saveWeeklyTasks(data.weeklyTasks);
+    if (Array.isArray(data.reminders)) this.saveReminders(data.reminders);
+    if (Array.isArray(data.notes)) this.saveNotes(data.notes);
+    if (data.settings && typeof data.settings.arbiAutoAdd === 'boolean') {
+      this.saveArbiAutoAdd(data.settings.arbiAutoAdd);
+    }
+    return true;
+  },
+
+  // =============================================================
+  // 云端同步触发
+  // =============================================================
+
+  _triggerSync() {
+    if (typeof GistSync !== 'undefined' && GistSync.isConfigured()) {
+      GistSync.triggerUpload();
+    }
   },
 };

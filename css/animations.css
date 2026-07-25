@@ -42,3 +42,9 @@
     box-shadow: 0 0 8px rgba(212, 175, 55, 0.6), 0 0 16px rgba(31, 182, 255, 0.4), 0 0 24px rgba(212, 175, 55, 0.15);
   }
 }
+
+/* 便签卡片 / 事项行淡入 */
+@keyframes noteFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -1,24 +1,3 @@
-.arbitration-page {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.arbi-header {
-  display: none;
-  padding: 16px 24px 14px;
-  background: var(--orokin-texture), linear-gradient(135deg, #0E141C, #13181F);
-  background-size: var(--orokin-texture-size), 100% 100%;
-  box-shadow: var(--orokin-inset);
-}
-
-.arbi-header .header-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .arbi-content {
   flex: 1;
   overflow-y: auto;

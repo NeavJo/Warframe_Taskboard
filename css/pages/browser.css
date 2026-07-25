@@ -2,18 +2,8 @@
    Browser Page — 内置浏览器页
    ============================================================= */
 
-.browser-page {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
 .browser-toolbar {
   padding: 12px 16px;
-  background: var(--orokin-texture), linear-gradient(135deg, #0E141C, #13181F);
-  background-size: var(--orokin-texture-size), 100% 100%;
-  box-shadow: var(--orokin-inset);
   display: flex;
   flex-direction: column;
   gap: 12px;

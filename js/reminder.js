@@ -73,20 +73,27 @@ const Reminder = {
   },
 
   // =============================================================
+  // 过滤：保留活跃的提醒（移除过期的已完成/临时提醒）
+  // =============================================================
+
+  _filterActiveReminders(reminders, now) {
+    return reminders.filter(r => {
+      const targetTime = new Date(r.targetTime).getTime();
+      if (r.isTemp) {
+        return now - targetTime <= REMINDER_AUTO_DELETE_MS;
+      }
+      return !r.isCompleted || now - targetTime <= REMINDER_AUTO_DELETE_MS;
+    });
+  },
+
+  // =============================================================
   // 渲染列表（仅首次/数据变更时调用，完整重建）
   // =============================================================
 
   _renderList() {
     const now = Date.now();
     const before = this._state.reminders.length;
-    this._state.reminders = this._state.reminders.filter(r => {
-      const targetTime = new Date(r.targetTime).getTime();
-      if (r.isTemp) {
-        return now - targetTime <= REMINDER_AUTO_DELETE_MS;
-      }
-      if (!r.isCompleted) return true;
-      return now - targetTime <= REMINDER_AUTO_DELETE_MS;
-    });
+    this._state.reminders = this._filterActiveReminders(this._state.reminders, now);
     if (this._state.reminders.length !== before) this._persist();
 
     // 清空 DOM 和引用
@@ -119,11 +126,13 @@ const Reminder = {
 
   _createReminderCard(reminder) {
     const card = document.createElement('div');
-    card.className = 'wf-card silver flow reminder-card';
+    card.className = 'wf-card flow reminder-card';
+    setAccentColor(card, reminder.accent || '#FFD84D');
     if (reminder.isTemp) card.classList.add('temp-reminder');
 
     const iconBadge = document.createElement('div');
-    iconBadge.className = 'wf-chip silver icon-badge';
+    iconBadge.className = 'wf-chip icon-badge';
+    setAccentColor(iconBadge, reminder.accent || '#FFD84D');
     iconBadge.appendChild(mi(reminder.icon || 'notifications'));
     card.appendChild(iconBadge);
 
@@ -192,7 +201,8 @@ const Reminder = {
     }
 
     const checkBadge = document.createElement('div');
-    checkBadge.className = 'wf-chip silver check-badge';
+    checkBadge.className = 'wf-chip check-badge';
+    setAccentColor(checkBadge, reminder.accent || '#FFD84D');
     topGroup.appendChild(checkBadge);
 
     rightCol.appendChild(topGroup);
@@ -224,32 +234,48 @@ const Reminder = {
     const diffMs = targetTime - now;
     const isActive = !reminder.isCompleted && diffMs <= 0;
 
-    // 更新卡片类 + 颜色变体
+    // 更新卡片状态类
     card.classList.toggle('completed', reminder.isCompleted);
     card.classList.toggle('active', isActive);
-    // 同步 wf-card 颜色变体
-    card.classList.remove('green', 'yellow', 'blue');
-    if (reminder.isTemp) card.classList.add('blue');
-    else if (reminder.isCompleted) card.classList.add('green');
-    if (isActive) card.classList.add('yellow');
 
-    // 更新图标徽章类（保留 wf-chip silver 基底，只切换状态类）
-    iconBadge.className = 'wf-chip silver icon-badge ' + (reminder.isCompleted ? 'done' : isActive ? 'active' : 'default');
+    // 以 reminder.accent 为基础色
+    const baseAccent = reminder.accent || '#FFD84D';
+    let cardAccent = baseAccent;
+    if (reminder.isCompleted) {
+      // 已完成：绿色调（但保留基础色的一点特征）
+      cardAccent = '#3FB950';
+    } else if (isActive) {
+      // 已激活：用基础色，但增强亮度
+      cardAccent = baseAccent;
+    }
+    setAccentColor(card, cardAccent);
+
+    // 更新图标徽章类
+    iconBadge.className = 'wf-chip icon-badge ' + (reminder.isCompleted ? 'done' : isActive ? 'active' : 'default');
+    setAccentColor(iconBadge, cardAccent);
+    iconBadge.style.color = cardAccent;
 
     // 更新勾选徽章
     checkBadge.innerHTML = reminder.isCompleted ? '<span class="material-icons">check</span>' : '';
+    setAccentColor(checkBadge, cardAccent);
 
     // 更新状态标签（文本必须包在 span 内，才能被 .wf-chip > * { z-index: 2 } 提升到伪元素之上）
     statusBadge.className = 'wf-chip reminder-status';
     if (reminder.isCompleted) {
       statusBadge.innerHTML = '<span>已完成</span>';
       statusBadge.dataset.status = 'completed';
+      setAccentColor(statusBadge, '#3FB950');
+      statusBadge.style.color = '#3FB950';
     } else if (isActive || diffMs <= 0) {
       statusBadge.innerHTML = '<span>已激活</span>';
       statusBadge.dataset.status = 'active';
+      setAccentColor(statusBadge, baseAccent);
+      statusBadge.style.color = baseAccent;
     } else {
       statusBadge.innerHTML = `<span>${this._formatCountdown(diffMs)}</span>`;
       statusBadge.dataset.status = 'pending';
+      setAccentColor(statusBadge, baseAccent);
+      statusBadge.style.color = baseAccent;
     }
   },
 
@@ -300,13 +326,7 @@ const Reminder = {
 
     const now = Date.now();
 
-    const filtered = this._state.reminders.filter(r => {
-      const targetTime = new Date(r.targetTime).getTime();
-      if (r.isTemp) {
-        return now - targetTime <= REMINDER_AUTO_DELETE_MS;
-      }
-      return !r.isCompleted || now - targetTime <= REMINDER_AUTO_DELETE_MS;
-    });
+    const filtered = this._filterActiveReminders(this._state.reminders, now);
 
     if (filtered.length !== this._state.reminders.length) {
       this._state.reminders = filtered;
@@ -476,12 +496,7 @@ const Reminder = {
     iconGrid.className = 'icon-grid';
     const reminderIcons = ['notifications', 'event', 'alarm', 'timer', 'flag', 'star', 'bookmark', 'label'];
     const initialIcon = reminder?.icon || 'notifications';
-    const iconSelector = createOptionSelector(reminderIcons, (iconName) => {
-      const opt = document.createElement('div');
-      opt.className = 'wf-chip silver icon-option';
-      opt.appendChild(mi(iconName));
-      return opt;
-    }, (iconName) => iconName === initialIcon);
+    const iconSelector = createIconSelector(reminderIcons, initialIcon);
     iconGrid.appendChild(iconSelector);
     body.appendChild(iconGrid);
     body.appendChild(sizedBox(12));
@@ -490,13 +505,7 @@ const Reminder = {
     const colorRow = document.createElement('div');
     colorRow.className = 'color-row';
     const initialColor = reminder?.accent || defaultAccent;
-    const colorSelector = createOptionSelector(ACCENT_COLORS, (c) => {
-      const swatch = document.createElement('div');
-      swatch.className = 'wf-chip color-swatch';
-      swatch.style.setProperty('--swatch-color', c);
-      swatch.innerHTML = '<span>&#10003;</span>';
-      return swatch;
-    }, (c) => c === initialColor);
+    const colorSelector = createColorSelector(ACCENT_COLORS, initialColor);
     colorRow.appendChild(colorSelector);
     body.appendChild(colorRow);
 

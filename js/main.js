@@ -17,6 +17,7 @@
   const NAV_ITEMS = [
     { label: '看板', icon: 'dashboard', pageId: 'page-taskboard' },
     { label: '提醒', icon: 'notifications', pageId: 'page-reminder' },
+    { label: '便签', icon: 'event_note', pageId: 'page-notes' },
     { label: '仲裁', icon: 'gavel', pageId: 'page-arbitration' },
     { label: '浏览器（wiki）', icon: 'public', pageId: 'page-browser' },
     { label: '设置', icon: 'settings', pageId: 'page-settings' },
@@ -39,6 +40,7 @@
     reminder: null,
     arbitration: null,
     browser: null,
+    notes: null,
 
     // =============================================================
     // 启动
@@ -55,10 +57,12 @@
       this._els.wideDateText = document.getElementById('wide-date-text');
       this._els.wideCountdownText = document.getElementById('wide-countdown-text');
       this._els.wideManageBtn = document.getElementById('wide-manage-btn');
+      this._els.wideAddBtn = document.getElementById('wide-add-btn');
       this._els.pages = {
         taskboard: document.getElementById('page-taskboard'),
         reminder: document.getElementById('page-reminder'),
         arbitration: document.getElementById('page-arbitration'),
+        notes: document.getElementById('page-notes'),
         browser: document.getElementById('page-browser'),
         settings: document.getElementById('page-settings'),
       };
@@ -81,6 +85,10 @@
       this.arbitration = Arbitration;
       this.arbitration.init(this._els.pages.arbitration);
 
+      // 初始化便签页
+      this.notes = Notes;
+      this.notes.init(this._els.pages.notes);
+
       // 初始化浏览器页
       this.browser = Browser;
       this.browser.init(this._els.pages.browser);
@@ -93,8 +101,16 @@
         this._toggleManageMode();
       });
 
+      // 绑定宽屏新建按钮（便签页）
+      this._els.wideAddBtn.addEventListener('click', () => {
+        if (this.notes) this.notes._openEditor(null);
+      });
+
       // 启动宽屏时钟
       this._startWideClock();
+
+      // 初始化云端同步
+      this._setupGistSync();
 
       // 初始激活看板页
       this._switchPage(0);
@@ -117,32 +133,67 @@
     },
 
     // =============================================================
-  // 重新加载看板数据（导入后调用）
-  // =============================================================
+    // 云端同步（Gist）
+    // =============================================================
 
-  _reloadTaskboard() {
-    if (this.taskboard) {
-      this.taskboard._state.dailyTasks = Store.loadDailyTasks();
-      this.taskboard._state.weeklyTasks = Store.loadWeeklyTasks();
-      this.taskboard._refreshPanels();
-    }
-  },
+    _setupGistSync() {
+      if (typeof GistSync === 'undefined') return;
 
-  // =============================================================
-  // 重新加载提醒数据（导入后调用）
-  // =============================================================
+      // 切回前台时静默同步
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          this._silentSync();
+        }
+      });
 
-  _reloadReminder() {
-    if (this.reminder) {
-      this.reminder.reloadFromStore();
-    }
-  },
+      // 初始化时静默同步一次
+      setTimeout(() => this._silentSync(), 1500);
+    },
 
-  _reloadArbitration() {
-    if (this.arbitration) {
-      this.arbitration.reloadFromStore();
-    }
-  },
+    async _silentSync() {
+      if (!GistSync.isConfigured()) return;
+      const updated = await GistSync.checkAndSync(() => {
+        // 有更新时刷新各模块
+        this.reloadAll();
+      });
+      if (updated && typeof showSnackbar === 'function') {
+        showSnackbar('已同步云端最新数据');
+      }
+    },
+
+    /**
+     * 统一刷新所有模块数据
+     */
+    reloadAll() {
+      if (this.taskboard) {
+        this.taskboard._state.dailyTasks = Store.loadDailyTasks();
+        this.taskboard._state.weeklyTasks = Store.loadWeeklyTasks();
+        this.taskboard._refreshPanels();
+      }
+      if (this.reminder) this.reminder.reloadFromStore();
+      if (this.arbitration) this.arbitration.reloadFromStore();
+      if (this.notes) this.notes.reloadFromStore();
+    },
+
+    // =============================================================
+    // 旧方法别名（兼容外部调用）
+    // =============================================================
+
+    _reloadTaskboard() {
+      this.reloadAll();
+    },
+
+    _reloadReminder() {
+      this.reloadAll();
+    },
+
+    _reloadArbitration() {
+      this.reloadAll();
+    },
+
+    _reloadNotes() {
+      this.reloadAll();
+    },
 
     // =============================================================
     // 宽屏侧栏渲染
@@ -256,6 +307,10 @@
       const showManage = (index === 0 || index === 1);
       this._els.wideManageBtn.style.display = showManage ? '' : 'none';
 
+      // 右上角新建按钮：便签页显示
+      const showAdd = (index === 3);
+      this._els.wideAddBtn.style.display = showAdd ? '' : 'none';
+
       // 同步管理按钮状态（根据当前页面的管理模式）
       if (showManage) this._syncWideManageBtn();
     },
@@ -271,7 +326,7 @@
       // 看板(0) / 提醒(1) 无需顶栏中部控件
       if (index === 0 || index === 1) return;
 
-      if (index === 3) {
+      if (index === 4) {
         const template = document.getElementById('browser-controls-template');
         const clone = template.content.cloneNode(true);
         center.appendChild(clone);

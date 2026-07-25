@@ -2,7 +2,6 @@ const ARBI_DATA_BASE_URL = 'https://arbi.wf.wiki/data';
 const ARBI_PROXY_PREFIX = '/proxy/arbi.wf.wiki/data';
 const ARBI_LOCAL_DATA_PATH = 'data';
 const ARBI_HIGH_VALUE_TIERS = ['S', 'A+', 'A', 'A-'];
-const ARBI_TEMP_REMINDER_TAG = 'arbi_temp';
 const ARBI_LAST_DAILY_AUTO_ADD_KEY = 'wf_arbi_last_daily_auto_add';
 const ARBI_DATA_CACHE_KEY = 'wf_arbi_data_cache';
 const ARBI_DATA_CACHE_TTL_MS = 24 * 60 * 60 * 1000;

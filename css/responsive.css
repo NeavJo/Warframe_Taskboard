@@ -40,21 +40,7 @@
   }
 
   .taskboard-tab-view .tab-panel {
-    position: absolute;
-    inset: 0;
     height: 100%;
-    overflow-y: auto;
-    padding: 8px 16px;
-    opacity: 0;
-    pointer-events: none;
-    transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease;
-    will-change: transform, opacity;
-  }
-
-  .taskboard-tab-view .tab-panel.active {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(0);
   }
 
   /* 窄屏 浏览器 */
@@ -99,6 +85,20 @@
   .reminder-content {
     padding: 16px;
   }
+
+  /* 窄屏 便签页 */
+  .notes-header {
+    display: block;
+  }
+
+  .notes-content {
+    padding: 16px;
+  }
+
+  .notes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
 }
 
 /* 手机竖屏：宽度 < 480px */
@@ -127,6 +127,22 @@
   }
   #rm-add-btn > span:last-child {
     display: none;
+  }
+
+  /* 手机竖屏 便签页 */
+  .notes-header { padding: 14px 14px 12px; }
+  .notes-content { padding: 12px; }
+  .notes-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .note-card { padding: 12px; }
+  .note-card-title { font-size: 14px; }
+
+  /* 手机竖屏：编辑器对话框宽度近全屏 */
+  .note-editor-box {
+    width: calc(100vw - 16px);
+    max-height: calc(100vh * 5 / 6);
   }
 
   /* 移动端编辑/新增对话框缩短至2/3 */
