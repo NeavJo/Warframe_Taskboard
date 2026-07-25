@@ -3,6 +3,13 @@
    复用 .wf-card / .wf-chip 基底，所有文本节点用 <span> 包裹
    ============================================================= */
 
+.notes-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 /* ----- 内容区 ----- */
 .notes-content {
   flex: 1;

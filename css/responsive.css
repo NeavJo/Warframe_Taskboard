@@ -59,6 +59,7 @@
 
   /* 窄屏 设置页 */
   .settings-header {
+    display: block;
     padding: 16px 16px 14px;
   }
 
@@ -75,6 +76,15 @@
 
   .settings-card .wf-btn {
     align-self: stretch;
+  }
+
+  /* 窄屏 仲裁页 */
+  .arbi-header {
+    display: block;
+  }
+
+  .arbi-content {
+    padding: 16px;
   }
 
   /* 窄屏 提醒页 */
