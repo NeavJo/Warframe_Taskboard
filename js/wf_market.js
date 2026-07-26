@@ -358,7 +358,7 @@ const Market = {
               <div class="market-search-wrap" id="mk-search-wrap">
                 <span class="material-icons market-search-icon">manage_search</span>
                 <input type="text" id="mk-search-input" class="market-search-input"
-                       placeholder="例如：Rhino Prime / 大久合弓"
+                       placeholder="例如：Rhino Prime / 大久和弓"
                        autocomplete="off" spellcheck="false" />
                 <button class="wf-icon-btn wf-btn" id="mk-clear-btn" title="清空" style="display:none;">
                   <span class="material-icons">close</span>
