@@ -124,9 +124,11 @@
       });
 
       // 绑定宽屏新建按钮（便签页）
-      this._els.wideAddBtn.addEventListener('click', () => {
-        if (this.notes) this.notes._openEditor(null);
-      });
+      if (this._els.wideAddBtn) {
+        this._els.wideAddBtn.addEventListener('click', () => {
+          if (this.notes) this.notes._openEditor(null);
+        });
+      }
 
       // 启动宽屏时钟
       this._startWideClock();
@@ -331,7 +333,9 @@
 
       // 右上角新建按钮：便签页显示
       const showAdd = (index === 3);
-      this._els.wideAddBtn.style.display = showAdd ? '' : 'none';
+      if (this._els.wideAddBtn) {
+        this._els.wideAddBtn.style.display = showAdd ? '' : 'none';
+      }
 
       // 同步管理按钮状态（根据当前页面的管理模式）
       if (showManage) this._syncWideManageBtn();
