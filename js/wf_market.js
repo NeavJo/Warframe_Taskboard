@@ -39,7 +39,15 @@ const WM_IS_LOCAL = (function() {
 })();
 
 const WM_PROXY_PREFIX = '/proxy/';
-const WM_API_BASE = WM_IS_LOCAL ? WM_PROXY_PREFIX + WM_API_ORIGIN : WM_API_ORIGIN;
+const WM_CORS_PROXY = 'https://corsproxy.io/?';
+
+/** 构建 API URL：本地走 dev-server 代理，远端走公共 CORS 代理 */
+function wmApiUrl(path) {
+  const full = WM_API_ORIGIN + path;
+  if (WM_IS_LOCAL) return WM_PROXY_PREFIX + full;
+  return WM_CORS_PROXY + encodeURIComponent(full);
+}
+
 const WM_IMG_CDN_BASE = WM_IS_LOCAL ? WM_PROXY_PREFIX + WM_IMG_CDN_ORIGIN : WM_IMG_CDN_ORIGIN;
 const WM_IMG_DB_NAME = 'wf_market_img_cache';
 const WM_IMG_DB_STORE = 'images';
@@ -396,7 +404,7 @@ const Market = {
   async _refreshItemsFromNetwork(silent) {
     try {
       if (!silent) this._showProgress('正在连接 Warframe Market…', 0);
-      const resp = await fetch(`${WM_API_BASE}/items`, {
+      const resp = await fetch(wmApiUrl('/items'), {
         method: 'GET',
         headers: {
           'Language': WM_LANG,
@@ -932,19 +940,16 @@ const Market = {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), WM_FETCH_TIMEOUT);
     try {
-      const resp = await fetch(
-        `${WM_API_BASE}/orders/item/${encodeURIComponent(slug)}`,
-        {
-          method: 'GET',
-          headers: {
-            'Language': WM_LANG,
-            'Platform': WM_PLATFORM,
-            'Crossplay': WM_CROSSPLAY,
-            'Accept': 'application/json',
-          },
-          signal: controller.signal,
-        }
-      );
+      const resp = await fetch(wmApiUrl(`/orders/item/${encodeURIComponent(slug)}`), {
+        method: 'GET',
+        headers: {
+          'Language': WM_LANG,
+          'Platform': WM_PLATFORM,
+          'Crossplay': WM_CROSSPLAY,
+          'Accept': 'application/json',
+        },
+        signal: controller.signal,
+      });
       if (!resp.ok) {
         if (resp.status === 404) throw new Error('物品不存在，请检查名称或 slug');
         throw new Error(`服务器返回 HTTP ${resp.status}`);
