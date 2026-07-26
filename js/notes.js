@@ -377,16 +377,58 @@ const Notes = {
     const newCompleted = !item.completed;
     item.completed = newCompleted;
 
+    const affectedIds = new Set([itemId]);
+
     // 级联：勾选/取消勾选一级事项时，所有子事项双向同步
     if (item.parentId === null) {
       note.items.forEach(child => {
-        if (child.parentId === item.id) child.completed = newCompleted;
+        if (child.parentId === item.id) {
+          child.completed = newCompleted;
+          affectedIds.add(child.id);
+        }
       });
     }
 
     note.updatedAt = Date.now();
     this._persist();
-    this._render();
+
+    // 增量更新 DOM，避免整卡重渲染闪烁
+    this._updateCardItemStates(note.id, affectedIds, newCompleted);
+    this._updateCardProgress(note);
+  },
+
+  _updateCardItemStates(noteId, affectedIds, newCompleted) {
+    const card = document.querySelector(`.note-card[data-note-id="${noteId}"]`);
+    if (!card) return;
+
+    affectedIds.forEach(itemId => {
+      const row = card.querySelector(`.note-item[data-item-id="${itemId}"]`);
+      if (!row) return;
+      row.classList.toggle('completed', newCompleted);
+      const check = row.querySelector('.note-check');
+      if (check) {
+        check.innerHTML = newCompleted ? '<span class="material-icons">check</span>' : '';
+      }
+    });
+  },
+
+  _updateCardProgress(note) {
+    const card = document.querySelector(`.note-card[data-note-id="${note.id}"]`);
+    if (!card) return;
+
+    const progress = this._computeProgress(note);
+    const fill = card.querySelector('.note-progress-fill');
+    if (fill) {
+      fill.style.width = (progress * 100) + '%';
+    }
+
+    const counter = card.querySelector('.note-counter');
+    if (counter) {
+      const completed = note.items.filter(i => i.completed).length;
+      counter.textContent = `${completed}/${note.items.length}`;
+    }
+
+    card.classList.toggle('completed', progress === 1 && note.items.length > 0);
   },
 
   // =============================================================
