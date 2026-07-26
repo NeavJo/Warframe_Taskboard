@@ -28,6 +28,7 @@ function createBtn(opts = {}) {
   if (opts.className) classes.push(opts.className);
   if (opts.primary) classes.push('primary');
   if (opts.outline) classes.push('outline');
+  if (opts.danger) classes.push('danger');
   btn.className = classes.join(' ');
   btn.type = 'button';
 
@@ -71,7 +72,7 @@ function setAccentColor(el, accentColor) {
  * 创建单条任务卡片
  */
 function createTaskCard(task, callbacks, isManageMode = false, showDragHandle = false) {
-  const accent = task.accent || '#D4AF37';
+  const accent = task.accent || DEFAULT_TASK_ACCENT;
   const card = document.createElement('div');
   card.className = `wf-card flow task-card${task.isCompleted ? ' completed' : ''}`;
   card.dataset.taskId = task.id;
@@ -438,8 +439,7 @@ const TASK_ICONS = [
   'military_tech', 'key', 'crisis_alert',
 ];
 
-// 主题色选项
-const ACCENT_COLORS = ['#D4AF37', '#1FB6FF', '#FFD84D', '#3FB950', '#E5534B'];
+
 
 /**
  * 通用：创建单选选择器（图标/颜色等）
@@ -493,7 +493,7 @@ function createColorSelector(colors, initialColor) {
  */
 function createTaskEditorDialog(task, isDaily, onSubmit) {
   const isEdit = !!task;
-  const defaultAccent = isDaily ? '#FFD84D' : '#1FB6FF';
+  const defaultAccent = isDaily ? DEFAULT_DAILY_ACCENT : DEFAULT_WEEKLY_ACCENT;
 
   const overlay = document.createElement('div');
   overlay.className = 'dialog-overlay';
@@ -613,6 +613,88 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   requestAnimationFrame(() => overlay.classList.add('open'));
 
   return overlay;
+}
+
+/**
+ * 通用确认对话框
+ * @param {Object} options
+ * @param {string} options.title - 标题
+ * @param {string} options.message - 提示消息
+ * @param {string} [options.confirmText='确认'] - 确认按钮文字
+ * @param {string} [options.cancelText='取消'] - 取消按钮文字
+ * @param {boolean} [options.danger=false] - 是否为危险操作（红色确认按钮）
+ * @param {string} [options.color='gold'] - 对话框颜色（gold/silver/blue 等）
+ * @returns {Promise<boolean>}
+ */
+function confirmDialog({ title, message, confirmText = '确认', cancelText = '取消', danger = false, color = 'gold' }) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'dialog-overlay';
+
+    const box = document.createElement('div');
+    box.className = `wf-card ${color} dialog-box`;
+    box.style.maxWidth = '420px';
+
+    // 头部
+    const header = document.createElement('div');
+    header.className = 'dialog-header';
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    header.appendChild(bar);
+    const titleEl = document.createElement('div');
+    titleEl.className = 'title';
+    titleEl.textContent = title;
+    header.appendChild(titleEl);
+    box.appendChild(header);
+
+    box.appendChild(dividerEl());
+
+    // 消息体
+    const body = document.createElement('div');
+    body.className = 'dialog-body';
+    body.style.padding = '24px 20px';
+    const msg = document.createElement('p');
+    msg.style.cssText = 'color:var(--text-secondary);font-size:14px;line-height:1.6;letter-spacing:0.5px;';
+    msg.textContent = message;
+    body.appendChild(msg);
+    box.appendChild(body);
+
+    box.appendChild(dividerEl());
+
+    // 按钮
+    const footer = document.createElement('div');
+    footer.className = 'dialog-footer';
+
+    const cancelBtn = createBtn({
+      text: cancelText,
+      outline: true,
+      onClick: () => { close(); resolve(false); },
+    });
+    footer.appendChild(cancelBtn);
+
+    const confirmBtn = createBtn({
+      text: confirmText,
+      primary: true,
+      danger: danger,
+      onClick: () => { close(); resolve(true); },
+    });
+    footer.appendChild(confirmBtn);
+
+    box.appendChild(footer);
+    overlay.appendChild(box);
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) { close(); resolve(false); }
+    });
+
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('open'));
+
+    function close() {
+      overlay.classList.remove('open');
+      setTimeout(() => overlay.remove(), 200);
+    }
+  });
 }
 
 // =============================================================

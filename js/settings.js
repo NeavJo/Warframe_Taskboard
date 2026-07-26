@@ -233,6 +233,13 @@ const Settings = {
     this._els.syncTutorialBtn.addEventListener('click', () => {
       this._openSyncTutorial();
     });
+
+    // 云端同步：监听上传成功事件
+    if (typeof GistSync !== 'undefined') {
+      GistSync.onUpload(timestamp => {
+        this._updateUploadStatus(timestamp);
+      });
+    }
   },
 
   // =============================================================
@@ -265,6 +272,15 @@ const Settings = {
     }
   },
 
+  _updateUploadStatus(timestamp) {
+    if (!this._els.syncStatus || !this._els.syncStatusText) return;
+    const date = new Date(timestamp);
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    this._els.syncStatus.className = 'sync-status configured';
+    this._els.syncStatusText.textContent = `已上传 · ${hh}:${mm}`;
+  },
+
   _setSyncStatus(kind, text) {
     if (!this._els.syncStatus) return;
     this._els.syncStatus.className = 'sync-status ' + kind;
@@ -279,7 +295,6 @@ const Settings = {
     this._setSyncStatus('syncing', '正在上传…');
     const result = await GistSync.uploadNow();
     if (result && result.updatedAt) {
-      this._updateSyncStatus();
       showSnackbar('数据已上传至云端');
     } else {
       this._setSyncStatus('error', '上传失败');
@@ -541,10 +556,12 @@ const Settings = {
     const notesCount = hasNotes ? data.notes.length : 0;
     const reminderText = reminderCount > 0 ? `和 ${reminderCount} 个提醒事项` : '';
     const notesText = notesCount > 0 ? `和 ${notesCount} 个便签` : '';
-    const confirmed = await this._confirmDialog(
-      '导入确认',
-      `即将覆盖当前 ${data.dailyTasks.length} 个日常任务和 ${data.weeklyTasks.length} 个周常任务${reminderText}${notesText}。当前数据将丢失，是否继续？`
-    );
+    const confirmed = await confirmDialog({
+      title: '导入确认',
+      message: `即将覆盖当前 ${data.dailyTasks.length} 个日常任务和 ${data.weeklyTasks.length} 个周常任务${reminderText}${notesText}。当前数据将丢失，是否继续？`,
+      confirmText: '确认导入',
+      danger: true,
+    });
     if (!confirmed) return;
 
     // 覆写数据
@@ -558,75 +575,5 @@ const Settings = {
     const reminderMsg = reminderCount > 0 ? ` + ${reminderCount} 提醒` : '';
     const notesMsg = notesCount > 0 ? ` + ${notesCount} 便签` : '';
     showSnackbar(`已导入 ${data.dailyTasks.length} 日常 + ${data.weeklyTasks.length} 周常${reminderMsg}${notesMsg}`);
-  },
-
-  // =============================================================
-  // 确认对话框
-  // =============================================================
-
-  _confirmDialog(title, message) {
-    return new Promise((resolve) => {
-      const overlay = document.createElement('div');
-      overlay.className = 'dialog-overlay';
-
-      const box = document.createElement('div');
-      box.className = 'wf-card gold dialog-box';
-      box.style.maxWidth = '420px';
-
-      // 头部
-      const header = document.createElement('div');
-      header.className = 'dialog-header';
-      const bar = document.createElement('div');
-      bar.className = 'bar';
-      header.appendChild(bar);
-      const titleEl = document.createElement('div');
-      titleEl.className = 'title';
-      titleEl.textContent = title;
-      header.appendChild(titleEl);
-      box.appendChild(header);
-
-      box.appendChild(dividerEl());
-
-      // 消息体
-      const body = document.createElement('div');
-      body.className = 'dialog-body';
-      body.style.padding = '24px 20px';
-      const msg = document.createElement('p');
-      msg.style.cssText = 'color:var(--text-secondary);font-size:14px;line-height:1.6;letter-spacing:0.5px;';
-      msg.textContent = message;
-      body.appendChild(msg);
-      box.appendChild(body);
-
-      box.appendChild(dividerEl());
-
-      // 按钮
-      const footer = document.createElement('div');
-      footer.className = 'dialog-footer';
-
-      const cancelBtn = createBtn({
-        text: '取消',
-        outline: true,
-        onClick: () => { close(); resolve(false); },
-      });
-      footer.appendChild(cancelBtn);
-
-      const confirmBtn = createBtn({
-        text: '确认导入',
-        primary: true,
-        onClick: () => { close(); resolve(true); },
-      });
-      footer.appendChild(confirmBtn);
-
-      box.appendChild(footer);
-      overlay.appendChild(box);
-
-      document.body.appendChild(overlay);
-      requestAnimationFrame(() => overlay.classList.add('open'));
-
-      function close() {
-        overlay.classList.remove('open');
-        setTimeout(() => overlay.remove(), 200);
-      }
-    });
   },
 };

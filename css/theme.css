@@ -68,7 +68,7 @@
        1. 给元素加 .wf-card 基底类
        2. 覆盖 --card-accent / --card-accent-deep / --card-chamfer / --card-fill-tint
        3. 加 .flow 修饰符启用流光
-     预设变体类：.silver / .gold / .yellow / .blue / .green
+     预设变体类：.silver / .gold / .yellow / .blue / .green / .purple
   */
   --card-accent: #b8c4d0;                /* 主色调（亮） */
   --card-accent-deep: #3a4048;            /* 暗边色 */

@@ -26,6 +26,21 @@ const GistSync = {
   _uploadTimer: null,
   _isUploading: false,
   _isDownloading: false,
+  _uploadListeners: [],
+
+  /**
+   * 注册上传成功回调
+   * @param {function(timestamp: number)} listener
+   */
+  onUpload(listener) {
+    this._uploadListeners.push(listener);
+  },
+
+  _notifyUpload(ts) {
+    this._uploadListeners.forEach(fn => {
+      try { fn(ts); } catch (e) { console.warn(e); }
+    });
+  },
 
   // =============================================================
   // 配置读写
@@ -114,6 +129,7 @@ const GistSync = {
       const result = await this._apiPatch(payload);
       if (result && result.updatedAt) {
         this.setLastSyncTime(result.updatedAt);
+        this._notifyUpload(result.updatedAt);
       }
       return result;
     } catch (e) {

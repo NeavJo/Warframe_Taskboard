@@ -11,9 +11,14 @@ const DAILY_RESET_HOUR = 8;
 const WEEKLY_RESET_WEEKDAY = 1; // 周一
 const WEEKLY_RESET_HOUR = 8;
 
-// 一天的毫秒数（常量化避免重复计算）
 const DAY_MS = 86400000;
 const HOUR_MS = 3600000;
+
+const ACCENT_COLORS = ['#D4AF37', '#1FB6FF', '#c792ea', '#3FB950', '#E5534B'];
+const DEFAULT_DAILY_ACCENT = '#FFD84D';
+const DEFAULT_WEEKLY_ACCENT = '#1FB6FF';
+const DEFAULT_REMINDER_ACCENT = '#FFD84D';
+const DEFAULT_TASK_ACCENT = '#D4AF37';
 
 // =============================================================
 // 日期工具

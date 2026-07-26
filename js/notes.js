@@ -12,7 +12,7 @@
  *   Item { id, text, completed, parentId: string|null, order }
  */
 
-const NOTE_COLORS = ['gold', 'silver', 'blue', 'yellow', 'green'];
+const NOTE_COLORS = ['gold', 'silver', 'blue', 'purple', 'green'];
 const NOTE_PREVIEW_LIMIT = 6; // 卡片预览最多显示的事项条数
 
 const Notes = {
@@ -109,9 +109,9 @@ const Notes = {
     this._renderSection(this._els.pinnedSection, pinned, '置顶', 'push_pin', true);
     this._renderSection(this._els.regularSection, regular, '其他', 'event_note', false);
 
-    // 空状态
-    this._els.empty.style.display = this._state.notes.length === 0 ? 'flex' : 'none';
-    this._els.composer.style.display = this._state.notes.length === 0 ? 'none' : 'flex';
+    // composer 始终显示作为新建入口
+    this._els.empty.style.display = 'none';
+    this._els.composer.style.display = 'flex';
   },
 
   _renderSection(container, notes, label, icon, isPinned) {
@@ -733,8 +733,16 @@ const Notes = {
       const delBtn = createBtn({
         text: '删除',
         outline: true,
-        onClick: () => {
-          if (confirm('确定删除此便签？此操作不可撤销。')) {
+        danger: true,
+        onClick: async () => {
+          const confirmed = await confirmDialog({
+            title: '删除便签',
+            message: '确定删除此便签？此操作不可撤销。',
+            confirmText: '删除',
+            danger: true,
+            color: 'silver',
+          });
+          if (confirmed) {
             const realNote = this._state.notes.find(n => n.id === draft.id);
             if (realNote) this._deleteNote(realNote);
             close(false);

@@ -42,6 +42,8 @@ const STORE_KEYS = {
   ARBI_AUTO_ADD: 'wf_arbi_auto_add',
 };
 
+const DATA_VERSION = 4;
+
 // =============================================================
 // TaskStorageService 等效实现
 // =============================================================
@@ -210,6 +212,8 @@ const Store = {
    */
   exportAll() {
     return {
+      version: DATA_VERSION,
+      exportTime: new Date().toISOString(),
       dailyTasks: this.loadDailyTasks(),
       weeklyTasks: this.loadWeeklyTasks(),
       reminders: this.loadReminders(),
@@ -217,8 +221,6 @@ const Store = {
       settings: {
         arbiAutoAdd: this.loadArbiAutoAdd(),
       },
-      exportTime: new Date().toISOString(),
-      version: 1,
     };
   },
 

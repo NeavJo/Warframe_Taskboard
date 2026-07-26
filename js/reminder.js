@@ -16,7 +16,7 @@ const Reminder = {
 
   _els: {},
   _timerInterval: null,
-  _cardRefs: new Map(), // reminder.id → { card, statusEl, nameEl, checkBadge, iconBadge }
+  _cardRefs: new Map(), // reminder.id → { card, statusEl, nameEl, checkBadge, iconBadge, lastState }
 
   init(container) {
     container.innerHTML = `
@@ -125,14 +125,15 @@ const Reminder = {
   // =============================================================
 
   _createReminderCard(reminder) {
+    const accent = reminder.accent || DEFAULT_REMINDER_ACCENT;
     const card = document.createElement('div');
     card.className = 'wf-card flow reminder-card';
-    setAccentColor(card, reminder.accent || '#FFD84D');
+    setAccentColor(card, accent);
     if (reminder.isTemp) card.classList.add('temp-reminder');
 
     const iconBadge = document.createElement('div');
     iconBadge.className = 'wf-chip icon-badge';
-    setAccentColor(iconBadge, reminder.accent || '#FFD84D');
+    setAccentColor(iconBadge, accent);
     iconBadge.appendChild(mi(reminder.icon || 'notifications'));
     card.appendChild(iconBadge);
 
@@ -202,7 +203,7 @@ const Reminder = {
 
     const checkBadge = document.createElement('div');
     checkBadge.className = 'wf-chip check-badge';
-    setAccentColor(checkBadge, reminder.accent || '#FFD84D');
+    setAccentColor(checkBadge, accent);
     topGroup.appendChild(checkBadge);
 
     rightCol.appendChild(topGroup);
@@ -234,48 +235,53 @@ const Reminder = {
     const diffMs = targetTime - now;
     const isActive = !reminder.isCompleted && diffMs <= 0;
 
-    // 更新卡片状态类
+    const baseAccent = reminder.accent || DEFAULT_REMINDER_ACCENT;
+    const cardAccent = reminder.isCompleted ? '#3FB950' : baseAccent;
+
+    const countdownSec = Math.max(0, Math.floor(diffMs / 1000));
+    const stateKey = `${reminder.isCompleted ? 'c' : 'p'}_${isActive ? 'a' : 'w'}_${countdownSec}`;
+    if (refs.lastState === stateKey) return;
+    refs.lastState = stateKey;
+
     card.classList.toggle('completed', reminder.isCompleted);
     card.classList.toggle('active', isActive);
-
-    // 以 reminder.accent 为基础色
-    const baseAccent = reminder.accent || '#FFD84D';
-    let cardAccent = baseAccent;
-    if (reminder.isCompleted) {
-      // 已完成：绿色调（但保留基础色的一点特征）
-      cardAccent = '#3FB950';
-    } else if (isActive) {
-      // 已激活：用基础色，但增强亮度
-      cardAccent = baseAccent;
-    }
     setAccentColor(card, cardAccent);
 
-    // 更新图标徽章类
-    iconBadge.className = 'wf-chip icon-badge ' + (reminder.isCompleted ? 'done' : isActive ? 'active' : 'default');
+    const iconState = reminder.isCompleted ? 'done' : isActive ? 'active' : 'default';
+    iconBadge.className = 'wf-chip icon-badge ' + iconState;
     setAccentColor(iconBadge, cardAccent);
     iconBadge.style.color = cardAccent;
 
-    // 更新勾选徽章
-    checkBadge.innerHTML = reminder.isCompleted ? '<span class="material-icons">check</span>' : '';
+    if (checkBadge.dataset.checked !== String(reminder.isCompleted)) {
+      checkBadge.dataset.checked = String(reminder.isCompleted);
+      checkBadge.innerHTML = reminder.isCompleted ? '<span class="material-icons">check</span>' : '';
+    }
     setAccentColor(checkBadge, cardAccent);
 
-    // 更新状态标签（文本必须包在 span 内，才能被 .wf-chip > * { z-index: 2 } 提升到伪元素之上）
     statusBadge.className = 'wf-chip reminder-status';
+    const statusAccent = reminder.isCompleted ? '#3FB950' : baseAccent;
+    setAccentColor(statusBadge, statusAccent);
+    statusBadge.style.color = statusAccent;
+
+    const statusSpan = statusBadge.firstElementChild;
     if (reminder.isCompleted) {
-      statusBadge.innerHTML = '<span>已完成</span>';
-      statusBadge.dataset.status = 'completed';
-      setAccentColor(statusBadge, '#3FB950');
-      statusBadge.style.color = '#3FB950';
-    } else if (isActive || diffMs <= 0) {
-      statusBadge.innerHTML = '<span>已激活</span>';
-      statusBadge.dataset.status = 'active';
-      setAccentColor(statusBadge, baseAccent);
-      statusBadge.style.color = baseAccent;
+      if (statusBadge.dataset.status !== 'completed') {
+        statusBadge.dataset.status = 'completed';
+        statusBadge.innerHTML = '<span>已完成</span>';
+      }
+    } else if (isActive) {
+      if (statusBadge.dataset.status !== 'active') {
+        statusBadge.dataset.status = 'active';
+        statusBadge.innerHTML = '<span>已激活</span>';
+      }
     } else {
-      statusBadge.innerHTML = `<span>${this._formatCountdown(diffMs)}</span>`;
       statusBadge.dataset.status = 'pending';
-      setAccentColor(statusBadge, baseAccent);
-      statusBadge.style.color = baseAccent;
+      const text = this._formatCountdown(diffMs);
+      if (statusSpan) {
+        statusSpan.textContent = text;
+      } else {
+        statusBadge.innerHTML = `<span>${text}</span>`;
+      }
     }
   },
 
@@ -394,7 +400,7 @@ const Reminder = {
 
   _openEditorDialog(reminder) {
     const isEdit = !!reminder;
-    const defaultAccent = '#FFD84D';
+    const defaultAccent = DEFAULT_REMINDER_ACCENT;
     const now = new Date();
     now.setMinutes(now.getMinutes() + 30);
     now.setSeconds(0, 0);

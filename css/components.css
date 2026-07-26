@@ -41,7 +41,10 @@
 }
 
 /* 颜色变体（只需加 class 即可） */
-.wf-card.silver { /* 默认 */ }
+.wf-card.silver {
+  --card-accent: #c8d4e0;
+  --card-accent-deep: #4a5058;
+}
 .wf-card.gold {
   --card-accent: var(--gold-bright);
   --card-accent-deep: var(--gold-deep);
@@ -57,6 +60,10 @@
 .wf-card.green {
   --card-accent: color-mix(in srgb, var(--success) 70%, #ffffff);
   --card-accent-deep: color-mix(in srgb, var(--success) 30%, transparent);
+}
+.wf-card.purple {
+  --card-accent: #c792ea;
+  --card-accent-deep: #6b4f8a;
 }
 
 .wf-card > * {
@@ -126,11 +133,15 @@
 }
 
 /* 颜色变体（与 .wf-card 共享，因为都修改 --card-accent） */
-.wf-chip.silver { /* 默认 */ }
+.wf-chip.silver {
+  --card-accent: #c8d4e0;
+  --card-accent-deep: #4a5058;
+}
 .wf-chip.gold { --card-accent: var(--gold-bright); --card-accent-deep: var(--gold-deep); }
 .wf-chip.yellow { --card-accent: var(--yellow); --card-accent-deep: var(--yellow-dim); }
 .wf-chip.blue { --card-accent: var(--blue-accent); --card-accent-deep: var(--blue-accent-deep); }
 .wf-chip.green { --card-accent: color-mix(in srgb, var(--success) 70%, #ffffff); --card-accent-deep: color-mix(in srgb, var(--success) 30%, transparent); }
+.wf-chip.purple { --card-accent: #c792ea; --card-accent-deep: #6b4f8a; }
 .wf-chip.danger { --card-accent: #ff7a72; --card-accent-deep: color-mix(in srgb, var(--danger) 40%, transparent); }
 
 /* ----- 按钮样式系统 (Orokin 契形风格) ----- */
@@ -309,6 +320,22 @@
   filter: drop-shadow(0 0 12px var(--gold-glow));
 }
 
+.wf-btn.primary.danger::after {
+  background: linear-gradient(135deg, #8b2c2c, #e5534b, #8b2c2c);
+}
+
+.wf-btn.primary.danger::before {
+  background: #e5534b;
+}
+
+.wf-btn.primary.danger {
+  filter: drop-shadow(0 0 6px rgba(229, 83, 75, 0.5));
+}
+
+.wf-btn.primary.danger:hover {
+  filter: drop-shadow(0 0 12px rgba(229, 83, 75, 0.7));
+}
+
 .wf-btn.outline::after {
   background: var(--bg-border);
 }
@@ -331,6 +358,26 @@
 
 .wf-btn.outline:hover {
   color: var(--gold);
+}
+
+.wf-btn.outline.danger::after {
+  background: rgba(229, 83, 75, 0.5);
+}
+
+.wf-btn.outline.danger {
+  color: #e5534b;
+}
+
+.wf-btn.outline.danger:hover::after {
+  background: linear-gradient(135deg, #8b2c2c, #e5534b, #8b2c2c);
+}
+
+.wf-btn.outline.danger:hover::before {
+  background: rgba(229, 83, 75, 0.08);
+}
+
+.wf-btn.outline.danger:hover {
+  color: #ff6b63;
 }
 
 /* ----- 任务面板 ----- */

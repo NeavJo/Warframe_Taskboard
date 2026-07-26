@@ -239,7 +239,7 @@ const Taskboard = {
     const dailyOpts = {
       title: '每日日常',
       subtitle: 'DAILY',
-      accent: '#FFD84D',
+      accent: DEFAULT_DAILY_ACCENT,
       tasks: this._state.dailyTasks,
       callbacks: buildCallbacks(true),
       isManageMode: isManage,
@@ -249,7 +249,7 @@ const Taskboard = {
     const weeklyOpts = {
       title: '每周周常',
       subtitle: 'WEEKLY',
-      accent: '#1FB6FF',
+      accent: DEFAULT_WEEKLY_ACCENT,
       tasks: this._state.weeklyTasks,
       callbacks: buildCallbacks(false),
       isManageMode: isManage,
