@@ -49,21 +49,9 @@
   --card-accent: var(--gold-bright);
   --card-accent-deep: var(--gold-deep);
 }
-.wf-card.yellow {
-  --card-accent: var(--yellow);
-  --card-accent-deep: var(--yellow-dim);
-}
 .wf-card.blue {
   --card-accent: var(--blue-accent);
   --card-accent-deep: var(--blue-accent-deep);
-}
-.wf-card.green {
-  --card-accent: color-mix(in srgb, var(--success) 70%, #ffffff);
-  --card-accent-deep: color-mix(in srgb, var(--success) 30%, transparent);
-}
-.wf-card.purple {
-  --card-accent: #c792ea;
-  --card-accent-deep: #6b4f8a;
 }
 
 .wf-card > * {
@@ -140,8 +128,6 @@
 .wf-chip.gold { --card-accent: var(--gold-bright); --card-accent-deep: var(--gold-deep); }
 .wf-chip.yellow { --card-accent: var(--yellow); --card-accent-deep: var(--yellow-dim); }
 .wf-chip.blue { --card-accent: var(--blue-accent); --card-accent-deep: var(--blue-accent-deep); }
-.wf-chip.green { --card-accent: color-mix(in srgb, var(--success) 70%, #ffffff); --card-accent-deep: color-mix(in srgb, var(--success) 30%, transparent); }
-.wf-chip.purple { --card-accent: #c792ea; --card-accent-deep: #6b4f8a; }
 .wf-chip.danger { --card-accent: #ff7a72; --card-accent-deep: color-mix(in srgb, var(--danger) 40%, transparent); }
 
 /* ----- 按钮样式系统 (Orokin 契形风格) ----- */
@@ -393,20 +379,6 @@
 .panel-header {
   padding: 18px;
   --card-chamfer: 12px;
-}
-
-/* 金色主题（日常） */
-.panel-header.theme-gold {
-  --card-accent: var(--gold-bright);
-  --card-accent-deep: var(--gold-deep);
-  --card-fill-tint: 4%;
-}
-
-/* 蓝色主题（周常） */
-.panel-header.theme-blue {
-  --card-accent: var(--blue-bright);
-  --card-accent-deep: var(--blue-deep);
-  --card-fill-tint: 4%;
 }
 
 .panel-header .header-top {
@@ -751,7 +723,6 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;

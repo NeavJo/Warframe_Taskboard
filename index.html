@@ -29,18 +29,6 @@
 </head>
 <body>
   <!-- 全局 SVG 渐变资源库（Orokin 风格） -->
-  <svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
-    <defs>
-      <!-- 暗金流光渐变（开关控件用） -->
-      <linearGradient id="shadow-flow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="rgba(138, 109, 27, 0)" />
-        <stop offset="40%" stop-color="rgba(255, 230, 128, 0.9)" />
-        <stop offset="60%" stop-color="rgba(212, 175, 55, 0.95)" />
-        <stop offset="100%" stop-color="rgba(138, 109, 27, 0)" />
-      </linearGradient>
-    </defs>
-  </svg>
-
   <div id="app">
     <!-- ============================================================
          宽屏全局顶栏 (≥900px)
@@ -62,10 +50,6 @@
         <div class="header-right-inner">
           <div class="header-right-top">
             <span class="header-date-text" id="wide-date-text"></span>
-            <button class="wf-btn primary" id="wide-add-btn" style="display:none;">
-              <span class="material-icons mi-sm">add</span>
-              <span>新建</span>
-            </button>
             <button class="wf-btn manage-btn" id="wide-manage-btn">管理</button>
           </div>
           <div class="header-countdown-text" id="wide-countdown-text"></div>
@@ -82,7 +66,6 @@
       <!-- 宽屏侧栏 (≥900px) -->
       <nav class="sidebar" id="sidebar">
         <div class="sidebar-nav" id="sidebar-nav"></div>
-        <div class="sidebar-footer"></div>
       </nav>
 
       <!-- 内容面板  -->

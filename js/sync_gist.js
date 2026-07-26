@@ -277,5 +277,3 @@ const GistSync = {
     return { updatedAt: payload.updatedAt };
   },
 };
-
-window.GistSync = GistSync;

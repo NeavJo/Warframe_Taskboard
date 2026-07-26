@@ -134,6 +134,10 @@
       // 初始化云端同步
       this._setupGistSync();
 
+      // 缓存静态 DOM 查询结果，减少切换页面时的重复查询
+      this._els.pageViews = document.querySelectorAll('.page-view');
+      this._els.navTriggerIcons = document.querySelectorAll('.nav-trigger-inline .material-icons');
+
       // 初始激活看板页
       this._switchPage(0);
     },
@@ -249,7 +253,6 @@
           <div class="drawer-version">TASKBOARD</div>
         </div>
         <div class="drawer-nav" id="drawer-nav"></div>
-        <div class="drawer-footer"></div>
       `;
       overlay.appendChild(panel);
       this._els.drawerPanel = panel;
@@ -295,7 +298,7 @@
       }
 
       // 切换页面可见性
-      document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+      this._els.pageViews.forEach(el => el.classList.remove('active'));
       const targetPage = document.getElementById(item.pageId);
       if (targetPage) targetPage.classList.add('active');
 
@@ -315,7 +318,7 @@
       this._els.headerSubtitle.textContent = `TASKBOARD / ${item.label}`;
 
       // 更新所有行内触发按钮的图标（与当前功能区匹配）
-      document.querySelectorAll('.nav-trigger-inline .material-icons').forEach(el => {
+      this._els.navTriggerIcons.forEach(el => {
         el.textContent = item.icon;
       });
 

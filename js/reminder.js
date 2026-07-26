@@ -436,7 +436,7 @@ const Reminder = {
         const target = new Date();
         target.setHours(target.getHours() + h);
         target.setMinutes(0, 0, 0);
-        dateInput.value = this._toDateInputValue(target);
+        dateInput.value = formatDateKey(target);
         timeInput.value = this._toTimeInputValue(target);
         quickRow.querySelectorAll('.quick-hour-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -455,7 +455,7 @@ const Reminder = {
     const dateInput = document.createElement('input');
     dateInput.type = 'date';
     dateInput.className = 'field-input';
-    dateInput.value = reminder ? this._toDateInputValue(new Date(reminder.targetTime)) : this._toDateInputValue(now);
+    dateInput.value = reminder ? formatDateKey(new Date(reminder.targetTime)) : formatDateKey(now);
     dateCol.appendChild(dateInput);
 
     const timeCol = document.createElement('div');
@@ -552,10 +552,6 @@ const Reminder = {
       closeOnEscape: true,
     });
     close = dialog.close;
-  },
-
-  _toDateInputValue(d) {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   },
 
   _toTimeInputValue(d) {

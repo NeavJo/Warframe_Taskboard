@@ -645,7 +645,6 @@ const Notes = {
 
   _openEditor(note) {
     const isEdit = !!note;
-    const this_ = this;
     // 编辑时使用副本，取消不污染原数据
     const draft = isEdit ? JSON.parse(JSON.stringify(note)) : this._createNote();
     let dialogClose; // will be set after createDialog
@@ -779,7 +778,7 @@ const Notes = {
       text: isEdit ? '保存' : '创建',
       primary: true,
       onClick: () => {
-        this_._editorSave();
+        this._editorSave();
         dialogClose();
       },
     }));
@@ -792,7 +791,7 @@ const Notes = {
       closeOnOverlay: true,
       closeOnEscape: true,
       onClose: () => {
-        this_._editor = null;
+        this._editor = null;
       },
     });
     dialogClose = dialog.close;
@@ -1155,12 +1154,9 @@ const Notes = {
         list.querySelectorAll('.drag-over-top,.drag-over-bottom').forEach(r => {
           r.classList.remove('drag-over-top', 'drag-over-bottom');
         });
-        const fromId_ = fromId;
-        const targetId_ = targetId;
-        const placeBefore_ = placeBefore;
         dragState = null;
-        if (targetId_ && targetId_ !== fromId_) {
-          this._editorReorder(fromId_, targetId_, placeBefore_);
+        if (targetId && targetId !== fromId) {
+          this._editorReorder(fromId, targetId, placeBefore);
         }
       } else {
         dragState = null;
@@ -1173,4 +1169,3 @@ const Notes = {
 };
 
 // 暴露给全局
-window.Notes = Notes;

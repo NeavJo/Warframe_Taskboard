@@ -5,7 +5,7 @@
  *   - 启动时拉取全量物品清单用于自动补全
  *   - 搜索框输入实时模糊匹配 + 键盘上下/Enter + 鼠标点选
  *   - 选中物品后请求在线卖单并计算底价/众数/切尾均价/卖家数
- *   - 一键复制 /w 白金私聊指令；一键添加到便签
+ *   - 一键复制 /w 白金私聊指令
  *
  * 依赖 API (v2)：
  *   GET https://api.warframe.market/v2/items             (Language, Platform)
@@ -39,16 +39,84 @@ const WM_IS_LOCAL = (function() {
 })();
 
 const WM_PROXY_PREFIX = '/proxy/';
-const WM_CORS_PROXY = 'https://corsproxy.io/?';
+const WM_CORS_PROXIES = [
+  'https://corsproxy.io/?url=',
+  'https://api.allorigins.win/raw?url=',
+  'https://corsproxy.org/latest?url=',
+  'https://api-proxy-forever.vercel.app/proxy?url=',
+  'https://corsproxy.anywhere.link/v1/?url=',
+];
 
-/** 构建 API URL：本地走 dev-server 代理，远端走公共 CORS 代理 */
-function wmApiUrl(path) {
-  const full = WM_API_ORIGIN + path;
-  if (WM_IS_LOCAL) return WM_PROXY_PREFIX + full;
-  return WM_CORS_PROXY + encodeURIComponent(full);
+/**
+ * 并行尝试所有可用 URL 获取 API 数据，返回最快成功的响应文本
+ * - 本地 dev-server 代理
+ * - 多个公共 CORS 代理（并行）
+ * - 直连（兜底）
+ */
+async function wmFetch(path, options = {}) {
+  const fullUrl = WM_API_ORIGIN + path;
+  const urls = [];
+
+  // 本地代理（仅本地环境且未加 ?noproxy）
+  if (WM_IS_LOCAL && !location.search.includes('noproxy')) {
+    urls.push(WM_PROXY_PREFIX + fullUrl);
+  }
+
+  // CORS 代理（并行）
+  for (const proxy of WM_CORS_PROXIES) {
+    urls.push(proxy + encodeURIComponent(fullUrl));
+  }
+
+  // 直连兜底
+  urls.push(fullUrl);
+
+  const errors = [];
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), WM_FETCH_TIMEOUT);
+  const mergedOptions = { ...options, signal: controller.signal };
+
+  // 使用 Promise.allSettled：将所有请求同时发出，取第一个成功
+  const results = await Promise.allSettled(
+    urls.map(url =>
+      fetch(url, mergedOptions).then(async resp => {
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const text = await resp.text();
+        // 确认返回的是 JSON（代理有时返回 HTML 错误页）
+        try { JSON.parse(text); } catch (e) { throw new Error('非 JSON 响应'); }
+        return { text, url };
+      })
+    )
+  );
+
+  clearTimeout(timer);
+
+  // 找第一个成功的
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      return result.value.text;
+    }
+    errors.push(result.reason?.message || '未知错误');
+  }
+
+  // 所有带头的请求都失败后，尝试不带任何自定义头的纯直连
+  try {
+    const fallbackCtrl = new AbortController();
+    const fallbackTimer = setTimeout(() => fallbackCtrl.abort(), WM_FETCH_TIMEOUT);
+    const resp = await fetch(fullUrl, { signal: fallbackCtrl.signal });
+    clearTimeout(fallbackTimer);
+    if (resp.ok) {
+      const text = await resp.text();
+      try { JSON.parse(text); return text; } catch {}
+    }
+  } catch (fe) {
+    errors.push('直连兜底: ' + (fe.message || '失败'));
+  }
+
+  throw new Error(`所有请求均失败: ${errors.join('; ')}`);
 }
 
 const WM_IMG_CDN_BASE = WM_IS_LOCAL ? WM_PROXY_PREFIX + WM_IMG_CDN_ORIGIN : WM_IMG_CDN_ORIGIN;
+const WM_IMG_LOCAL_BASE = './data/img'; // GitHub Action 同步的同源图片目录
 const WM_IMG_DB_NAME = 'wf_market_img_cache';
 const WM_IMG_DB_STORE = 'images';
 const WM_IMG_DB_VERSION = 1;
@@ -101,48 +169,6 @@ const WmImgCache = {
     } catch { return false; }
   },
 
-  /** 为 img 元素设置带缓存的 src */
-  async setCachedSrc(imgEl, url, retryUrl, onFallback) {
-    const cacheKey = url.replace(/^https?:\/\/[^/]+/, '');
-    // 1. 尝试从 IndexedDB 读取
-    const blob = await this.get(cacheKey);
-    if (blob) {
-      imgEl.src = URL.createObjectURL(blob);
-      imgEl.dataset.cached = '1';
-      return;
-    }
-    // 2. 缓存未命中，fetch 下载并缓存
-    try {
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const newBlob = await resp.blob();
-      // 仅缓存图片类型（避免缓存错误页面）
-      if (newBlob.type.startsWith('image/')) {
-        this.set(cacheKey, newBlob);
-        imgEl.src = URL.createObjectURL(newBlob);
-        imgEl.dataset.cached = '1';
-        return;
-      }
-      throw new Error('Not an image');
-    } catch {
-      // 3. fetch 失败，尝试 retryUrl（带 ?_r=1 参数）
-      if (retryUrl && retryUrl !== url) {
-        try {
-          const resp = await fetch(retryUrl);
-          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-          const newBlob = await resp.blob();
-          if (newBlob.type.startsWith('image/')) {
-            this.set(cacheKey, newBlob);
-            imgEl.src = URL.createObjectURL(newBlob);
-            imgEl.dataset.cached = '1';
-            return;
-          }
-        } catch {}
-      }
-      // 4. 全部失败，调用降级回调
-      if (onFallback) onFallback();
-    }
-  },
 };
 
 // slug → GitHub warframe-items 图片文件名（PascalCase）
@@ -371,10 +397,32 @@ const Market = {
     document.body.appendChild(this._els.autocomplete);
 
     this._bindEvents();
+    this._initLazyLoad();
     this._loadAllItems();
   },
 
   reloadFromStore() {},
+
+  /** 初始化缩略图懒加载（IntersectionObserver） */
+  _initLazyLoad() {
+    if ('IntersectionObserver' in window && !this._thumbsObserver) {
+      this._thumbsObserver = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const thumb = entry.target;
+            this._thumbsObserver.unobserve(thumb);
+            const fn = thumb._lazyLoad;
+            if (fn) {
+              delete thumb._lazyLoad;
+              fn();
+            }
+          }
+        }
+      }, {
+        rootMargin: '150px 0px', // 提前 150px 预加载
+      });
+    }
+  },
 
   // ===== 物品清单加载 =====
   async _loadAllItems() {
@@ -404,7 +452,8 @@ const Market = {
   async _refreshItemsFromNetwork(silent) {
     try {
       if (!silent) this._showProgress('正在连接 Warframe Market…', 0);
-      const resp = await fetch(wmApiUrl('/items'), {
+      // Language/Platform 头不通过 CORS 代理转发，改为 URL 查询参数
+      const text = await wmFetch('/items?language=' + WM_LANG + '&platform=' + WM_PLATFORM, {
         method: 'GET',
         headers: {
           'Language': WM_LANG,
@@ -412,52 +461,44 @@ const Market = {
           'Accept': 'application/json',
         },
       });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-      // 尝试读取 Content-Length 以计算真实下载进度
-      const total = Number(resp.headers.get('Content-Length'));
-      const hasTotal = total > 0;
-
-      // 通过 ReadableStream 读取响应体，实时更新进度
-      const reader = resp.body.getReader();
-      const chunks = [];
-      let received = 0;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        received += value.length;
-        if (!silent) {
-          if (hasTotal) {
-            const pct = Math.min(99, Math.round(received / total * 100));
-            this._showProgress(`正在下载物品清单…`, pct);
-          } else {
-            // 没有 Content-Length，显示不确定进度
-            this._showProgress('正在下载物品清单…', -1);
-          }
-        }
-      }
-
-      // 合并 chunks 并解析 JSON
-      const buf = new Uint8Array(received);
-      let pos = 0;
-      for (const c of chunks) { buf.set(c, pos); pos += c.length; }
-      const text = new TextDecoder().decode(buf);
-      const json = JSON.parse(text);
-      const items = (json && json.data) || [];
 
       if (!silent) this._showProgress('正在解析物品数据…', 100);
+      const json = JSON.parse(text);
+      const items = (json && json.data) || [];
       const processed = this._processItems(items);
       this._state.allItems = processed;
       this._state.itemsLoaded = true;
       this._saveItemsCache(processed);
       if (!silent) this._hideHint();
+      return; // 在线加载成功
     } catch (e) {
-      console.warn('Warframe Market 物品清单加载失败:', e);
-      if (!this._state.itemsLoaded) {
-        this._showHint('物品清单加载失败，自动补全不可用（仍可直接输入物品名或 URL slug 查询）', 'error');
+      console.warn('WM API 在线加载失败:', e);
+    }
+
+    // 兜底：加载 GitHub Action 同步的同源本地缓存文件（无 CORS，适用于 GitHub Pages）
+    if (!this._state.itemsLoaded) {
+      try {
+        if (!silent) this._showProgress('正在从本地缓存加载…', 50);
+        const resp = await fetch('./data/wf_market_items.json');
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const text = await resp.text();
+        const json = JSON.parse(text);
+        const items = (json && json.data) || [];
+        if (items.length === 0) throw new Error('空数据');
+        const processed = this._processItems(items);
+        this._state.allItems = processed;
+        this._state.itemsLoaded = true;
+        this._saveItemsCache(processed);
+        if (!silent) this._hideHint();
+        return;
+      } catch (e2) {
+        console.warn('本地缓存文件加载失败:', e2);
       }
+    }
+
+    // 全部失败
+    if (!this._state.itemsLoaded) {
+      this._showHint('物品清单加载失败，自动补全不可用（仍可直接输入物品名或 URL slug 查询）', 'error');
     }
   },
 
@@ -674,17 +715,22 @@ const Market = {
           thumb.appendChild(wmRenderComponentPlaceholder(comp));
         } else {
           const imgFn = wmSlugToImageFilename(item.slug);
-          const imgUrl = `${WM_IMG_CDN_BASE}/${imgFn}`;
+          const cdnUrl = `${WM_IMG_CDN_BASE}/${imgFn}`;
+          const localUrl = `${WM_IMG_LOCAL_BASE}/${imgFn}`;
           const retryUrl = `${WM_IMG_CDN_BASE}/${imgFn}?_r=1`;
-          const cacheKey = imgUrl.replace(/^https?:\/\/[^/]+/, '');
+          const cacheKey = cdnUrl.replace(/^https?:\/\/[^/]+/, '');
 
           thumb.classList.add('is-loading');
-          (async () => {
-            let blob = await WmImgCache.get(cacheKey);
 
+          // 懒加载：仅当缩略图进入可视区域时才加载图片
+          const loadImage = () => {
+            (async () => {
+              let blob = await WmImgCache.get(cacheKey);
+
+            // 1. 优先尝试本地文件（同源，极快，无 CORS）
             if (!blob) {
               try {
-                const resp = await fetch(imgUrl);
+                const resp = await fetch(localUrl);
                 if (resp.ok) {
                   const newBlob = await resp.blob();
                   if (newBlob.type.startsWith('image/')) {
@@ -694,6 +740,22 @@ const Market = {
                 }
               } catch {}
             }
+
+            // 2. 再从 CDN 加载
+            if (!blob) {
+              try {
+                const resp = await fetch(cdnUrl);
+                if (resp.ok) {
+                  const newBlob = await resp.blob();
+                  if (newBlob.type.startsWith('image/')) {
+                    blob = newBlob;
+                    WmImgCache.set(cacheKey, newBlob);
+                  }
+                }
+              } catch {}
+            }
+
+            // 3. 带 ?_r=1 重试 CDN
             if (!blob && retryUrl) {
               try {
                 const resp = await fetch(retryUrl);
@@ -717,7 +779,7 @@ const Market = {
                 imgEl.remove();
                 const fb = wmGetComponentType(item.slug);
                 if (fb) thumb.appendChild(wmRenderComponentPlaceholder(fb));
-                else thumb.innerHTML = '<span class="material-icons">image</span>';
+                else thumb.classList.add('fallback');
               };
               thumb.appendChild(imgEl);
               if (imgEl.complete) thumb.classList.remove('is-loading');
@@ -725,11 +787,19 @@ const Market = {
               thumb.classList.remove('is-loading');
               const fb = wmGetComponentType(item.slug);
               if (fb) thumb.appendChild(wmRenderComponentPlaceholder(fb));
-              else thumb.innerHTML = '<span class="material-icons">image</span>';
+              else thumb.classList.add('fallback');
             }
           })();
+        };
+
+        if (this._thumbsObserver) {
+          thumb._lazyLoad = loadImage;
+          this._thumbsObserver.observe(thumb);
+        } else {
+          loadImage(); // 不支持 IntersectionObserver 时立即加载
         }
-      }
+      }    // closes inner else (非部件物品分支)
+      }    // closes outer else (图片/SVG分支)
       row.appendChild(thumb);
 
       const nameWrap = document.createElement('div');
@@ -937,28 +1007,19 @@ const Market = {
   },
 
   async _fetchOrders(slug) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), WM_FETCH_TIMEOUT);
-    try {
-      const resp = await fetch(wmApiUrl(`/orders/item/${encodeURIComponent(slug)}`), {
-        method: 'GET',
-        headers: {
-          'Language': WM_LANG,
-          'Platform': WM_PLATFORM,
-          'Crossplay': WM_CROSSPLAY,
-          'Accept': 'application/json',
-        },
-        signal: controller.signal,
-      });
-      if (!resp.ok) {
-        if (resp.status === 404) throw new Error('物品不存在，请检查名称或 slug');
-        throw new Error(`服务器返回 HTTP ${resp.status}`);
-      }
-      const json = await resp.json();
-      return (json && json.data) || [];
-    } finally {
-      clearTimeout(timer);
-    }
+    // 将 platform/crossplay 放在 URL 查询参数中，确保通过 CORS 代理也能正确传递
+    const path = `/orders/item/${encodeURIComponent(slug)}?platform=${WM_PLATFORM}&crossplay=${WM_CROSSPLAY}`;
+    const text = await wmFetch(path, {
+      method: 'GET',
+      headers: {
+        'Platform': WM_PLATFORM,
+        'Crossplay': WM_CROSSPLAY,
+        'Accept': 'application/json',
+      },
+    });
+    const json = JSON.parse(text);
+    if (json && json.error) throw new Error(json.error);
+    return (json && json.data) || [];
   },
 
   // ===== 统计计算 =====
@@ -1108,12 +1169,6 @@ const Market = {
     copyBtn.addEventListener('click', () => this._copyWhisper(stat));
     actions.appendChild(copyBtn);
 
-    const noteBtn = document.createElement('button');
-    noteBtn.className = 'wf-btn outline';
-    noteBtn.innerHTML = `<span class="material-icons mi-sm">note_add</span><span>添加到便签</span>`;
-    noteBtn.addEventListener('click', () => this._addToNotes(stat));
-    actions.appendChild(noteBtn);
-
     const wmBtn = document.createElement('button');
     wmBtn.className = 'wf-btn outline';
     wmBtn.innerHTML = `<span class="material-icons mi-sm">open_in_new</span><span>WM 页面</span>`;
@@ -1156,7 +1211,7 @@ const Market = {
     return box;
   },
 
-  // ===== 操作：复制/添加便签 =====
+  // ===== 操作：复制 =====
   _buildWhisperCommand(stat) {
     return `/w ${stat.cheapest.name} Hi! I want to buy: ${stat.itemNameEn} for ${stat.cheapest.platinum} platinum. (warframe.market)`;
   },
@@ -1180,35 +1235,6 @@ const Market = {
     } catch (e) {
       console.warn('复制失败:', e);
       showSnackbar('复制失败，请手动复制');
-    }
-  },
-
-  _addToNotes(stat) {
-    try {
-      if (typeof Notes === 'undefined' || !Notes._state.isLoaded) {
-        showSnackbar('便签页未就绪');
-        return;
-      }
-      const now = Date.now();
-      const note = {
-        id: Store.generateId(),
-        title: `购买 ${stat.itemName}`,
-        color: 'gold',
-        pinned: false,
-        items: [
-          { id: Store.generateId(), text: `联系 ${stat.cheapest.name} 购买（${stat.cheapest.platinum}p）`, completed: false, parentId: null, order: 0 },
-          { id: Store.generateId(), text: `建议价（众数）：${stat.mode}p · 底价：${stat.floor}p · 卖家数：${stat.sellers}`, completed: false, parentId: null, order: 1 },
-        ],
-        createdAt: now,
-        updatedAt: now,
-      };
-      Notes._state.notes.unshift(note);
-      Notes._persist();
-      Notes._render();
-      showSnackbar(`已添加到便签：${note.title}`);
-    } catch (e) {
-      console.warn('添加到便签失败:', e);
-      showSnackbar('添加失败');
     }
   },
 
@@ -1253,5 +1279,3 @@ const Market = {
     this._els.hint.style.display = 'none';
   },
 };
-
-window.Market = Market;

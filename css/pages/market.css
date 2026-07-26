@@ -105,94 +105,6 @@
   flex-shrink: 0;
 }
 
-/* 收藏按钮 */
-#mk-fav-btn {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  flex-shrink: 0;
-  transition: color var(--transition-fast), filter var(--transition-fast);
-}
-
-#mk-fav-btn.active::after {
-  background: linear-gradient(135deg, #1a4a7a, #4da6ff, #1a4a7a);
-}
-
-#mk-fav-btn.active::before {
-  --btn-base: linear-gradient(135deg, color-mix(in srgb, var(--bg-surface) 78%, #1a5a9a) 0%, color-mix(in srgb, var(--bg-surface) 90%, #1a5a9a) 100%);
-}
-
-#mk-fav-btn.active {
-  color: var(--blue-bright);
-  filter: drop-shadow(0 0 6px rgba(77, 166, 255, 0.3));
-}
-
-#mk-fav-btn.danger::after {
-  background: linear-gradient(135deg, #6b2020, #e5534b, #6b2020);
-}
-
-#mk-fav-btn.danger::before {
-  --btn-base: linear-gradient(135deg, color-mix(in srgb, var(--bg-surface) 78%, #6b2020) 0%, color-mix(in srgb, var(--bg-surface) 90%, #6b2020) 100%);
-}
-
-#mk-fav-btn.danger {
-  color: var(--danger);
-  filter: drop-shadow(0 0 6px rgba(229, 83, 75, 0.3));
-}
-
-#mk-fav-btn.disabled::after {
-  background: linear-gradient(135deg, #2a2f36, #4a5058, #6a707a, #4a5058, #2a2f36);
-  opacity: 0.35;
-}
-
-#mk-fav-btn.disabled {
-  color: var(--text-muted);
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-/* 收藏栏 */
-.market-fav-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 8px 0 0;
-  border-top: 1px solid rgba(255,255,255,0.05);
-  margin-top: 10px;
-}
-
-.market-fav-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: rgba(0,0,0,0.3);
-  border: 1px solid var(--bg-border);
-  border-radius: 4px;
-  cursor: pointer;
-  letter-spacing: 0.3px;
-  user-select: none;
-  transition: border-color var(--transition-fast), color var(--transition-fast);
-}
-
-.market-fav-tag:hover {
-  border-color: var(--gold-dim);
-  color: var(--gold-bright);
-}
-
-.market-fav-tag .material-icons {
-  font-size: 13px;
-  opacity: 0.5;
-  transition: opacity var(--transition-fast);
-}
-
-.market-fav-tag .material-icons:hover {
-  opacity: 1;
-}
-
 /* ----- 自动补全下拉（挂载在 body，fixed 定位，通过 scroll/resize 事件同步位置） ----- */
 .market-autocomplete {
   position: fixed;
@@ -333,7 +245,8 @@
   position: relative;
 }
 
-.market-ac-thumb.is-loading::before {
+.market-ac-thumb.is-loading::before,
+.market-ac-thumb.fallback::before {
   content: '?';
   position: absolute;
   inset: 0;
@@ -710,11 +623,6 @@
   color: var(--card-accent);
   text-shadow: 0 0 8px var(--card-accent-deep);
   line-height: 1.1;
-}
-
-.market-stat-box.gold .market-stat-value {
-  color: var(--gold-bright);
-  text-shadow: 0 0 12px var(--gold-glow), 0 1px 2px rgba(0,0,0,0.8);
 }
 
 .market-stat-desc {
