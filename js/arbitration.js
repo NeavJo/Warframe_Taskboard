@@ -334,32 +334,7 @@ const Arbitration = {
   },
 
   _openSettingsDialog() {
-    const overlay = document.createElement('div');
-    overlay.className = 'dialog-overlay';
-
-    const box = document.createElement('div');
-    box.className = 'wf-card gold dialog-box';
-
-    const header = document.createElement('div');
-    header.className = 'dialog-header';
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    header.appendChild(bar);
-    const title = document.createElement('div');
-    title.className = 'title';
-    title.textContent = '仲裁设置';
-    header.appendChild(title);
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'wf-chip silver dialog-close';
-    closeBtn.innerHTML = '<span>&#10005;</span>';
-    closeBtn.addEventListener('click', close);
-    header.appendChild(closeBtn);
-    box.appendChild(header);
-
-    box.appendChild(dividerEl());
-
     const body = document.createElement('div');
-    body.className = 'dialog-body';
 
     const settingRow = document.createElement('div');
     settingRow.className = 'arbi-setting-row';
@@ -395,21 +370,23 @@ const Arbitration = {
     `;
     body.appendChild(dataRow);
 
-    box.appendChild(body);
-    box.appendChild(dividerEl());
-
     const footer = document.createElement('div');
-    footer.className = 'dialog-footer';
+
+    let close;
     footer.appendChild(createBtn({
       text: '关闭',
       primary: true,
-      onClick: close,
+      onClick: () => close(),
     }));
-    box.appendChild(footer);
 
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-    requestAnimationFrame(() => overlay.classList.add('open'));
+    const dialog = createDialog({
+      title: '仲裁设置',
+      body,
+      footer,
+      closeOnOverlay: true,
+      closeOnEscape: true,
+    });
+    close = dialog.close;
 
     const toggle = document.getElementById('arbi-auto-add-toggle');
     toggle.addEventListener('change', (e) => {
@@ -437,15 +414,6 @@ const Arbitration = {
         refreshBtn.disabled = false;
         refreshBtn.textContent = '刷新';
       }
-    });
-
-    function close() {
-      overlay.classList.remove('open');
-      setTimeout(() => overlay.remove(), 200);
-    }
-
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) close();
     });
   },
 

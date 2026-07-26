@@ -41,12 +41,12 @@ const Reminder = {
 
         <div class="reminder-content" id="rm-content">
           <div class="reminder-list" id="rm-list"></div>
-          <div class="reminder-empty" id="rm-empty" style="display:none;">
-            <div class="empty-icon">
+          <div class="wf-empty-state reminder-empty" id="rm-empty" style="display:none;">
+            <div class="wf-empty-icon">
               <span class="material-icons">notifications_none</span>
             </div>
-            <div class="empty-text">暂无提醒事项</div>
-            <div class="empty-desc">点击右上角「新增」创建定时提醒</div>
+            <div class="wf-empty-title">暂无提醒事项</div>
+            <div class="wf-empty-desc">点击右上角「新增」创建定时提醒</div>
           </div>
         </div>
       </div>
@@ -405,32 +405,7 @@ const Reminder = {
     now.setMinutes(now.getMinutes() + 30);
     now.setSeconds(0, 0);
 
-    const overlay = document.createElement('div');
-    overlay.className = 'dialog-overlay';
-
-    const box = document.createElement('div');
-    box.className = 'wf-card gold dialog-box';
-
-    const header = document.createElement('div');
-    header.className = 'dialog-header';
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    header.appendChild(bar);
-    const title = document.createElement('div');
-    title.className = 'title';
-    title.textContent = isEdit ? '编辑提醒' : '新增提醒';
-    header.appendChild(title);
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'wf-chip silver dialog-close';
-    closeBtn.innerHTML = '<span>&#10005;</span>';
-    closeBtn.addEventListener('click', close);
-    header.appendChild(closeBtn);
-    box.appendChild(header);
-
-    box.appendChild(dividerEl());
-
     const body = document.createElement('div');
-    body.className = 'dialog-body';
 
     body.appendChild(fieldLabel('提醒名称'));
     const nameInput = document.createElement('input');
@@ -515,16 +490,13 @@ const Reminder = {
     colorRow.appendChild(colorSelector);
     body.appendChild(colorRow);
 
-    box.appendChild(body);
-    box.appendChild(dividerEl());
-
     const footer = document.createElement('div');
-    footer.className = 'dialog-footer';
 
+    let close;
     footer.appendChild(createBtn({
       text: '取消',
       outline: true,
-      onClick: close,
+      onClick: () => close(),
     }));
 
     footer.appendChild(createBtn({
@@ -572,20 +544,14 @@ const Reminder = {
       },
     }));
 
-    box.appendChild(footer);
-    overlay.appendChild(box);
-
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) close();
+    const dialog = createDialog({
+      title: isEdit ? '编辑提醒' : '新增提醒',
+      body,
+      footer,
+      closeOnOverlay: true,
+      closeOnEscape: true,
     });
-
-    function close() {
-      overlay.classList.remove('open');
-      setTimeout(() => overlay.remove(), 200);
-    }
-
-    document.body.appendChild(overlay);
-    requestAnimationFrame(() => overlay.classList.add('open'));
+    close = dialog.close;
   },
 
   _toDateInputValue(d) {

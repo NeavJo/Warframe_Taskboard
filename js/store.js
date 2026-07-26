@@ -211,6 +211,11 @@ const Store = {
    * 导出全部数据（用于导入导出和云端同步）
    */
   exportAll() {
+    let marketFavorites = null;
+    try {
+      const raw = localStorage.getItem('wf_market_favorites_v1');
+      if (raw) marketFavorites = JSON.parse(raw);
+    } catch (e) {}
     return {
       version: DATA_VERSION,
       exportTime: new Date().toISOString(),
@@ -221,6 +226,7 @@ const Store = {
       settings: {
         arbiAutoAdd: this.loadArbiAutoAdd(),
       },
+      marketFavorites,
     };
   },
 
@@ -235,6 +241,11 @@ const Store = {
     if (Array.isArray(data.notes)) this.saveNotes(data.notes);
     if (data.settings && typeof data.settings.arbiAutoAdd === 'boolean') {
       this.saveArbiAutoAdd(data.settings.arbiAutoAdd);
+    }
+    if (data.marketFavorites && Array.isArray(data.marketFavorites)) {
+      try {
+        localStorage.setItem('wf_market_favorites_v1', JSON.stringify(data.marketFavorites));
+      } catch (e) {}
     }
     return true;
   },

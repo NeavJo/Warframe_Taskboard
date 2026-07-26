@@ -34,7 +34,7 @@ const Settings = {
             <div class="settings-card-body">
               <div class="settings-card-title">每日自动添加高价值提醒</div>
               <div class="settings-card-desc">
-                每天 0 点自动将 S/A+/A/A- 级仲裁任务添加到提醒列表，30分钟后自动删除。
+                每天 0 点自动将 S/A+/A/A- 级仲裁任务添加到提醒列表，到期30分钟后自动删除。
               </div>
             </div>
             <label class="toggle-switch" id="settings-arbi-auto-toggle">
@@ -59,7 +59,7 @@ const Settings = {
               <div class="settings-card-body">
                 <div class="settings-card-title">云端同步（GitHub Gist）</div>
                 <div class="settings-card-desc">
-                  通过 GitHub Gist 实现多端数据同步，修改后 4 秒自动上传，切回前台自动拉取。
+                  通过 GitHub Gist 实现多端数据同步。
                 </div>
               </div>
             </div>
@@ -107,7 +107,7 @@ const Settings = {
             <div class="settings-card-body">
               <div class="settings-card-title">导出任务数据</div>
               <div class="settings-card-desc">
-                将日常和周常任务保存为 JSON 文件，方便备份或在其他设备上导入。
+                将本地数据保存为 JSON 文件，方便备份或在其他设备上导入。
               </div>
             </div>
             <button class="wf-btn primary" id="settings-export-btn">
@@ -124,7 +124,7 @@ const Settings = {
             <div class="settings-card-body">
               <div class="settings-card-title">导入任务数据</div>
               <div class="settings-card-desc">
-                读取之前导出的 JSON 备份文件，恢复任务列表。将 <strong>覆盖</strong> 当前所有任务数据。
+                读取之前导出的 JSON 备份文件，恢复数据。
               </div>
             </div>
             <button class="wf-btn blue" id="settings-import-btn">
@@ -332,38 +332,9 @@ const Settings = {
   // =============================================================
 
   _openSyncTutorial() {
-    const overlay = document.createElement('div');
-    overlay.className = 'dialog-overlay';
-    document.body.appendChild(overlay);
-
-    const box = document.createElement('div');
-    box.className = 'wf-card gold dialog-box sync-tutorial-box';
-
-    // 头部
-    const header = document.createElement('div');
-    header.className = 'dialog-header';
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    header.appendChild(bar);
-    const title = document.createElement('div');
-    title.className = 'title';
-    title.textContent = '云端同步使用教程';
-    header.appendChild(title);
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'wf-chip silver dialog-close';
-    closeBtn.innerHTML = '<span>&#10005;</span>';
-    closeBtn.addEventListener('click', close);
-    header.appendChild(closeBtn);
-    box.appendChild(header);
-
-    // 分割线
-    const div1 = document.createElement('div');
-    div1.className = 'dialog-divider';
-    box.appendChild(div1);
-
     // 正文
     const body = document.createElement('div');
-    body.className = 'dialog-body sync-tutorial-body';
+    body.className = 'sync-tutorial-body';
 
     const steps = [
       {
@@ -423,45 +394,24 @@ const Settings = {
     `;
     body.appendChild(notice);
 
-    box.appendChild(body);
-
     // 底部按钮
+    let close;
     const footer = document.createElement('div');
-    footer.className = 'dialog-footer';
     const okBtn = document.createElement('button');
     okBtn.className = 'wf-btn primary';
     okBtn.textContent = '知道了';
-    okBtn.addEventListener('click', close);
+    okBtn.addEventListener('click', () => close());
     footer.appendChild(okBtn);
-    box.appendChild(footer);
 
-    overlay.appendChild(box);
-
-    // 动画显示
-    requestAnimationFrame(() => {
-      overlay.classList.add('open');
+    const dialog = createDialog({
+      title: '云端同步使用教程',
+      body,
+      footer,
+      className: 'sync-tutorial-box',
+      closeOnOverlay: true,
+      closeOnEscape: true,
     });
-
-    function close() {
-      overlay.classList.remove('open');
-      setTimeout(() => {
-        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-      }, 200);
-    }
-
-    // 点击遮罩关闭
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) close();
-    });
-
-    // ESC 关闭
-    const onEsc = (e) => {
-      if (e.key === 'Escape') {
-        close();
-        document.removeEventListener('keydown', onEsc);
-      }
-    };
-    document.addEventListener('keydown', onEsc);
+    close = dialog.close;
   },
 
   // =============================================================
@@ -554,11 +504,13 @@ const Settings = {
     // 确认对话框
     const reminderCount = hasReminders ? data.reminders.length : 0;
     const notesCount = hasNotes ? data.notes.length : 0;
+    const favCount = data.marketFavorites && Array.isArray(data.marketFavorites) ? data.marketFavorites.length : 0;
     const reminderText = reminderCount > 0 ? `和 ${reminderCount} 个提醒事项` : '';
     const notesText = notesCount > 0 ? `和 ${notesCount} 个便签` : '';
+    const favText = favCount > 0 ? `和 ${favCount} 个市场收藏` : '';
     const confirmed = await confirmDialog({
       title: '导入确认',
-      message: `即将覆盖当前 ${data.dailyTasks.length} 个日常任务和 ${data.weeklyTasks.length} 个周常任务${reminderText}${notesText}。当前数据将丢失，是否继续？`,
+      message: `即将覆盖当前 ${data.dailyTasks.length} 个日常任务和 ${data.weeklyTasks.length} 个周常任务${reminderText}${notesText}${favText}。当前数据将丢失，是否继续？`,
       confirmText: '确认导入',
       danger: true,
     });
@@ -574,6 +526,7 @@ const Settings = {
 
     const reminderMsg = reminderCount > 0 ? ` + ${reminderCount} 提醒` : '';
     const notesMsg = notesCount > 0 ? ` + ${notesCount} 便签` : '';
-    showSnackbar(`已导入 ${data.dailyTasks.length} 日常 + ${data.weeklyTasks.length} 周常${reminderMsg}${notesMsg}`);
+    const favMsg = favCount > 0 ? ` + ${favCount} 收藏` : '';
+    showSnackbar(`已导入 ${data.dailyTasks.length} 日常 + ${data.weeklyTasks.length} 周常${reminderMsg}${notesMsg}${favMsg}`);
   },
 };

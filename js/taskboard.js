@@ -170,7 +170,7 @@ const Taskboard = {
   // 启动引导（加载数据、检查重置）
   // =============================================================
 
-  async _bootstrap() {
+  _bootstrap() {
     // 加载数据
     this._state.dailyTasks = Store.loadDailyTasks();
     this._state.weeklyTasks = Store.loadWeeklyTasks();

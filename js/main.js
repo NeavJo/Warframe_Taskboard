@@ -20,6 +20,7 @@
     { label: '便签', icon: 'event_note', pageId: 'page-notes' },
     { label: '仲裁', icon: 'gavel', pageId: 'page-arbitration' },
     { label: '浏览器（wiki）', icon: 'public', pageId: 'page-browser' },
+    { label: '市场查价', icon: 'storefront', pageId: 'page-market' },
     { label: '设置', icon: 'settings', pageId: 'page-settings' },
   ];
 
@@ -41,6 +42,7 @@
     arbitration: null,
     browser: null,
     notes: null,
+    market: null,
 
     // =============================================================
     // 启动
@@ -64,6 +66,7 @@
         arbitration: document.getElementById('page-arbitration'),
         notes: document.getElementById('page-notes'),
         browser: document.getElementById('page-browser'),
+        market: document.getElementById('page-market'),
         settings: document.getElementById('page-settings'),
       };
 
@@ -73,28 +76,47 @@
       // 创建窄屏抽屉侧栏 + 浮动触发按钮
       this._createDrawer();
 
-      // 初始化看板页
+      // 初始化看板页（当前活跃页，优先渲染）
       this.taskboard = Taskboard;
       await this.taskboard.init(this._els.pages.taskboard, this._isManageMode);
 
-      // 初始化提醒页
-      this.reminder = Reminder;
-      this.reminder.init(this._els.pages.reminder);
+      // 其余非活跃页面延后初始化，避免主线程被同步阻塞
+      const defer = (fn) => {
+        if (window.requestIdleCallback) {
+          requestIdleCallback(fn, { timeout: 2000 });
+        } else {
+          setTimeout(fn, 50);
+        }
+      };
 
-      // 初始化仲裁页
-      this.arbitration = Arbitration;
-      this.arbitration.init(this._els.pages.arbitration);
+      defer(() => {
+        this.reminder = Reminder;
+        this.reminder.init(this._els.pages.reminder);
+      });
 
-      // 初始化便签页
-      this.notes = Notes;
-      this.notes.init(this._els.pages.notes);
+      defer(() => {
+        this.arbitration = Arbitration;
+        this.arbitration.init(this._els.pages.arbitration);
+      });
 
-      // 初始化浏览器页
-      this.browser = Browser;
-      this.browser.init(this._els.pages.browser);
+      defer(() => {
+        this.notes = Notes;
+        this.notes.init(this._els.pages.notes);
+      });
 
-      // 初始化设置页
-      Settings.init(this._els.pages.settings);
+      defer(() => {
+        this.browser = Browser;
+        this.browser.init(this._els.pages.browser);
+      });
+
+      defer(() => {
+        this.market = Market;
+        this.market.init(this._els.pages.market);
+      });
+
+      defer(() => {
+        Settings.init(this._els.pages.settings);
+      });
 
       // 绑定宽屏管理按钮（看板/提醒页共用）
       this._els.wideManageBtn.addEventListener('click', () => {
@@ -263,8 +285,14 @@
 
     _switchPage(index) {
       if (index === this._currentIndex || !NAV_ITEMS[index]) return;
+      const prevIndex = this._currentIndex;
       this._currentIndex = index;
       const item = NAV_ITEMS[index];
+
+      // 切换页面前，先关闭市场查价页的下拉菜单（挂载在 body 上，不受页面可见性控制）
+      if (prevIndex === 5 && index !== 5) {
+        Market._hideAutocomplete();
+      }
 
       // 切换页面可见性
       document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));

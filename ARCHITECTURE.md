@@ -20,35 +20,39 @@
 wf-taskboard-web/
 ├── index.html                    # SPA 入口，定义所有页面容器与资源加载顺序
 ├── dev-server.bat                # Windows 开发服务器启动脚本
-├── dev-server-proxy.py           # 带 CORS 代理的 Python 开发服务器
+├── dev-server-proxy.py           # 带 CORS 代理 + 连接池的 Python 开发服务器
 ├── README.md                     # 项目介绍（面向用户）
 ├── ARCHITECTURE.md               # 本文件
 │
 ├── css/
 │   ├── theme.css                 # 主题变量 + Reset + 滚动条（~115行）
-│   ├── orokin.css                # 奥罗金拟物材质工具类（~84行）
-│   ├── animations.css            # 所有 @keyframes 动画定义（~45行）
-│   ├── layout.css                # App Shell / 顶栏 / 侧栏 / 抽屉 / 底栏（~375行）
-│   ├── components.css            # 通用组件：wf-card / wf-chip / wf-btn / 对话框 / Snackbar（~1056行）
-│   ├── responsive.css            # 所有 @media 响应式适配（~137行）
+│   ├── animations.css            # 所有 @keyframes 动画定义（~60行）
+│   ├── layout.css                # App Shell / 顶栏 / 侧栏 / 抽屉（~375行）
+│   ├── components.css            # 通用组件：wf-card / wf-chip / wf-btn / 对话框 / 进度条 / Snackbar（~1150行）
+│   ├── responsive.css            # 所有 @media 响应式适配（~185行）
 │   └── pages/
 │       ├── taskboard.css         # 看板页：双栏 / TabBar / 翻页（~187行）
 │       ├── browser.css           # 浏览器页：工具栏 / iframe / URL输入（~139行）
 │       ├── settings.css          # 设置页：卡片布局 / 开关样式引用（~135行）
 │       ├── reminder.css          # 提醒页：卡片 / 状态徽章 / 快捷按钮（~364行）
-│       └── arbitration.css       # 仲裁页：评级标签 / 状态标签 / 契形开关（~594行）
+│       ├── arbitration.css       # 仲裁页：评级标签 / 状态标签 / 契形开关（~594行）
+│       ├── notes.css             # 便签页：卡片 / 进度条 / 编辑器 / 事项拖动（~720行）
+│       └── market.css            # 市场查价页：搜索 / 自动补全 / 结果卡片 / 收藏栏（~870行）
 │
 ├── js/
 │   ├── utils.js                  # 全局工具函数：日期 / DOM / Snackbar（~106行）
-│   ├── store.js                  # localStorage 持久化 + 自动重置逻辑（~152行）
-│   ├── components.js             # 可复用组件工厂：按钮 / 任务卡片 / 面板 / 编辑对话框（~608行）
-│   ├── taskboard.js              # 看板页控制器（~353行）
-│   ├── reminder.js               # 提醒页控制器（~588行）
+│   ├── store.js                  # localStorage 持久化 + 自动重置逻辑 + 导出/导入（~255行）
+│   ├── sync_gist.js              # GitHub Gist 云端同步模块（~280行）
+│   ├── components.js             # 可复用组件工厂：按钮 / 任务卡片 / 面板 / 对话框 / 进度条（~700行）
+│   ├── taskboard.js              # 看板页控制器（~350行）
+│   ├── reminder.js               # 提醒页控制器（~590行）
 │   ├── arbitration_data.js       # 仲裁数据加载与查询（多数据源降级）（~253行）
-│   ├── arbitration.js            # 仲裁页控制器（~439行）
+│   ├── arbitration.js            # 仲裁页控制器（~440行）
 │   ├── browser.js                # 浏览器页控制器（~163行）
-│   ├── settings.js               # 设置页控制器：导入 / 导出 / 仲裁开关（~331行）
-│   └── main.js                   # 应用入口：导航 / 路由 / 状态协调（~375行）
+│   ├── notes.js                  # 便签页控制器：卡片 / 编辑器 / 事项拖拽排序（~1200行）
+│   ├── wf_market.js              # Warframe Market 查价页：物品清单 / 自动补全 / 订单查询 / 收藏（~1340行）
+│   ├── settings.js               # 设置页控制器：导入 / 导出 / 云端同步教程（~530行）
+│   └── main.js                   # 应用入口：导航 / 路由 / 状态协调（~450行）
 │
 ├── data/
 │   ├── arbys.nodes.zh.json       # 仲裁节点定义（地点 / 任务类型 / 阵营）
@@ -66,8 +70,8 @@ wf-taskboard-web/
 ### 3.1 加载顺序（index.html 中不可调整）
 
 ```
-theme.css → orokin.css → animations.css → layout.css → components.css
-→ pages/taskboard.css → browser.css → settings.css → reminder.css → arbitration.css
+theme.css → animations.css → layout.css → components.css
+→ pages/taskboard.css → browser.css → settings.css → reminder.css → arbitration.css → notes.css → market.css
 → responsive.css
 ```
 
@@ -78,10 +82,9 @@ theme.css → orokin.css → animations.css → layout.css → components.css
 | 文件 | 职责 | 关键内容 |
 |------|------|----------|
 | `theme.css` | 主题令牌与全局基础 | `:root` CSS 变量（颜色/间距/过渡时间/卡片系统变量/拟物纹理变量）；全局 reset；`body` 字体；滚动条样式 |
-| `orokin.css` | 奥罗金拟物材质工具类 | 切角变量 `--chamfer-sm/md/lg`；`.orokin-inner`（碳纤维+玻璃反光材质层）；`.orokin-content`（内容层 z-index:2）；`.orokin-corner-decor`（四角铆点装饰） |
-| `animations.css` | 所有 `@keyframes` | `spin`/`triggerGlow`/`reminderPulse`/`tempReminderPulse`/`cardBorderFlow`/`glowLineBreathe` |
-| `layout.css` | 应用级骨架 | `#app` flex布局；`.app-header`（宽屏顶栏：brand + header-center + header-right）；`.page-header::after`（金→蓝渐变彩线）；`.glow-divider`；`.sidebar`；`.content-panel`；`.page-view`；窄屏抽屉系统（`.nav-trigger-inline`/`.drawer-overlay`/`.drawer-panel`） |
-| `components.css` | 可跨页面复用的组件 | **核心基底类**（见 3.3）；任务面板与卡片；编辑器对话框；Snackbar；加载动画；拖拽占位符 |
+| `animations.css` | 所有 `@keyframes` | `spin`/`triggerGlow`/`reminderPulse`/`tempReminderPulse`/`cardBorderFlow`/`glowLineBreathe`/`marketResultFadeIn` |
+| `layout.css` | 应用级骨架 | `#app` flex布局；`.app-header`（宽屏顶栏）；`.page-header::after`（金→蓝渐变彩线）；`.glow-divider`；`.sidebar`；`.content-panel`；`.page-view`；窄屏抽屉系统 |
+| `components.css` | 可跨页面复用的组件 | **核心基底类**（见 3.3）；任务面板与卡片；编辑器对话框；Snackbar；加载动画；拖拽占位符；通用进度条（`.wf-progress`/`.wf-progress-fill`）；通用空状态（`.wf-empty-state`/`.wf-empty-icon`）；对话框工厂（`createDialog()`） |
 | `responsive.css` | 所有 `@media` | 3个断点：≥900px / <900px / <480px |
 | `pages/*.css` | 单一页面专属样式 | 各页面内部布局与元素 |
 
@@ -112,6 +115,12 @@ theme.css → orokin.css → animations.css → layout.css → components.css
 - 变体：`.primary`（金色实心）/ `.outline`（描边）/ `.sidebar-tile`（侧栏导航，激活态带斜向高光扫光）/ `.wf-icon-btn`
 - 纯文本内容必须包裹在 `<span>` 中（否则会被伪元素覆盖不可见）
 
+### 3.5 通用组件抽象
+
+项目中三处重复的**进度条样式**（看板面板 / 便签卡片 / 市场加载）已统一为 `.wf-progress` + `.wf-progress-fill` 基底类，通过 CSS 变量 `--card-accent` 控制颜色，页面专属类仅保留差异化属性（高度/边距）。
+
+三处重复的**空状态样式**（便签 / 提醒 / 市场）已统一为 `.wf-empty-state` 系列类（`.wf-empty-icon` / `.wf-empty-title` / `.wf-empty-desc`），页面专属类仅覆盖内边距和 flex 属性。
+
 ---
 
 ## 四、JS 架构
@@ -119,8 +128,8 @@ theme.css → orokin.css → animations.css → layout.css → components.css
 ### 4.1 加载顺序（index.html 中不可调整）
 
 ```
-utils.js → store.js → components.js → taskboard.js → reminder.js
-→ arbitration_data.js → arbitration.js → browser.js → settings.js → main.js
+utils.js → store.js → sync_gist.js → components.js → taskboard.js → reminder.js
+→ arbitration_data.js → arbitration.js → browser.js → notes.js → wf_market.js → settings.js → main.js
 ```
 
 **依赖方向**：`main.js` 依赖所有模块；各页面模块依赖 `utils.js`/`store.js`/`components.js`；`arbitration.js` 依赖 `arbitration_data.js`；模块间通信通过 `window.App` 协调。
@@ -140,77 +149,119 @@ utils.js → store.js → components.js → taskboard.js → reminder.js
 | `mostRecentWeekday(from, weekday)` | 计算最近的目标工作日 |
 | `clearEl(el)` | 清空 DOM 子元素 |
 | `showSnackbar(msg, duration)` | 显示底部 Snackbar |
+| `DEFAULT_DAILY_ACCENT` / `DEFAULT_WEEKLY_ACCENT` | 默认主题色常量 |
 
 #### `store.js` — 数据持久化
 
-**localStorage 键**：`wf_daily_state` / `wf_weekly_state` / `wf_last_daily_reset` / `wf_last_weekly_reset` / `wf_reminders_state`
+**localStorage 键**：`wf_daily_state` / `wf_weekly_state` / `wf_last_daily_reset` / `wf_last_weekly_reset` / `wf_reminders_state` / `wf_notes_state` / `wf_arbi_auto_add`
 
 **默认任务**：
 - 日常（4项）：突击、每日献礼、大傻/三傻、执政官裂缝
 - 周常（4项）：执政官猎杀、卡尔驻军、虚空商人、钢铁之路
 
-**核心方法**：`loadDailyTasks()` / `loadWeeklyTasks()` / `saveDailyTasks()` / `saveWeeklyTasks()` / `loadReminders()` / `saveReminders()` / `checkAndPerformReset()` / `generateId()`
+**核心方法**：`loadDailyTasks()` / `saveDailyTasks()` / `checkAndPerformReset()` / `generateId()` / `exportAll()` / `importAll()`
+
+**导出格式 v3**（含 `marketFavorites`）：
+```json
+{
+  "version": 3,
+  "dailyTasks": [...],
+  "weeklyTasks": [...],
+  "reminders": [...],
+  "notes": [...],
+  "settings": { "arbiAutoAdd": true },
+  "marketFavorites": [{"slug":"...", "name":"...", "nameEn":"..."}]
+}
+```
+
+#### `sync_gist.js` — 云端同步（`GistSync` 对象）
+
+- **配置**：Token + Gist ID 存 localStorage，`wf_gist_token` / `wf_gist_id`
+- **数据格式**：调用 `Store.exportAll()`，外层包裹 `{ updatedAt, data }` 时间戳信封
+- **上传**：4 秒防抖（`triggerUpload()`），或立即上传（`uploadNow()`）
+- **下载**：`download()` → 检查 `updatedAt` 时间戳 → 调用 `Store.importAll()` 覆写本地
+- **自动同步**：`visibilitychange` 切回前台时静默拉取
+- **回调**：`onUpload(listener)` 注册上传成功回调，用于设置页显示"已上传"状态
 
 #### `components.js` — 可复用组件工厂
 
 | 函数 | 说明 |
 |------|------|
-| `mi(name, extraClass)` | 创建 Material Icon 的 `<span>` |
-| `createBtn(opts)` | 通用按钮工厂（支持 icon/text/active/primary/outline/className/onClick） |
-| `createTaskCard(task, callbacks, isManageMode, showDragHandle)` | 任务卡片（未完成银色/已完成金色，含拖拽手柄+图标徽章+管理按钮+勾选框；管理模式绑定 HTML5 dragstart/dragend） |
-| `createTaskPanel(opts, taskType, initialProgress)` | 任务面板（含进度条灵动过渡：`requestAnimationFrame` 从 `initialProgress` 平滑到目标值；列表区 HTML5 Drag&Drop + 移动端 touch 拖拽排序 + `navigator.vibrate(20)` 震动反馈） |
+| `createDialog(opts)` | 标准 Orokin 风格对话框工厂 — 统一 6 处对话框构建，支持 `{ title, body, footer, onClose, closeOnOverlay, closeOnEscape, width }`，返回 `{ overlay, box, close }` |
+| `createBtn(opts)` | 通用按钮工厂 |
+| `createTaskCard(task, callbacks, isManageMode, showDragHandle)` | 任务卡片（未完成银色/已完成金色，含拖拽手柄+图标徽章+管理按钮+勾选框） |
+| `createTaskPanel(opts, taskType, initialProgress)` | 任务面板（含进度条灵动过渡；列表区 HTML5 Drag&Drop + 移动端 touch 拖拽排序） |
 | `createTaskEditorDialog(task, isDaily, onSubmit)` | 任务编辑对话框（名称/描述/15图标选择/5色选择） |
-| `fieldLabel/sizedBox/dividerEl` | 内部工具函数 |
+| `confirmDialog(opts)` | 确认对话框（返回 Promise boolean） |
 
 #### `taskboard.js` — 看板页（`Taskboard` 对象）
 
 - `init(container, isManageMode)`：渲染骨架（宽屏双栏 + 窄屏 TabBar/TabView + loading）
-- **翻页动画**：强制 reflow 机制（清理上次动画 → 旧面板滑出 → 新面板无 transition 放到入口 → `void offsetHeight` 强制 reflow → 启用 transition 过渡），时长 0.4s，缓动 `cubic-bezier(0.32, 0.72, 0, 1)`
+- **翻页动画**：强制 reflow 机制，时长 0.4s，缓动 `cubic-bezier(0.32, 0.72, 0, 1)`
 - **进度条**：从旧 DOM 读取当前 width 作为动画起始值，避免从 0% 重新增长
-- **自动重置**：每日 08:00 / 每周一 08:00 调用 `Store.checkAndPerformReset`，仅重置未完成项
+- **自动重置**：每日 08:00 / 每周一 08:00，仅重置未完成项
 - `setManageMode(enabled)`：外部控制管理模式开关
 
 #### `reminder.js` — 提醒页（`Reminder` 对象）
 
-- **常量**：`REMINDER_AUTO_DELETE_MS = 30 * 60 * 1000`（激活后 30 分钟自动删除）
-- **性能优化**：`_renderList()` 完整重建 DOM 后，`_onTick()` 每秒只调用 `_updateCardState()` 更新文本和类名，不重建 DOM
+- **自动删除**：激活后 30 分钟自动删除（`REMINDER_AUTO_DELETE_MS = 30 * 60 * 1000`）
+- **性能优化**：`_onTick()` 每秒只调用 `_updateCardState()` 增量更新，不重建 DOM
 - **卡片状态**：pending（蓝色倒计时）→ active（黄色脉冲发光）→ completed（绿色，30分钟后删除）
 - **临时提醒**：支持 `isTemp` 标记，仲裁页自动注入的提醒使用 `tempType: 'arbi_temp'`
-- **编辑器**：快捷小时按钮（1/2/4/8/12/24h）+ 日期/时间输入 + 图标/颜色选择
 
 #### `arbitration_data.js` — 仲裁数据加载（`ArbiData` 对象）
 
-- **数据源降级**：`[本地 data/ 目录 → 开发代理 /proxy/ → 远程直连 https://arbi.wf.wiki/data/]`，并行 fetch 3 个 JSON
+- **数据源降级**：`[本地 data/ → 开发代理 /proxy/ → 远程直连]`，并行 fetch 3 个 JSON
 - **缓存**：localStorage 24h TTL，命中后后台刷新
-- **查询方法**：`getCurrentArbitration(nowTs)` / `getUpcomingArbitrations(hours, nowTs)` / `getTodaysHighValueArbitrations(nowTs)`（筛选 S/A+/A/A-）
-- **调度算法**：`_getNodeAt(ts)` 通过 `seq[stepsSinceStart % seqLen]` 从调度数组定位当前节点
+- **查询方法**：`getCurrentArbitration(nowTs)` / `getUpcomingArbitrations()` / `getTodaysHighValueArbitrations()`
+- **调度算法**：`_getNodeAt(ts)` 通过 `seq[stepsSinceStart % seqLen]` 定位当前节点
 
 #### `arbitration.js` — 仲裁页（`Arbitration` 对象）
 
-- **三区域渲染**：当前仲裁（含倒计时）+ 今日高价值列表（含 past/active 状态）+ 未来 12 小时列表（高价值用 `.wf-card gold` 突出）
-- **自动添加提醒**：每日 0 点检查（`wf_arbi_last_daily_auto_add` 键），将今日高价值仲裁批量写入 `Store` 作为临时提醒，通知 `window.App.reminder.reloadFromStore()` 刷新
-- **设置对话框**：NJOrokinUI 风格契形开关（SVG 边框 + 流光动画）+ 数据刷新按钮
+- **三区域渲染**：当前仲裁（含倒计时）+ 今日高价值列表 + 未来 12 小时列表
+- **自动添加提醒**：每日 0 点自动将高价值仲裁批量写入 Store 作为临时提醒
+- **设置对话框**：使用 `createDialog()` 工厂构建，含契形开关 + 数据刷新按钮
 
 #### `browser.js` — 浏览器页（`Browser` 对象）
 
-- **预设站点**：灰机 Wiki（iframe 嵌入）/ wf.wiki（新标签页）/ Warframe Market（新标签页）
+- **预设站点**：灰机 Wiki（iframe）/ wf.wiki（新标签页）/ Warframe Market（新标签页）
 - URL 持久化到 localStorage（`wf_browser_last_url`）
-- 支持 URL 输入、刷新、首页
+
+#### `notes.js` — 便签页（`Notes` 对象）
+
+- **卡片列表**：每张便签带标题、颜色、进度条、事项列表
+- **编辑器**：`_openEditor()` 使用 `createDialog()` 工厂构建，支持标题/颜色切换/置顶/事项增删改
+- **事项拖拽**：支持在编辑器内拖拽排序事项（桌面端鼠标拖拽 + 移动端触摸拖拽）
+- **性能优化**：勾选事项时使用 `_updateCardItemStates()` 增量更新（不重建整卡），避免闪烁
+- **进度条**：使用通用 `.wf-progress` / `.wf-progress-fill` 基底类
+
+#### `wf_market.js` — 市场查价页（`Market` 对象）
+
+- **物品清单**：启动时从 `api.warframe.market/v2/items` 拉取全量物品，localStorage 缓存 24h，后台静默刷新
+- **自动补全**：中文/英文 双向模糊匹配（预计算 `slugL/nameL/nameEnL/nameZhL`，零 toLowerCase 开销），80ms 防抖，LRU 缓存 200 条
+- **物品缩略图**：长流程部件使用 SVG 占位符（神经/机体/系统/枪管/枪机/枪托等），Mod 显示中空卡片，遗物显示篮球图标，其他使用 IndexedDB 缓存的 CDN 图片
+- **查价**：`_fetchOrders(slug)` 带 15s AbortController 超时；支持中文别名映射（`WM_CN_ALIASES`）
+- **价格统计**：底价 / 众数 / 切尾平均价(5%) / 在线卖家数
+- **报价列表交互**：点击报价可切换选中卖家，复制按钮跟随选中卖家
+- **收藏功能**：最多 6 个，localStorage 持久化（`wf_market_favorites_v1`），随导出/导入同步
+- **自动补全下拉**：`position: fixed` 挂载在 body，通过 scroll/resize 事件动态同步位置，支持窄屏/宽屏自适应
 
 #### `settings.js` — 设置页（`Settings` 对象）
 
-- **3 张卡片**：仲裁自动提醒开关 + 导出按钮 + 导入按钮
-- **导出**：v3 JSON（dailyTasks + weeklyTasks + reminders + settings.arbiAutoAdd）
-- **导入**：读取 → JSON 解析 → 版本校验(v1/v2/v3) → 字段校验 → 确认对话框 → 写入 Store → 通知 App 刷新三个模块
-- **仲裁开关**：与仲裁页共用 `wf_arbi_auto_add` 键，实时同步 `window.App.arbitration._state`
+- **5 张功能卡片**：
+  1. 仲裁自动提醒开关（与仲裁页共享 `wf_arbi_auto_add` 键）
+  2. 数据导出（JSON v3）
+  3. 数据导入（含确认对话框 + 覆盖式写入 + 通知刷新所有模块）
+  4. 云端同步配置（Token/Gist ID 输入 + 上传/拉取按钮 + 指示灯 + 教程弹窗）
+  5. 数据重置
+- **云端同步教程**：使用 `createDialog()` 工厂构建的 4 步骤教程弹窗
 
 #### `main.js` — 应用主控制器（IIFE，暴露 `window.App`）
 
-- **导航配置**：`NAV_ITEMS` 5 项（看板/提醒/仲裁/浏览器/设置）
-- **初始化流程**：`_setupViewportHeight`（动态 `--vh` 解决手机地址栏遮挡）→ 缓存 DOM → `_renderSidebar` → `_createDrawer` → 初始化 5 个模块 → 绑定管理按钮 → `_startWideClock` → `_switchPage(0)`
-- **页面切换** `_switchPage(index)`：切换 `.page-view.active` → 同步侧栏/抽屉选中态 → 更新顶栏副标题 → 更新 inline 触发按钮图标 → `_updateWideHeaderCenter`（浏览器页克隆控件模板到顶栏）→ 控制管理按钮显示（仅看板/提醒页）
-- **窄屏抽屉**：`openDrawer()`/`closeDrawer()` 暴露给 inline 触发按钮
-- **数据刷新**：`_reloadTaskboard()`/`_reloadReminder()`/`_reloadArbitration()` 供导入后调用
+- **导航配置**：`NAV_ITEMS` 7 项（看板/提醒/仲裁/便签/浏览器/市场/设置）
+- **页面初始化**：看板页优先同步初始化，其余非活跃页面通过 `requestIdleCallback` 延迟初始化（避免启动卡顿）
+- **页面切换** `_switchPage(index)`：切换 `.page-view.active` → 同步侧栏/抽屉选中态 → 更新顶栏副标题 → 更新 inline 触发按钮 → 控制管理按钮显示
+- **数据刷新**：`reloadAll()` 供导入后调用所有模块刷新
 
 ---
 
@@ -218,9 +269,9 @@ utils.js → store.js → components.js → taskboard.js → reminder.js
 
 | 文件 | 内容 | 格式 |
 |------|------|------|
-| `arbys.nodes.zh.json` | 仲裁节点定义 | `schema:1`，`nodes` 对象，键为 nodeKey，每节点含 missionType/missionNameZh/faction/nameZh/minEnemyLevel 等 |
-| `arbys.schedule.v2.json` | 仲裁轮换调度表 | `schema:2`，含 `startTs`（起始时间戳）、`stepSec:3600`（步长1小时）、`nodes` 数组（~88个）、`seq` 数组（数千项，定义循环顺序） |
-| `tierlist.default.json` | 仲裁节点评级表 | `schema:1`，`tiers` 数组（S/A+/A/A-/B/C/未评级），`tierBuckets` 将 tier 映射到 nodeKey 数组 |
+| `arbys.nodes.zh.json` | 仲裁节点定义 | `schema:1`，`nodes` 对象，键为 nodeKey |
+| `arbys.schedule.v2.json` | 仲裁轮换调度表 | `schema:2`，含 `startTs`、`stepSec:3600`、`nodes` 数组、`seq` 数组 |
+| `tierlist.default.json` | 仲裁节点评级表 | `schema:1`，`tiers` 数组，`tierBuckets` 映射 |
 
 **GitHub Actions**（`.github/workflows/sync-arbi-data.yml`）每天 UTC 4:00 从 `https://arbi.wf.wiki/data/` 下载这 3 个文件，校验后自动提交更新。
 
@@ -229,14 +280,15 @@ utils.js → store.js → components.js → taskboard.js → reminder.js
 ## 六、开发服务器
 
 ### `dev-server.bat`
-Windows 启动脚本。设置 `PORT=8080`，获取局域网 IP，优先用 `py dev-server-proxy.py`（支持 CORS 代理），回退 `python -m http.server`。
+Windows 启动脚本。设置 `PORT=8082`，直接启动 `python dev-server-proxy.py`。
 
 ### `dev-server-proxy.py`
 继承 `http.server.SimpleHTTPRequestHandler` 的开发服务器：
-- `protocol_version = 'HTTP/1.0'`（短连接，避免 keep-alive 挂起）
-- `/proxy/` 路径前缀触发 CORS 代理（自动补 `https://`，附加 `Access-Control-Allow-Origin: *`）
-- `allow_reuse_address = True` + `request_queue_size = 128`
-- 静默处理 `ConnectionAbortedError`/`TimeoutError`/`BrokenPipeError`
+
+- **连接池复用**：使用 `http.client.HTTPSConnection` 连接池（`_conn_pool` 字典），对 `api.warframe.market` 等目标 host 复用 TCP+SSL 连接，首次握手后后续请求省去 SSL 开销
+- **重试机制**：最多 2 次重试，间隔 0.2s，连接断开时自动清除池中失效连接
+- `/proxy/` 路径前缀转发到外部站点，附带 `Access-Control-Allow-Origin: *` 头解决 CORS 问题
+- `allow_reuse_address = True` + `request_queue_size = 128` + `daemon_threads = True`
 
 ---
 
@@ -257,16 +309,18 @@ Windows 启动脚本。设置 `PORT=8080`，获取局域网 IP，优先用 `py d
 ```
 用户操作
     ↓
-页面模块 (Taskboard/Reminder/Arbitration/Browser/Settings)
+页面模块 (Taskboard/Reminder/Arbitration/Browser/Notes/Market/Settings)
     ↓
-Store (localStorage)
+Store (localStorage) / 各模块独立 localStorage 键
     ↓
 跨模块通信通过 window.App 协调
 
 特殊数据流：
 1. 仲裁自动提醒：Arbitration → Store.saveReminders() → App.reminder.reloadFromStore()
-2. 设置导入：Settings → Store → App._reloadTaskboard/_reloadReminder/_reloadArbitration
+2. 设置导入：Settings → Store.importAll() → App.reloadAll()
 3. 设置仲裁开关：Settings → localStorage → Arbitration._state 同步
+4. 云端同步：GistSync → Store.exportAll() / Store.importAll() → App.reloadAll()
+5. 市场收藏：Market._saveFavorites() → localStorage（随 Store.exportAll() 导出）
 ```
 
 ---
@@ -279,9 +333,11 @@ Store (localStorage)
 - **新增样式优先复用 CSS 变量**，不要硬编码颜色值
 - **JS 模块间通信通过 `main.js` 协调**，避免页面模块互相直接依赖
 - **`.wf-card`/`.wf-chip` 的纯文本内容必须包裹在 `<span>` 中**，否则会被伪元素覆盖不可见
-- **CSS 变量 `--chip-chamfer-inner` 必须直接计算**（`calc(var(--chip-chamfer-val) - var(--chip-inset-val))`），不可使用 `var()` 自引用（会导致循环引用使 `clip-path` 失效）
+- **CSS 变量 `--chip-chamfer-inner` 必须直接计算**，不可使用 `var()` 自引用
 - **进度条动画必须从旧 DOM 读取当前 width 作为起始值**，避免从 0% 重新增长
-- **翻页动画必须使用强制 reflow 机制**（`void offsetHeight`），避免双 `requestAnimationFrame` 导致浏览器合并渲染帧引发跳帧
+- **翻页动画必须使用强制 reflow 机制**（`void offsetHeight`）
+- **进度条、空状态优先使用通用类 `.wf-progress` / `.wf-empty-state`**，避免在页面 CSS 中重复实现
+- **对话框统一使用 `createDialog()` 工厂函数**，禁止手动构建对话框 DOM
 
 ---
 

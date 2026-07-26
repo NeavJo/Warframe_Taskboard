@@ -313,51 +313,6 @@
 
 .note-progress {
   flex: 1;
-  height: 6px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3));
-  overflow: hidden;
-  clip-path: polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 3px 100%, 0 calc(100% - 3px));
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.8), inset 0 -1px 1px rgba(255,255,255,0.03);
-  position: relative;
-}
-
-.note-progress-fill {
-  height: 100%;
-  position: relative;
-  background: linear-gradient(180deg,
-    color-mix(in srgb, var(--card-accent) 60%, #ffffff 40%),
-    var(--card-accent),
-    color-mix(in srgb, var(--card-accent) 70%, #000000 30%)
-  );
-  box-shadow:
-    0 0 6px color-mix(in srgb, var(--card-accent) 60%, transparent),
-    0 0 12px color-mix(in srgb, var(--card-accent) 30%, transparent),
-    inset 0 1px 1px rgba(255,255,255,0.3),
-    inset 0 -1px 1px rgba(0,0,0,0.3);
-  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  clip-path: polygon(0 0, calc(100% - 2px) 0, 100% 2px, 100% 100%, 2px 100%, 0 calc(100% - 2px));
-  overflow: hidden;
-}
-
-.note-progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    transparent 35%,
-    rgba(255,255,255,0.5) 50%,
-    rgba(255,255,255,0.2) 55%,
-    transparent 70%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  background-position: 100% 0;
-  animation: progressFlow 2.5s linear infinite;
-  pointer-events: none;
 }
 
 .note-counter {
@@ -373,57 +328,9 @@
   color: var(--success);
 }
 
-/* ----- 空状态 ----- */
+/* ----- 空状态（继承 .wf-empty-state 通用样式，仅覆盖 padding） ----- */
 .notes-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
   padding: 80px 20px;
-  text-align: center;
-}
-
-.notes-empty .empty-icon {
-  position: relative;
-  width: 76px;
-  height: 76px;
-  border-radius: 50%;
-  background: var(--orokin-texture), radial-gradient(circle, color-mix(in srgb, var(--gold) 10%, var(--bg-surface)), var(--bg-surface));
-  background-size: var(--orokin-texture-size), 100% 100%;
-  box-shadow: var(--orokin-inset), 0 0 24px var(--gold-glow);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 34px;
-  color: var(--gold);
-  filter: drop-shadow(0 0 6px var(--gold-glow));
-}
-
-.notes-empty .empty-icon::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  padding: 1.5px;
-  background: linear-gradient(135deg, var(--gold-deep), var(--gold-bright), var(--gold-deep));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  pointer-events: none;
-}
-
-.notes-empty .empty-text {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  letter-spacing: 1px;
-}
-
-.notes-empty .empty-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
 }
 
 /* ----- 便签编辑器对话框（在 .dialog-box 内） ----- */
@@ -734,13 +641,6 @@
 .note-editor-foot-info .material-icons {
   font-size: 14px;
   color: var(--gold-dim);
-}
-
-/* 拖拽时的占位提示 */
-.drag-placeholder {
-  background: rgba(212, 175, 55, 0.08);
-  border: 1px dashed var(--gold-dim);
-  border-radius: 4px;
 }
 
 /* ----- 编辑器内空状态引导 ----- */

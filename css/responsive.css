@@ -13,7 +13,6 @@
 @media (max-width: 899px) {
   .app-header { display: none; }
   .sidebar { display: none; }
-  .bottom-nav { display: none; }
 
   .taskboard-header {
     display: block;
@@ -112,6 +111,12 @@
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
   }
+
+  /* 窄屏 市场查价页 */
+  .market-header { display: block; }
+  .market-content { padding: 16px; }
+  .market-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .market-actions .wf-btn { min-width: 0; flex: 1 1 50%; }
 }
 
 /* 手机竖屏：宽度 < 480px */
@@ -163,4 +168,17 @@
     max-height: calc(100vh * 2 / 3);
     width: calc(100vw - 24px);
   }
+
+  /* 手机竖屏 市场查价页 */
+  .market-header { padding: 14px 14px 12px; }
+  .market-content { padding: 12px; }
+  .market-search-card { padding: 14px 14px 12px; }
+  .market-result-card { padding: 14px; gap: 14px; }
+  .market-result-name { font-size: 16px; }
+  .market-stat-value { font-size: 20px; }
+  .market-stat-label { font-size: 10px; }
+  .market-stat-desc { display: none; }
+  .market-actions .wf-btn { flex: 1 1 100%; }
+  #mk-query-btn > span:last-child { display: none; }
+  #mk-query-btn { width: 36px; padding: 0; }
 }

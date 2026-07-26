@@ -65,6 +65,125 @@ function setAccentColor(el, accentColor) {
 }
 
 // =============================================================
+// 标准 OROKIN 风格对话框
+// =============================================================
+
+/**
+ * 创建标准 Orokin 风格对话框
+ * @param {Object} opts
+ * @param {string} opts.title - 对话框标题
+ * @param {HTMLElement|string} [opts.body] - 正文内容（Element 或 HTML 字符串）
+ * @param {HTMLElement|string} [opts.footer] - 底部内容（Element 或 HTML 字符串）
+ * @param {Function} [opts.onClose] - 关闭回调
+ * @param {boolean} [opts.closeOnOverlay=true] - 点击遮罩关闭
+ * @param {boolean} [opts.closeOnEscape=true] - ESC 键关闭
+ * @param {string} [opts.width] - 自定义宽度 CSS
+ * @param {string} [opts.className] - dialog-box 附加类名
+ * @returns {Object} { overlay, box, close } - close() 方法手动关闭
+ */
+function createDialog(opts) {
+  const {
+    title,
+    body,
+    footer,
+    onClose,
+    closeOnOverlay = true,
+    closeOnEscape = true,
+    width,
+    className,
+  } = opts || {};
+
+  const overlay = document.createElement('div');
+  overlay.className = 'dialog-overlay';
+
+  const box = document.createElement('div');
+  box.className = 'wf-card gold dialog-box';
+  if (className) box.classList.add(className);
+  if (width) box.style.width = width;
+
+  // --- 头部 ---
+  const header = document.createElement('div');
+  header.className = 'dialog-header';
+  const bar = document.createElement('div');
+  bar.className = 'bar';
+  header.appendChild(bar);
+  const titleEl = document.createElement('div');
+  titleEl.className = 'title';
+  titleEl.textContent = title;
+  header.appendChild(titleEl);
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'wf-chip silver dialog-close';
+  closeBtn.type = 'button';
+  closeBtn.innerHTML = '<span>&#10005;</span>';
+  header.appendChild(closeBtn);
+  box.appendChild(header);
+
+  // 标题栏下方金色渐变分割线
+  box.appendChild(dividerEl());
+
+  // --- 表体 ---
+  if (body != null) {
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'dialog-body';
+    if (typeof body === 'string') {
+      bodyEl.innerHTML = body;
+    } else if (body instanceof HTMLElement) {
+      bodyEl.appendChild(body);
+    }
+    box.appendChild(bodyEl);
+  }
+
+  // --- 底部（含分割线） ---
+  if (footer != null) {
+    box.appendChild(dividerEl());
+    const footerEl = document.createElement('div');
+    footerEl.className = 'dialog-footer';
+    if (typeof footer === 'string') {
+      footerEl.innerHTML = footer;
+    } else if (footer instanceof HTMLElement) {
+      footerEl.appendChild(footer);
+    }
+    box.appendChild(footerEl);
+  }
+
+  overlay.appendChild(box);
+
+  // --- 关闭逻辑 ---
+  let onEsc;
+  function close() {
+    overlay.classList.remove('open');
+    setTimeout(() => {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      if (closeOnEscape && onEsc) document.removeEventListener('keydown', onEsc);
+    }, 200);
+    if (typeof onClose === 'function') onClose();
+  }
+
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    close();
+  });
+
+  if (closeOnOverlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) close();
+    });
+  }
+
+  if (closeOnEscape) {
+    onEsc = (e) => {
+      if (e.key === 'Escape') close();
+    };
+    document.addEventListener('keydown', onEsc);
+  }
+
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('open'));
+
+  return { overlay, box, close };
+}
+
+// =============================================================
 // 任务卡片 (对应 TaskCard)
 // =============================================================
 
@@ -234,9 +353,9 @@ function createTaskPanel(opts, taskType, initialProgress) {
   header.appendChild(titleEl);
 
   const barContainer = document.createElement('div');
-  barContainer.className = 'progress-bar';
+  barContainer.className = 'wf-progress progress-bar';
   const fill = document.createElement('div');
-  fill.className = 'progress-fill';
+  fill.className = 'wf-progress-fill progress-fill';
   fill.style.width = (initialProgress != null ? initialProgress * 100 : 0) + '%';
   fill.style.setProperty('--card-accent', accent);
   barContainer.appendChild(fill);
@@ -495,33 +614,8 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   const isEdit = !!task;
   const defaultAccent = isDaily ? DEFAULT_DAILY_ACCENT : DEFAULT_WEEKLY_ACCENT;
 
-  const overlay = document.createElement('div');
-  overlay.className = 'dialog-overlay';
-
-  const box = document.createElement('div');
-  box.className = 'wf-card gold dialog-box';
-
-  // --- 头部 ---
-  const header = document.createElement('div');
-  header.className = 'dialog-header';
-  const bar = document.createElement('div');
-  bar.className = 'bar';
-  header.appendChild(bar);
-  const title = document.createElement('div');
-  title.className = 'title';
-  title.textContent = isEdit ? '编辑任务' : '新增任务';
-  header.appendChild(title);
-  const closeBtn = document.createElement('button');
-    closeBtn.className = 'wf-chip silver dialog-close';
-    closeBtn.innerHTML = '<span>&#10005;</span>';
-    closeBtn.addEventListener('click', close);
-  header.appendChild(closeBtn);
-  box.appendChild(header);
-  box.appendChild(dividerEl());
-
   // --- 表体 ---
   const body = document.createElement('div');
-  body.className = 'dialog-body';
 
   body.appendChild(fieldLabel('任务名称'));
   const nameWrap = document.createElement('div');
@@ -565,17 +659,14 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
   colorRow.appendChild(colorSelector);
   body.appendChild(colorRow);
 
-  box.appendChild(body);
-  box.appendChild(dividerEl());
-
   // --- 底部按钮 ---
   const footer = document.createElement('div');
-  footer.className = 'dialog-footer';
 
+  let close;
   footer.appendChild(createBtn({
     text: '取消',
     outline: true,
-    onClick: close,
+    onClick: () => close(),
   }));
   footer.appendChild(createBtn({
     text: isEdit ? '保存修改' : '创建任务',
@@ -598,21 +689,16 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
     },
   }));
 
-  box.appendChild(footer);
-  overlay.appendChild(box);
-
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) close();
+  const dialog = createDialog({
+    title: isEdit ? '编辑任务' : '新增任务',
+    body,
+    footer,
+    closeOnOverlay: true,
+    closeOnEscape: true,
   });
+  close = dialog.close;
 
-  function close() {
-    overlay.classList.remove('open');
-    setTimeout(() => overlay.remove(), 200);
-  }
-
-  requestAnimationFrame(() => overlay.classList.add('open'));
-
-  return overlay;
+  return dialog.overlay;
 }
 
 /**
@@ -628,72 +714,45 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
  */
 function confirmDialog({ title, message, confirmText = '确认', cancelText = '取消', danger = false, color = 'gold' }) {
   return new Promise((resolve) => {
-    const overlay = document.createElement('div');
-    overlay.className = 'dialog-overlay';
-
-    const box = document.createElement('div');
-    box.className = `wf-card ${color} dialog-box`;
-    box.style.maxWidth = '420px';
-
-    // 头部
-    const header = document.createElement('div');
-    header.className = 'dialog-header';
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    header.appendChild(bar);
-    const titleEl = document.createElement('div');
-    titleEl.className = 'title';
-    titleEl.textContent = title;
-    header.appendChild(titleEl);
-    box.appendChild(header);
-
-    box.appendChild(dividerEl());
-
     // 消息体
     const body = document.createElement('div');
-    body.className = 'dialog-body';
     body.style.padding = '24px 20px';
     const msg = document.createElement('p');
     msg.style.cssText = 'color:var(--text-secondary);font-size:14px;line-height:1.6;letter-spacing:0.5px;';
     msg.textContent = message;
     body.appendChild(msg);
-    box.appendChild(body);
-
-    box.appendChild(dividerEl());
 
     // 按钮
     const footer = document.createElement('div');
-    footer.className = 'dialog-footer';
 
-    const cancelBtn = createBtn({
+    let close;
+    footer.appendChild(createBtn({
       text: cancelText,
       outline: true,
       onClick: () => { close(); resolve(false); },
-    });
-    footer.appendChild(cancelBtn);
-
-    const confirmBtn = createBtn({
+    }));
+    footer.appendChild(createBtn({
       text: confirmText,
       primary: true,
       danger: danger,
       onClick: () => { close(); resolve(true); },
+    }));
+
+    const dialog = createDialog({
+      title,
+      body,
+      footer,
+      closeOnOverlay: true,
+      closeOnEscape: true,
+      onClose: () => resolve(false),
     });
-    footer.appendChild(confirmBtn);
+    close = dialog.close;
 
-    box.appendChild(footer);
-    overlay.appendChild(box);
-
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) { close(); resolve(false); }
-    });
-
-    document.body.appendChild(overlay);
-    requestAnimationFrame(() => overlay.classList.add('open'));
-
-    function close() {
-      overlay.classList.remove('open');
-      setTimeout(() => overlay.remove(), 200);
+    // 设置自定义颜色
+    if (color !== 'gold') {
+      dialog.box.className = `wf-card ${color} dialog-box`;
     }
+    dialog.box.style.maxWidth = '420px';
   });
 }
 

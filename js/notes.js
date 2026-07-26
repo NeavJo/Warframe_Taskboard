@@ -60,12 +60,12 @@ const Notes = {
             <div id="nt-pinned-section"></div>
             <div id="nt-regular-section"></div>
 
-            <div class="notes-empty" id="nt-empty" style="display:none;">
-              <div class="empty-icon">
+            <div class="wf-empty-state notes-empty" id="nt-empty" style="display:none;">
+              <div class="wf-empty-icon">
                 <span class="material-icons">event_note</span>
               </div>
-              <div class="empty-text">暂无便签</div>
-              <div class="empty-desc">点击上方「新建」创建你的第一个目标清单</div>
+              <div class="wf-empty-title">暂无便签</div>
+              <div class="wf-empty-desc">点击上方「新建」创建你的第一个目标清单</div>
             </div>
           </div>
         </div>
@@ -210,9 +210,9 @@ const Notes = {
 
     const progress = this._computeProgress(note);
     const progressBar = document.createElement('div');
-    progressBar.className = 'note-progress';
+    progressBar.className = 'wf-progress note-progress';
     const fill = document.createElement('div');
-    fill.className = 'note-progress-fill';
+    fill.className = 'wf-progress-fill note-progress-fill';
     fill.style.width = (progress * 100) + '%';
     progressBar.appendChild(fill);
     foot.appendChild(progressBar);
@@ -648,35 +648,11 @@ const Notes = {
     const this_ = this;
     // 编辑时使用副本，取消不污染原数据
     const draft = isEdit ? JSON.parse(JSON.stringify(note)) : this._createNote();
-
-    const overlay = document.createElement('div');
-    overlay.className = 'dialog-overlay';
-
-    const box = document.createElement('div');
-    box.className = `wf-card ${draft.color || 'gold'} dialog-box note-editor-box`;
-
-    // --- 头部 ---
-    const header = document.createElement('div');
-    header.className = 'dialog-header';
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    header.appendChild(bar);
-    const titleEl = document.createElement('div');
-    titleEl.className = 'title';
-    titleEl.textContent = isEdit ? '编辑便签' : '新建便签';
-    header.appendChild(titleEl);
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'wf-chip silver dialog-close';
-    closeBtn.type = 'button';
-    closeBtn.innerHTML = '<span>✕</span>';
-    closeBtn.addEventListener('click', () => close(false));
-    header.appendChild(closeBtn);
-    box.appendChild(header);
-    box.appendChild(dividerEl());
+    let dialogClose; // will be set after createDialog
 
     // --- 表体 ---
     const body = document.createElement('div');
-    body.className = 'dialog-body note-editor-body';
+    body.className = 'note-editor-body';
 
     // 标题输入
     body.appendChild(fieldLabel('便签标题'));
@@ -703,7 +679,7 @@ const Notes = {
         colorRow.querySelectorAll('.note-color-chip').forEach(x => x.classList.remove('selected'));
         chip.classList.add('selected');
         draft.color = c;
-        box.className = `wf-card ${c} dialog-box note-editor-box`;
+        dialog.box.className = `wf-card ${c} dialog-box note-editor-box`;
       });
       colorRow.appendChild(chip);
     });
@@ -764,12 +740,8 @@ const Notes = {
     `;
     body.appendChild(footInfo);
 
-    box.appendChild(body);
-    box.appendChild(dividerEl());
-
     // --- 底部按钮 ---
     const footer = document.createElement('div');
-    footer.className = 'dialog-footer';
 
     if (isEdit) {
       const delBtn = createBtn({
@@ -787,7 +759,7 @@ const Notes = {
           if (confirmed) {
             const realNote = this._state.notes.find(n => n.id === draft.id);
             if (realNote) this._deleteNote(realNote);
-            close(false);
+            dialogClose();
           }
         },
       });
@@ -800,24 +772,33 @@ const Notes = {
     footer.appendChild(createBtn({
       text: '取消',
       outline: true,
-      onClick: () => close(false),
+      onClick: () => dialogClose(),
     }));
 
     footer.appendChild(createBtn({
       text: isEdit ? '保存' : '创建',
       primary: true,
-      onClick: () => close(true),
+      onClick: () => {
+        this_._editorSave();
+        dialogClose();
+      },
     }));
 
-    box.appendChild(footer);
-    overlay.appendChild(box);
-
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) close(false);
+    const dialog = createDialog({
+      title: isEdit ? '编辑便签' : '新建便签',
+      body,
+      footer,
+      className: 'note-editor-box',
+      closeOnOverlay: true,
+      closeOnEscape: true,
+      onClose: () => {
+        this_._editor = null;
+      },
     });
+    dialogClose = dialog.close;
 
-    document.body.appendChild(overlay);
-    requestAnimationFrame(() => overlay.classList.add('open'));
+    // 设置初始颜色类
+    dialog.box.className = `wf-card ${draft.color || 'gold'} dialog-box note-editor-box`;
 
     // --- 编辑器状态 ---
     this._editor = {
@@ -830,15 +811,6 @@ const Notes = {
     };
 
     this._editorRenderItems();
-
-    function close(save) {
-      overlay.classList.remove('open');
-      setTimeout(() => {
-        overlay.remove();
-        if (save) this_._editorSave();
-        this_._editor = null;
-      }, 200);
-    }
   },
 
   _editorRenderItems() {
