@@ -1039,6 +1039,12 @@
   padding: 14px 18px 18px;
 }
 
+.dialog-footer > * {
+  display: flex;
+  flex: 1;
+  gap: 12px;
+}
+
 .dialog-footer .wf-btn {
   flex: 1;
   height: 44px;

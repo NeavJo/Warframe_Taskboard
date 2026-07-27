@@ -714,6 +714,13 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
  */
 function confirmDialog({ title, message, confirmText = '确认', cancelText = '取消', danger = false, color = 'gold' }) {
   return new Promise((resolve) => {
+    let resolved = false;
+    function doResolve(value) {
+      if (resolved) return;
+      resolved = true;
+      resolve(value);
+    }
+
     // 消息体
     const body = document.createElement('div');
     body.style.padding = '24px 20px';
@@ -729,13 +736,13 @@ function confirmDialog({ title, message, confirmText = '确认', cancelText = '�
     footer.appendChild(createBtn({
       text: cancelText,
       outline: true,
-      onClick: () => { close(); resolve(false); },
+      onClick: () => { doResolve(false); close(); },
     }));
     footer.appendChild(createBtn({
       text: confirmText,
       primary: true,
       danger: danger,
-      onClick: () => { close(); resolve(true); },
+      onClick: () => { doResolve(true); close(); },
     }));
 
     const dialog = createDialog({
@@ -744,7 +751,7 @@ function confirmDialog({ title, message, confirmText = '确认', cancelText = '�
       footer,
       closeOnOverlay: true,
       closeOnEscape: true,
-      onClose: () => resolve(false),
+      onClose: () => doResolve(false),
     });
     close = dialog.close;
 

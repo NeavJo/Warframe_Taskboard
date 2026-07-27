@@ -277,7 +277,7 @@ const Notes = {
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
-          this._editorAddItem(item.parentId);
+          this._editorAddItemAfter(item.id, item.parentId);
         }
       });
       row.appendChild(input);
@@ -776,25 +776,34 @@ const Notes = {
         },
       });
       delBtn.style.flex = '0 0 auto';
-      delBtn.style.width = 'auto';
-      delBtn.style.padding = '0 16px';
+      delBtn.style.minWidth = '88px';
       footer.appendChild(delBtn);
     }
 
-    footer.appendChild(createBtn({
+    const spacer = document.createElement('div');
+    spacer.style.flex = '1 1 auto';
+    footer.appendChild(spacer);
+
+    const cancelBtn = createBtn({
       text: '取消',
       outline: true,
       onClick: () => dialogClose(),
-    }));
+    });
+    cancelBtn.style.flex = '0 0 auto';
+    cancelBtn.style.minWidth = '96px';
+    footer.appendChild(cancelBtn);
 
-    footer.appendChild(createBtn({
+    const submitBtn = createBtn({
       text: isEdit ? '保存' : '创建',
       primary: true,
       onClick: () => {
         this._editorSave();
         dialogClose();
       },
-    }));
+    });
+    submitBtn.style.flex = '0 0 auto';
+    submitBtn.style.minWidth = '96px';
+    footer.appendChild(submitBtn);
 
     const dialog = createDialog({
       title: isEdit ? '编辑便签' : '新建便签',
@@ -884,6 +893,47 @@ const Notes = {
     this._editor.dirty = true;
     this._editorRenderItems();
     addInput.focus();
+  },
+
+  _editorAddItemAfter(afterItemId, parentId) {
+    const { draft, itemsList } = this._editor;
+    const newItem = {
+      id: Store.generateId(),
+      text: '',
+      completed: false,
+      parentId: parentId,
+      order: 0,
+    };
+
+    const ordered = this._getOrderedItems(draft);
+    const afterIdx = ordered.findIndex(e => e.item.id === afterItemId);
+    let insertIdx;
+    if (afterIdx < 0) {
+      insertIdx = ordered.length;
+    } else {
+      insertIdx = afterIdx + 1;
+      if (parentId === null) {
+        // 一级事项：跳过当前事项的所有子事项
+        while (insertIdx < ordered.length && ordered[insertIdx].isChild) {
+          insertIdx++;
+        }
+      }
+    }
+    ordered.splice(insertIdx, 0, { item: newItem, isChild: parentId !== null });
+    ordered.forEach((entry, idx) => {
+      entry.item.order = idx;
+    });
+    draft.items = ordered.map(e => e.item);
+
+    draft.updatedAt = Date.now();
+    this._editor.dirty = true;
+    this._editorRenderItems();
+
+    // 聚焦到新事项的输入框
+    setTimeout(() => {
+      const newRow = itemsList.querySelector(`[data-item-id="${newItem.id}"] .nei-input`);
+      if (newRow) newRow.focus();
+    }, 0);
   },
 
   _editorToggleItem(itemId) {
