@@ -754,6 +754,9 @@ const Notes = {
 
     // --- 底部按钮 ---
     const footer = document.createElement('div');
+    footer.style.display = 'flex';
+    footer.style.alignItems = 'center';
+    footer.style.gap = '12px';
 
     if (isEdit) {
       const delBtn = createBtn({
@@ -775,8 +778,9 @@ const Notes = {
           }
         },
       });
-      delBtn.style.flex = '0 0 auto';
+      delBtn.style.flex = '0 0 auto !important';
       delBtn.style.minWidth = '88px';
+      delBtn.style.marginRight = '16px';
       footer.appendChild(delBtn);
     }
 
@@ -789,8 +793,9 @@ const Notes = {
       outline: true,
       onClick: () => dialogClose(),
     });
-    cancelBtn.style.flex = '0 0 auto';
+    cancelBtn.style.flex = '0 0 auto !important';
     cancelBtn.style.minWidth = '96px';
+    cancelBtn.style.marginRight = '8px';
     footer.appendChild(cancelBtn);
 
     const submitBtn = createBtn({
@@ -801,8 +806,9 @@ const Notes = {
         dialogClose();
       },
     });
-    submitBtn.style.flex = '0 0 auto';
+    submitBtn.style.flex = '0 0 auto !important';
     submitBtn.style.minWidth = '96px';
+    submitBtn.style.marginRight = '8px';
     footer.appendChild(submitBtn);
 
     const dialog = createDialog({

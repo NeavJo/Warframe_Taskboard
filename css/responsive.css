@@ -163,9 +163,18 @@
     max-height: calc(100vh * 5 / 6);
   }
 
-  /* 便签编辑器底部按钮：增加右侧间距，避免紧贴契形边框 */
+  /* 便签编辑器底部按钮：增加右侧间距 */
   .note-editor-box .dialog-footer {
-    padding-right: 22px;
+    padding-right: 32px;
+  }
+
+  .note-editor-box .dialog-footer > *:not(.wf-btn):not(.spacer) {
+    flex: 1;
+  }
+
+  .note-editor-box .dialog-footer .wf-btn {
+    flex: 0 0 auto !important;
+    margin-right: 12px;
   }
 
   /* 移动端编辑/新增对话框缩短至2/3 */

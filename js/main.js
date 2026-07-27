@@ -141,6 +141,71 @@
 
       // 初始激活看板页
       this._switchPage(0);
+
+      // 彩蛋：debug 密语监听（依次按下 d-e-b-u-g）
+      this._setupDebugEasterEgg();
+    },
+
+    _setupDebugEasterEgg() {
+      const sequence = 'debug';
+      let buffer = '';
+      let debugEnabled = false;
+
+      document.addEventListener('keydown', (e) => {
+        // 只在设置页面生效，且排除输入框中的按键
+        const activeEl = document.activeElement;
+        const isInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+        if (isInput) return;
+
+        const key = e.key.toLowerCase();
+        if (/^[a-z]$/.test(key)) {
+          buffer += key;
+          if (buffer.length > sequence.length) {
+            buffer = buffer.slice(-sequence.length);
+          }
+          if (buffer === sequence && !debugEnabled) {
+            debugEnabled = true;
+            this._showDebugButton();
+          }
+        }
+      });
+    },
+
+    _showDebugButton() {
+      const existing = document.getElementById('debug-self-check-btn');
+      if (existing) {
+        existing.style.display = '';
+        return;
+      }
+
+      const btn = document.createElement('button');
+      btn.id = 'debug-self-check-btn';
+      btn.className = 'wf-btn outline';
+      btn.style.cssText = 'margin-top:12px;border:1px dashed var(--accent);color:var(--accent);';
+      btn.innerHTML = '<span class="material-icons mi-sm">bug_report</span><span>功能自检</span>';
+      btn.addEventListener('click', () => {
+        if (typeof TestRunner !== 'undefined') {
+          TestRunner.run();
+        }
+      });
+
+      // 插入到设置页面内容中
+      const settingsPage = document.getElementById('page-settings');
+      if (settingsPage) {
+        const cards = settingsPage.querySelector('.settings-cards');
+        if (cards) {
+          const container = document.createElement('div');
+          container.style.cssText = 'grid-column:1/-1;display:flex;justify-content:center;';
+          container.appendChild(btn);
+          cards.appendChild(container);
+        }
+      }
+
+      // 小提示
+      console.log('%c[Debug] 隐藏按钮已激活：功能自检', 'color: #D4AF37; font-weight: bold;');
+      if (typeof showSnackbar === 'function') {
+        showSnackbar('调试模式已激活');
+      }
     },
 
     // =============================================================
