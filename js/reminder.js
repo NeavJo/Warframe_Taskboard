@@ -31,7 +31,7 @@ const Reminder = {
               <div class="page-brand-sub">REMINDER / 定时提醒</div>
             </div>
             <div class="page-spacer"></div>
-            <button class="wf-btn primary" id="rm-add-btn" style="display:none;">
+            <button class="wf-btn primary" id="rm-add-btn">
               <span class="material-icons mi-sm">add</span>
               <span>新增</span>
             </button>
@@ -381,7 +381,6 @@ const Reminder = {
   setManageMode(enabled) {
     this._state.isManageMode = enabled;
     this._syncManageBtn();
-    this._els.addBtn.style.display = enabled ? '' : 'none';
     this._renderList();
   },
 

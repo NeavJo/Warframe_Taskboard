@@ -123,10 +123,10 @@
         this._toggleManageMode();
       });
 
-      // 绑定宽屏新建按钮（便签页）
+      // 绑定宽屏新建按钮（仅提醒页）
       if (this._els.wideAddBtn) {
         this._els.wideAddBtn.addEventListener('click', () => {
-          if (this.notes) this.notes._openEditor(null);
+          if (this.reminder) this.reminder._openAddDialog();
         });
       }
 
@@ -331,8 +331,8 @@
       const showManage = (index === 0 || index === 1);
       this._els.wideManageBtn.style.display = showManage ? '' : 'none';
 
-      // 右上角新建按钮：便签页显示
-      const showAdd = (index === 3);
+      // 右上角新建按钮：仅提醒页(index=1) 显示
+      const showAdd = (index === 1);
       if (this._els.wideAddBtn) {
         this._els.wideAddBtn.style.display = showAdd ? '' : 'none';
       }
