@@ -281,6 +281,8 @@ const Taskboard = {
 
   _toggleTask(task) {
     task.isCompleted = !task.isCompleted;
+    // 记录/清除完成时间戳，用于精确判断重置周期
+    task.lastCompletedAt = task.isCompleted ? Date.now() : null;
     this._persist();
     this._refreshPanels();
   },

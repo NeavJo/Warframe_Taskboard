@@ -684,6 +684,7 @@ function createTaskEditorDialog(task, isDaily, onSubmit) {
         icon: iconSelector.getSelected(),
         accent: colorSelector.getSelected(),
         isCompleted: isEdit ? task.isCompleted : false,
+        lastCompletedAt: isEdit ? (task.lastCompletedAt || null) : null,
       });
       close();
     },

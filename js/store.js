@@ -12,19 +12,19 @@
 
 function buildDefaultDailyTasks() {
   return [
-    { id: 'sortie', name: '突击 (Sortie)', description: '完成今日 3 轮突击任务', icon: 'flash_on', accent: '#FFD84D', isCompleted: false },
-    { id: 'daily_tribute', name: '每日献礼签到', description: '每日登录献礼 / Tribute 奖励', icon: 'card_giftcard', accent: '#D4AF37', isCompleted: false },
-    { id: 'eidolon_culling', name: '大傻 / 三傻 夜灵捕获', description: '夜灵平原捕获 Teralyst / Gantulyst / Hydrolyst', icon: 'bolt', accent: '#1FB6FF', isCompleted: false },
-    { id: 'void_fissure', name: '执政官裂缝 / 虚空裂缝', description: '完成今日虚空裂缝任务', icon: 'auto_awesome', accent: '#D4AF37', isCompleted: false },
+    { id: 'sortie', name: '突击 (Sortie)', description: '完成今日 3 轮突击任务', icon: 'flash_on', accent: '#FFD84D', isCompleted: false, lastCompletedAt: null },
+    { id: 'daily_tribute', name: '每日献礼签到', description: '每日登录献礼 / Tribute 奖励', icon: 'card_giftcard', accent: '#D4AF37', isCompleted: false, lastCompletedAt: null },
+    { id: 'eidolon_culling', name: '大傻 / 三傻 夜灵捕获', description: '夜灵平原捕获 Teralyst / Gantulyst / Hydrolyst', icon: 'bolt', accent: '#1FB6FF', isCompleted: false, lastCompletedAt: null },
+    { id: 'void_fissure', name: '执政官裂缝 / 虚空裂缝', description: '完成今日虚空裂缝任务', icon: 'auto_awesome', accent: '#D4AF37', isCompleted: false, lastCompletedAt: null },
   ];
 }
 
 function buildDefaultWeeklyTasks() {
   return [
-    { id: 'archon_hunt', name: '执政官猎杀 (Archon Hunt)', description: '完成本周执政官猎杀', icon: 'gavel', accent: '#FFD84D', isCompleted: false },
-    { id: 'kahl_garrison', name: '卡尔驻军任务 (Kahl\'s Garrison)', description: '完成本周卡尔驻军', icon: 'castle', accent: '#1FB6FF', isCompleted: false },
-    { id: 'baro_kiteer', name: '虚空商人 (Baro Ki\'Teer)', description: '双周周末出现,记得查看虚空遗物 / 物品', icon: 'storefront', accent: '#D4AF37', isCompleted: false },
-    { id: 'steel_path_rotation', name: '钢铁之路奖励轮换', description: '查看本周钢铁之路无尽奖励', icon: 'shield', accent: '#FFD84D', isCompleted: false },
+    { id: 'archon_hunt', name: '执政官猎杀 (Archon Hunt)', description: '完成本周执政官猎杀', icon: 'gavel', accent: '#FFD84D', isCompleted: false, lastCompletedAt: null },
+    { id: 'kahl_garrison', name: '卡尔驻军任务 (Kahl\'s Garrison)', description: '完成本周卡尔驻军', icon: 'castle', accent: '#1FB6FF', isCompleted: false, lastCompletedAt: null },
+    { id: 'baro_kiteer', name: '虚空商人 (Baro Ki\'Teer)', description: '双周周末出现,记得查看虚空遗物 / 物品', icon: 'storefront', accent: '#D4AF37', isCompleted: false, lastCompletedAt: null },
+    { id: 'steel_path_rotation', name: '钢铁之路奖励轮换', description: '查看本周钢铁之路无尽奖励', icon: 'shield', accent: '#FFD84D', isCompleted: false, lastCompletedAt: null },
   ];
 }
 
@@ -69,6 +69,12 @@ const Store = {
       if (!saved) return defaultBuilder();
       const parsed = JSON.parse(saved);
       if (!Array.isArray(parsed)) return defaultBuilder();
+      // 兼容性：为旧数据（无 lastCompletedAt 字段）补充默认值
+      for (const item of parsed) {
+        if (item && typeof item === 'object' && !('lastCompletedAt' in item)) {
+          item.lastCompletedAt = null;
+        }
+      }
       return parsed;
     } catch (e) {
       console.warn('数据解析失败，回退默认任务:', e);
@@ -106,10 +112,20 @@ const Store = {
   /**
    * 检查并执行日常/周常重置。
    * 返回 true 表示有变更，调用方需刷新 UI 并重新持久化。
+   *
+   * 修复云端同步竞态：基于 lastCompletedAt 时间戳精确判断任务是否属于当前周期，
+   * 跨天/跨周首次进入必然重置；当日/当周已标记时，仅重置那些「已完成但完成时间
+   * 不属于当前周期」的任务（即云端旧数据覆盖），避免误清用户今日/本周正常勾选。
    */
   checkAndPerformReset(dailyTasks, weeklyTasks) {
     const now = new Date();
     let changed = false;
+
+    // 辅助：获取任务完成的日期 key（无时间戳或未完成返回 null）
+    const getCompletedKey = (t) => {
+      if (!t.isCompleted || !t.lastCompletedAt) return null;
+      return formatDateKey(new Date(t.lastCompletedAt));
+    };
 
     // --- 日常重置：每日 08:00 ---
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -117,10 +133,21 @@ const Store = {
     const lastDaily = localStorage.getItem(STORE_KEYS.LAST_DAILY_RESET);
     const todayKey = formatDateKey(now);
 
-    if (now >= todayResetTime && lastDaily !== todayKey) {
-      for (const t of dailyTasks) { t.isCompleted = false; }
-      localStorage.setItem(STORE_KEYS.LAST_DAILY_RESET, todayKey);
-      changed = true;
+    if (now >= todayResetTime) {
+      const isNewDay = lastDaily !== todayKey;
+      // 是否存在「已完成但完成时间不属于今日」的任务（云端旧数据）
+      const hasStaleCompleted = dailyTasks.some(t => {
+        const ck = getCompletedKey(t);
+        return t.isCompleted && ck !== todayKey;
+      });
+      if (isNewDay || hasStaleCompleted) {
+        for (const t of dailyTasks) {
+          t.isCompleted = false;
+          t.lastCompletedAt = null;
+        }
+        localStorage.setItem(STORE_KEYS.LAST_DAILY_RESET, todayKey);
+        changed = true;
+      }
     }
 
     // --- 周常重置：每周一 08:00 ---
@@ -129,10 +156,21 @@ const Store = {
     const lastWeekly = localStorage.getItem(STORE_KEYS.LAST_WEEKLY_RESET);
     const weekKey = formatDateKey(thisWeekMonday);
 
-    if (now >= thisWeekResetTime && lastWeekly !== weekKey) {
-      for (const t of weeklyTasks) { t.isCompleted = false; }
-      localStorage.setItem(STORE_KEYS.LAST_WEEKLY_RESET, weekKey);
-      changed = true;
+    if (now >= thisWeekResetTime) {
+      const isNewWeek = lastWeekly !== weekKey;
+      // 是否存在「已完成但完成时间不在本周」的任务（云端旧数据）
+      const hasStaleCompleted = weeklyTasks.some(t => {
+        const ck = getCompletedKey(t);
+        return t.isCompleted && (!ck || ck < weekKey);
+      });
+      if (isNewWeek || hasStaleCompleted) {
+        for (const t of weeklyTasks) {
+          t.isCompleted = false;
+          t.lastCompletedAt = null;
+        }
+        localStorage.setItem(STORE_KEYS.LAST_WEEKLY_RESET, weekKey);
+        changed = true;
+      }
     }
 
     return changed;
