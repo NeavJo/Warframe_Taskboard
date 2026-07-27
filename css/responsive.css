@@ -157,10 +157,15 @@
   .note-card { padding: 12px; }
   .note-card-title { font-size: 14px; }
 
-  /* 手机竖屏：编辑器对话框宽度近全屏 */
+  /* 手机竖屏：便签编辑器对话框宽度近全屏 */
   .note-editor-box {
     width: calc(100vw - 16px);
     max-height: calc(100vh * 5 / 6);
+  }
+
+  /* 便签编辑器底部按钮：增加右侧间距，避免紧贴契形边框 */
+  .note-editor-box .dialog-footer {
+    padding-right: 22px;
   }
 
   /* 移动端编辑/新增对话框缩短至2/3 */
