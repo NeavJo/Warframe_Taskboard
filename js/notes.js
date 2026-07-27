@@ -759,6 +759,11 @@ const Notes = {
     footer.style.gap = '12px';
 
     if (isEdit) {
+      const leftHalf = document.createElement('div');
+      leftHalf.style.flex = '1 1 50%';
+      leftHalf.style.display = 'flex';
+      leftHalf.style.justifyContent = 'center';
+
       const delBtn = createBtn({
         text: '删除',
         outline: true,
@@ -779,24 +784,16 @@ const Notes = {
         },
       });
       delBtn.style.flex = '0 0 auto !important';
-      delBtn.style.minWidth = '88px';
-      delBtn.style.marginRight = '16px';
-      footer.appendChild(delBtn);
+      delBtn.style.minWidth = '96px';
+      leftHalf.appendChild(delBtn);
+      footer.appendChild(leftHalf);
     }
 
-    const spacer = document.createElement('div');
-    spacer.style.flex = '1 1 auto';
-    footer.appendChild(spacer);
-
-    const cancelBtn = createBtn({
-      text: '取消',
-      outline: true,
-      onClick: () => dialogClose(),
-    });
-    cancelBtn.style.flex = '0 0 auto !important';
-    cancelBtn.style.minWidth = '96px';
-    cancelBtn.style.marginRight = '8px';
-    footer.appendChild(cancelBtn);
+    const rightHalf = document.createElement('div');
+    rightHalf.style.flex = '1 1 50%';
+    rightHalf.style.display = 'flex';
+    rightHalf.style.justifyContent = 'center';
+    if (!isEdit) rightHalf.style.flexBasis = '100%';
 
     const submitBtn = createBtn({
       text: isEdit ? '保存' : '创建',
@@ -807,9 +804,9 @@ const Notes = {
       },
     });
     submitBtn.style.flex = '0 0 auto !important';
-    submitBtn.style.minWidth = '96px';
-    submitBtn.style.marginRight = '8px';
-    footer.appendChild(submitBtn);
+    submitBtn.style.minWidth = '120px';
+    rightHalf.appendChild(submitBtn);
+    footer.appendChild(rightHalf);
 
     const dialog = createDialog({
       title: isEdit ? '编辑便签' : '新建便签',
