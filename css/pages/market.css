@@ -319,6 +319,16 @@
   opacity: 0.5;
   transform: translateY(-50%);
 }
+.market-ac-thumb.arcane {
+  background: transparent;
+}
+.market-ac-thumb-arcane {
+  width: 22px;
+  height: 11px;
+  border-radius: 11px 11px 0 0;
+  background: var(--gold-bright);
+  opacity: 0.6;
+}
 
 .market-ac-thumb img {
   width: 100%;
@@ -730,4 +740,73 @@
 
 .market-sample-chip.gold {
   --card-fill-tint: 15%;
+}
+
+/* ---- 收藏栏 ---- */
+.market-fav-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+/* 参考 .wf-chip 结构 */
+.market-fav-tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px 5px 8px;
+  background: transparent;
+  border: none;
+  isolation: isolate;
+  font-size: 12px;
+  color: #1a1a1a;
+  text-shadow: 0 0 4px rgba(255,255,255,0.3);
+  cursor: pointer;
+  user-select: none;
+  --fav-chamfer: 4px;
+  --fav-inset: 1px;
+  --fav-chamfer-inner: calc(var(--fav-chamfer) - var(--fav-inset));
+  clip-path: polygon(0 0, calc(100% - var(--fav-chamfer)) 0, 100% var(--fav-chamfer), 100% 100%, var(--fav-chamfer) 100%, 0 calc(100% - var(--fav-chamfer)));
+}
+/* 边框层（金色渐变） */
+.market-fav-tag::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold-bright), var(--gold-deep));
+  clip-path: polygon(0 0, calc(100% - var(--fav-chamfer)) 0, 100% var(--fav-chamfer), 100% 100%, var(--fav-chamfer) 100%, 0 calc(100% - var(--fav-chamfer)));
+  z-index: -2;
+  transition: background 0.2s, opacity 0.2s;
+}
+/* 内填充层（深色背景） */
+.market-fav-tag::after {
+  content: '';
+  position: absolute;
+  inset: var(--fav-inset);
+  background: linear-gradient(135deg, rgba(255,216,77,0.08), rgba(212,175,55,0.12));
+  clip-path: polygon(0 0, calc(100% - var(--fav-chamfer-inner)) 0, 100% var(--fav-chamfer-inner), 100% 100%, var(--fav-chamfer-inner) 100%, 0 calc(100% - var(--fav-chamfer-inner)));
+  z-index: -1;
+  transition: background 0.2s;
+}
+.market-fav-tag > * {
+  position: relative;
+  z-index: 0;
+}
+.market-fav-tag:hover::before {
+  background: linear-gradient(135deg, var(--gold), var(--gold-bright), var(--gold));
+  filter: drop-shadow(0 0 6px var(--gold-glow));
+}
+.market-fav-tag:hover::after {
+  background: linear-gradient(135deg, rgba(255,216,77,0.15), rgba(212,175,55,0.2));
+}
+.market-fav-tag .material-icons {
+  font-size: 14px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.market-fav-tag:hover .material-icons {
+  opacity: 1;
 }

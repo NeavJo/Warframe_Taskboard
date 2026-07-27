@@ -138,7 +138,6 @@
 
       // 缓存静态 DOM 查询结果，减少切换页面时的重复查询
       this._els.pageViews = document.querySelectorAll('.page-view');
-      this._els.navTriggerIcons = document.querySelectorAll('.nav-trigger-inline .material-icons');
 
       // 初始激活看板页
       this._switchPage(0);
@@ -320,7 +319,8 @@
       this._els.headerSubtitle.textContent = `TASKBOARD / ${item.label}`;
 
       // 更新所有行内触发按钮的图标（与当前功能区匹配）
-      this._els.navTriggerIcons.forEach(el => {
+      // 使用实时查询而非缓存，因为非活跃页面延迟初始化后会新增 .nav-trigger-inline
+      document.querySelectorAll('.nav-trigger-inline .material-icons').forEach(el => {
         el.textContent = item.icon;
       });
 

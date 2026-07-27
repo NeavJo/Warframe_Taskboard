@@ -24,7 +24,7 @@ const WM_AUTOCOMPLETE_LIMIT = 10;
 const WM_SEARCH_DEBOUNCE = 80;
 const WM_QUERY_CACHE_TTL = 60 * 1000;
 const WM_FETCH_TIMEOUT = 15000; // 单个请求 15s 超时
-const WM_ITEMS_CACHE_KEY = 'wf_market_items_cache_v3';
+const WM_ITEMS_CACHE_KEY = 'wf_market_items_cache_v4';
 const WM_ITEMS_CACHE_TTL = 24 * 60 * 60 * 1000; // 物品清单缓存 24h（后台静默更新保证新鲜度）
 
 const WM_LANG = 'zh-hans';
@@ -323,6 +323,7 @@ const Market = {
     matches: [],
     selectedItem: null,
     lastStat: null,
+    favorites: [],
     _searchCache: new Map(),
     _queryCache: new Map(),
     _debounceTimer: null,
@@ -366,6 +367,7 @@ const Market = {
               </div>
 
               <div class="market-hint" id="mk-hint" style="display:none;"></div>
+              <div class="market-fav-bar" id="mk-fav-bar" style="display:none;"></div>
             </div>
 
             <div class="market-result-area" id="mk-result-area">
@@ -389,6 +391,7 @@ const Market = {
     this._els.hint = document.getElementById('mk-hint');
     this._els.resultArea = document.getElementById('mk-result-area');
     this._els.empty = document.getElementById('mk-empty');
+    this._els.favBar = document.getElementById('mk-fav-bar');
 
     this._els.autocomplete = document.createElement('div');
     this._els.autocomplete.className = 'market-autocomplete';
@@ -399,6 +402,8 @@ const Market = {
     this._bindEvents();
     this._initLazyLoad();
     this._loadAllItems();
+    this._loadFavorites();
+    this._renderFavoritesBar();
   },
 
   reloadFromStore() {},
@@ -524,6 +529,7 @@ const Market = {
         nameZhL: nameZh.toLowerCase(),
         isMod: it.tags ? it.tags.includes('mod') : false,
         isRelic: it.tags ? it.tags.includes('relic') : false,
+        isArcane: it.tags ? it.tags.some(t => t.includes('arcane')) : false,
       };
     });
   },
@@ -704,6 +710,11 @@ const Market = {
         const ball = document.createElement('div');
         ball.className = 'market-ac-thumb-ball';
         thumb.appendChild(ball);
+      } else if (item.isArcane) {
+        thumb.className = 'market-ac-thumb arcane';
+        const semi = document.createElement('div');
+        semi.className = 'market-ac-thumb-arcane';
+        thumb.appendChild(semi);
       } else if (item.isMod) {
         thumb.className = 'market-ac-thumb mod';
         const modCard = document.createElement('div');
@@ -1040,6 +1051,15 @@ const Market = {
 
     const cheapest = valid.reduce((min, o) => o.platinum < min.platinum ? o : min, valid[0]);
 
+    // 按 platinum 从低到高排序后取前10
+    const sortedValid = valid.slice().sort((a, b) => a.platinum - b.platinum);
+    const sampleOrders = sortedValid.slice(0, 10).map(o => ({
+      platinum: o.platinum,
+      quantity: o.quantity,
+      ingameName: o.user.ingameName,
+      platform: o.user.platform,
+    }));
+
     return {
       empty: false,
       slug,
@@ -1055,8 +1075,70 @@ const Market = {
         quantity: cheapest.quantity,
         platform: cheapest.user.platform,
       },
-      samplePrices: prices.slice(0, 10),
+      sampleOrders,
     };
+  },
+
+  // ===== 收藏功能 =====
+  _loadFavorites() {
+    try {
+      const raw = localStorage.getItem('wf_market_favorites_v1');
+      this._state.favorites = raw ? JSON.parse(raw) : [];
+    } catch { this._state.favorites = []; }
+  },
+
+  _saveFavorites() {
+    try {
+      localStorage.setItem('wf_market_favorites_v1', JSON.stringify(this._state.favorites));
+    } catch {}
+  },
+
+  _renderFavoritesBar() {
+    const bar = this._els.favBar;
+    const favs = this._state.favorites;
+    if (!bar) return;
+    clearEl(bar);
+    if (favs.length === 0) { bar.style.display = 'none'; return; }
+    bar.style.display = '';
+    favs.forEach((slug, i) => {
+      // 从已加载物品中查找显示名（优先中文名）
+      const item = this._state.allItems.find(it => it.slug === slug);
+      const displayName = item ? item.name : slug.replace(/_/g, ' ');
+
+      const tag = document.createElement('span');
+      tag.className = 'market-fav-tag';
+      tag.textContent = displayName;
+      tag.title = `点击查询 ${displayName}`;
+      tag.addEventListener('click', () => {
+        this._els.searchInput.value = slug;
+        this._handleQuery();
+      });
+      const del = document.createElement('span');
+      del.className = 'material-icons mi-sm';
+      del.textContent = 'close';
+      del.style.cssText = 'cursor:pointer;opacity:0.5;margin-left:4px;font-size:14px;';
+      del.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._state.favorites.splice(i, 1);
+        this._saveFavorites();
+        this._renderFavoritesBar();
+      });
+      tag.appendChild(del);
+      bar.appendChild(tag);
+    });
+  },
+
+  _toggleFavorite(slug) {
+    const idx = this._state.favorites.indexOf(slug);
+    if (idx >= 0) {
+      this._state.favorites.splice(idx, 1);
+    } else {
+      if (this._state.favorites.length >= 6) this._state.favorites.shift();
+      this._state.favorites.push(slug);
+    }
+    this._saveFavorites();
+    this._renderFavoritesBar();
+    return idx < 0;
   },
 
   _calcMode(prices) {
@@ -1128,7 +1210,7 @@ const Market = {
     }
 
     const card = document.createElement('div');
-    card.className = 'wf-card gold market-result-card';
+    card.className = 'wf-card gold flow market-result-card';
     card.style.setProperty('--card-chamfer', '14px');
 
     const head = document.createElement('div');
@@ -1152,13 +1234,16 @@ const Market = {
     seller.className = 'market-seller-info';
     seller.innerHTML = `
       <div class="market-seller-label">
-        <span class="material-icons">person</span><span>最低价卖家</span>
+        <span class="material-icons">person</span><span class="market-seller-label-text">最低价卖家</span>
       </div>
       <div class="market-seller-detail">
         <span class="market-seller-name">${stat.cheapest.name}</span>
         <span class="market-seller-meta">${stat.cheapest.platinum} platinum × ${stat.cheapest.quantity || 1} · ${stat.cheapest.platform || ''}</span>
       </div>
     `;
+    // 存储当前选中的卖家信息到 card.dataset，供复制使用
+    card.dataset.sellerName = stat.cheapest.name;
+    card.dataset.sellerPlatinum = stat.cheapest.platinum;
     card.appendChild(seller);
 
     const actions = document.createElement('div');
@@ -1166,7 +1251,12 @@ const Market = {
     const copyBtn = document.createElement('button');
     copyBtn.className = 'wf-btn primary';
     copyBtn.innerHTML = `<span class="material-icons mi-sm">content_copy</span><span>复制白金私聊</span>`;
-    copyBtn.addEventListener('click', () => this._copyWhisper(stat));
+    copyBtn.addEventListener('click', () => {
+      // 从 card.dataset 读取当前选中的卖家信息
+      const sellerName = card.dataset.sellerName;
+      const sellerPlatinum = card.dataset.sellerPlatinum;
+      this._copyWhisperWithSeller(stat, sellerName, sellerPlatinum);
+    });
     actions.appendChild(copyBtn);
 
     const wmBtn = document.createElement('button');
@@ -1174,23 +1264,64 @@ const Market = {
     wmBtn.innerHTML = `<span class="material-icons mi-sm">open_in_new</span><span>WM 页面</span>`;
     wmBtn.addEventListener('click', () => window.open(`https://warframe.market/items/${stat.slug}`, '_blank'));
     actions.appendChild(wmBtn);
+
+    const favBtn = document.createElement('button');
+    favBtn.className = 'wf-btn outline';
+    const isFav = this._state.favorites.includes(stat.slug);
+    favBtn.innerHTML = `<span class="material-icons mi-sm">${isFav ? 'bookmark' : 'bookmark_border'}</span><span>${isFav ? '已收藏' : '收藏'}</span>`;
+    favBtn.addEventListener('click', () => {
+      const nowFav = this._toggleFavorite(stat.slug);
+      favBtn.innerHTML = `<span class="material-icons mi-sm">${nowFav ? 'bookmark' : 'bookmark_border'}</span><span>${nowFav ? '已收藏' : '收藏'}</span>`;
+    });
+    actions.appendChild(favBtn);
+
     card.appendChild(actions);
 
-    if (stat.samplePrices && stat.samplePrices.length > 0) {
+    if (stat.sampleOrders && stat.sampleOrders.length > 0) {
       const sample = document.createElement('div');
       sample.className = 'market-sample';
-      sample.innerHTML = `
-        <div class="market-sample-label">
-          <span class="material-icons">list</span><span>最低 ${stat.samplePrices.length} 个报价</span>
-        </div>
-        <div class="market-sample-list">
-          ${stat.samplePrices.map((p, i) => `
-            <div class="wf-chip ${i === 0 ? 'gold' : 'silver'} market-sample-chip" style="--chip-chamfer:5px; --chip-inset:1px;">
-              <span>${p}p</span>
-            </div>
-          `).join('')}
-        </div>
-      `;
+
+      const label = document.createElement('div');
+      label.className = 'market-sample-label';
+      label.innerHTML = `<span class="material-icons">list</span><span>最低 ${stat.sampleOrders.length} 个报价</span>`;
+      sample.appendChild(label);
+
+      const list = document.createElement('div');
+      list.className = 'market-sample-list';
+
+      stat.sampleOrders.forEach((o, i) => {
+        const chip = document.createElement('div');
+        chip.className = `wf-chip ${i === 0 ? 'gold' : 'silver'} market-sample-chip`;
+        chip.style.setProperty('--chip-chamfer', '5px');
+        chip.style.setProperty('--chip-inset', '1px');
+        chip.dataset.index = i;
+        chip.innerHTML = `<span>${o.platinum}p</span>`;
+
+        chip.addEventListener('click', () => {
+          // 更新卖家信息
+          const si = card.querySelector('.market-seller-info');
+          if (!si) return;
+
+          si.querySelector('.market-seller-name').textContent = o.ingameName;
+          si.querySelector('.market-seller-meta').textContent = `${o.platinum} platinum × ${o.quantity || 1} · ${o.platform || ''}`;
+
+          // 更新标签
+          si.querySelector('.market-seller-label-text').textContent = i === 0 ? '最低价卖家' : '当前选中卖家';
+
+          // 更新 card.dataset 供复制使用
+          card.dataset.sellerName = o.ingameName;
+          card.dataset.sellerPlatinum = o.platinum;
+
+          // 更新高亮
+          list.querySelectorAll('.market-sample-chip').forEach(c => { c.classList.remove('gold'); c.classList.add('silver'); });
+          chip.classList.remove('silver');
+          chip.classList.add('gold');
+        });
+
+        list.appendChild(chip);
+      });
+
+      sample.appendChild(list);
       card.appendChild(sample);
     }
 
@@ -1212,12 +1343,12 @@ const Market = {
   },
 
   // ===== 操作：复制 =====
-  _buildWhisperCommand(stat) {
-    return `/w ${stat.cheapest.name} Hi! I want to buy: ${stat.itemNameEn} for ${stat.cheapest.platinum} platinum. (warframe.market)`;
+  _buildWhisperCommand(sellerName, itemNameEn, platinum) {
+    return `/w ${sellerName} Hi! I want to buy: ${itemNameEn} for ${platinum} platinum. (warframe.market)`;
   },
 
-  async _copyWhisper(stat) {
-    const cmd = this._buildWhisperCommand(stat);
+  async _copyWhisperWithSeller(stat, sellerName, platinum) {
+    const cmd = this._buildWhisperCommand(sellerName, stat.itemNameEn, platinum);
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(cmd);
