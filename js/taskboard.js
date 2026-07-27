@@ -323,17 +323,37 @@ const Taskboard = {
   },
 
   // =============================================================
-  // 倒计时时钟
+  // 倒计时时钟 + 周期性重置检查
   // =============================================================
 
   _startClock() {
+    let tickCount = 0;
     const update = () => {
       const now = new Date();
       this._els.dateText.textContent = formatDate(now);
       this._els.countdownText.textContent = countdownText(now);
+      // 每 30 秒检查一次日常/周常重置（解决页面跨过重置时间点不刷新的问题）
+      tickCount++;
+      if (tickCount % 30 === 0) {
+        this._checkReset();
+      }
     };
     update();
     this._state.clockTimer = setInterval(update, 1000);
+  },
+
+  /**
+   * 检查并执行日常/周常重置（安全幂等，重复调用无副作用）
+   */
+  _checkReset() {
+    const changed = Store.checkAndPerformReset(
+      this._state.dailyTasks,
+      this._state.weeklyTasks
+    );
+    if (changed) {
+      this._persist();
+      this._refreshPanels();
+    }
   },
 
   // =============================================================
@@ -349,5 +369,16 @@ const Taskboard = {
   _syncManageBtn() {
     this._els.manageBtn.textContent = this._state.isManageMode ? '管理中' : '管理';
     this._els.manageBtn.classList.toggle('active', this._state.isManageMode);
+  },
+
+  /**
+   * 从 Store 重新加载数据并检查重置（用于云端同步后刷新）
+   */
+  reloadFromStore() {
+    this._state.dailyTasks = Store.loadDailyTasks();
+    this._state.weeklyTasks = Store.loadWeeklyTasks();
+    // 关键：加载后必须检查重置，防止云端旧数据覆盖已重置的状态
+    this._checkReset();
+    this._refreshPanels();
   },
 };

@@ -231,9 +231,11 @@
     _setupGistSync() {
       if (typeof GistSync === 'undefined') return;
 
-      // 切回前台时静默同步
+      // 切回前台时静默同步 + 重置检查
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
+          // 先检查重置，再同步云端（避免云端旧数据覆盖已重置的状态）
+          if (this.taskboard) this.taskboard._checkReset();
           this._silentSync(false);
         }
       });
@@ -268,11 +270,7 @@
      * 统一刷新所有模块数据
      */
     reloadAll() {
-      if (this.taskboard) {
-        this.taskboard._state.dailyTasks = Store.loadDailyTasks();
-        this.taskboard._state.weeklyTasks = Store.loadWeeklyTasks();
-        this.taskboard._refreshPanels();
-      }
+      if (this.taskboard) this.taskboard.reloadFromStore();
       if (this.reminder) this.reminder.reloadFromStore();
       if (this.arbitration) this.arbitration.reloadFromStore();
       if (this.notes) this.notes.reloadFromStore();
