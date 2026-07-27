@@ -674,9 +674,22 @@ const Notes = {
       const chip = document.createElement('div');
       chip.className = `wf-chip ${c} note-color-chip` + (draft.color === c ? ' selected' : '');
       chip.title = c;
+      if (draft.color === c) {
+        const check = document.createElement('span');
+        check.className = 'color-check';
+        check.textContent = '✓';
+        chip.appendChild(check);
+      }
       chip.addEventListener('click', () => {
-        colorRow.querySelectorAll('.note-color-chip').forEach(x => x.classList.remove('selected'));
+        colorRow.querySelectorAll('.note-color-chip').forEach(x => {
+          x.classList.remove('selected');
+          x.querySelectorAll('.color-check').forEach(s => s.remove());
+        });
         chip.classList.add('selected');
+        const check = document.createElement('span');
+        check.className = 'color-check';
+        check.textContent = '✓';
+        chip.appendChild(check);
         draft.color = c;
         dialog.box.className = `wf-card ${c} dialog-box note-editor-box`;
       });

@@ -328,6 +328,17 @@
   color: var(--success);
 }
 
+/* 整卡完成态：边框变绿、暗化 */
+.note-card.completed::before {
+  opacity: 0.5;
+  filter: saturate(0.6);
+}
+.note-card.completed .note-card-title {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--text-muted);
+}
+
 /* ----- 空状态（继承 .wf-empty-state 通用样式，仅覆盖 padding） ----- */
 .notes-empty {
   padding: 80px 20px;
@@ -373,13 +384,15 @@
   filter: drop-shadow(0 0 8px var(--card-accent));
 }
 
-.note-color-chip.selected::after {
-  content: '✓';
+/* 选中标记（用 span 包裹，避免覆盖 .wf-chip 自带的 ::after 边框层） */
+.note-color-chip > .color-check {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   color: #000;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
+  line-height: 1;
+  pointer-events: none;
 }
 
 /* 置顶开关 */
