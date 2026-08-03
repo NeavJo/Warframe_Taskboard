@@ -69,6 +69,30 @@ const ArbiData = {
   },
 
   async _fetchAndCache() {
+    // file:// 协议下通过 <script> 标签加载 .js wrapper 文件
+    if (IS_FILE_PROTOCOL) {
+      try {
+        await Promise.all([
+          loadScript('data/arbys.schedule.v2.js'),
+          loadScript('data/arbys.nodes.zh.js'),
+          loadScript('data/tierlist.default.js'),
+        ]);
+        const schedule = window.__ARBI_SCHEDULE;
+        const nodes = window.__ARBI_NODES;
+        const tierlist = window.__ARBI_TIERLIST;
+        if (!schedule || !nodes || !tierlist) throw new Error('数据不完整');
+
+        this._state.schedule = schedule;
+        this._state.nodes = nodes;
+        this._state.tierlist = tierlist;
+        this._buildTierMap();
+        return;
+      } catch (e) {
+        console.warn('file:// 仲裁数据加载失败:', e);
+        throw e;
+      }
+    }
+
     const isLocal = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
     // 数据源优先级：本地 data/ 目录 > 本地代理（开发环境）> 远程直连（最后手段）
     const sources = [

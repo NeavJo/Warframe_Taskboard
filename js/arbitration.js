@@ -122,6 +122,11 @@ const Arbitration = {
     }
 
     this._state.isDataReady = true;
+
+    // 关键：自动添加在渲染之前执行，避免渲染异常导致跳过
+    // force=true 确保每次页面载入都检测，arbi_temp_${startTime} 去重防止重复
+    this._checkAndAutoAddReminders(true);
+
     this._els.loading.style.display = 'none';
     this._els.main.style.display = 'block';
 
@@ -129,8 +134,6 @@ const Arbitration = {
     this._renderHighValue();
     this._renderUpcoming();
     this._startTimer();
-
-    this._checkAndAutoAddReminders();
   },
 
   _renderCurrent() {
@@ -248,6 +251,7 @@ const Arbitration = {
 
   _startTimer() {
     if (this._timerInterval) clearInterval(this._timerInterval);
+    this._tickCount = 0;
     this._timerInterval = setInterval(() => this._onTick(), 1000);
   },
 
@@ -276,6 +280,12 @@ const Arbitration = {
         this._renderHighValue();
         this._renderUpcoming();
       }
+    }
+
+    // 每 30 秒检查一次自动添加（处理页面跨天保持打开的场景）
+    this._tickCount++;
+    if (this._tickCount % 30 === 0) {
+      this._checkAndAutoAddReminders();
     }
   },
 

@@ -20,7 +20,7 @@
     { label: '便签', icon: 'event_note', pageId: 'page-notes' },
     { label: '仲裁', icon: 'gavel', pageId: 'page-arbitration' },
     { label: '浏览器（wiki）', icon: 'public', pageId: 'page-browser' },
-    { label: '市场查价', icon: 'storefront', pageId: 'page-market' },
+    { label: '市场', icon: 'storefront', pageId: 'page-market' },
     { label: '设置', icon: 'settings', pageId: 'page-settings' },
   ];
 
@@ -218,10 +218,7 @@
         document.documentElement.style.setProperty('--vh', `${vh}px`);
       };
       setVh();
-      window.addEventListener('resize', () => {
-        // 窄屏才触发，宽屏不用
-        if (window.innerWidth < 900) setVh();
-      });
+      window.addEventListener('resize', () => setVh());
     },
 
     // =============================================================
@@ -292,6 +289,10 @@
         });
         this._els.sidebarNav.appendChild(btn);
       });
+      const version = document.createElement('div');
+      version.className = 'sidebar-version';
+      version.textContent = 'v1.0.0';
+      this._els.sidebarNav.appendChild(version);
     },
 
     // =============================================================
@@ -317,6 +318,7 @@
           <div class="drawer-version">TASKBOARD</div>
         </div>
         <div class="drawer-nav" id="drawer-nav"></div>
+        <div class="drawer-footer">v1.0.0</div>
       `;
       overlay.appendChild(panel);
       this._els.drawerPanel = panel;

@@ -14,6 +14,9 @@
   .app-header { display: none; }
   .sidebar { display: none; }
 
+  /* 移动端无 hover，便签操作按钮常驻显示 */
+  .note-card-actions { opacity: 1; }
+
   .taskboard-header {
     display: block;
   }

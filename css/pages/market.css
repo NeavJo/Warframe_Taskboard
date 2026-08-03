@@ -417,61 +417,6 @@
   color: #ff9a93;
 }
 
-/* ----- 加载进度提示 ----- */
-.market-hint.loading {
-  background: rgba(31, 182, 255, 0.06);
-  border-color: rgba(31, 182, 255, 0.2);
-  padding: 14px 16px;
-}
-
-.market-progress-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* 不确定进度（无 Content-Length 时） */
-.market-progress-bar.indeterminate {
-  background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3));
-}
-
-.market-progress-bar.indeterminate::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  width: 40%;
-  background: linear-gradient(180deg,
-    color-mix(in srgb, var(--blue) 60%, #ffffff 40%),
-    var(--blue),
-    color-mix(in srgb, var(--blue) 70%, #000000 30%)
-  );
-  box-shadow:
-    0 0 6px color-mix(in srgb, var(--blue) 60%, transparent),
-    0 0 12px color-mix(in srgb, var(--blue) 30%, transparent);
-  clip-path: polygon(0 0, calc(100% - 2px) 0, 100% 2px, 100% 100%, 2px 100%, 0 calc(100% - 2px));
-  animation: marketIndeterminate 1.5s ease-in-out infinite;
-}
-
-@keyframes marketIndeterminate {
-  0%   { left: -40%; }
-  100% { left: 100%; }
-}
-
-.market-progress-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  color: var(--text-secondary);
-  letter-spacing: 0.3px;
-}
-
-.market-progress-pct {
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  color: var(--blue-bright);
-}
-
 /* ----- 空状态（继承 .wf-empty-state 通用样式，仅覆盖 flex + desc 差异） ----- */
 .market-empty {
   flex: 1;

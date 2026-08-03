@@ -83,6 +83,26 @@ function countdownText(now) {
 }
 
 // =============================================================
+// file:// 协议支持
+// =============================================================
+
+// 双击打开 index.html 时 protocol 为 'file:'
+const IS_FILE_PROTOCOL = location.protocol === 'file:';
+
+/**
+ * 通过 <script> 标签动态加载 JS 文件（file:// 协议下唯一可靠的本地数据加载方式）
+ */
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load ' + src));
+    document.head.appendChild(script);
+  });
+}
+
+// =============================================================
 // DOM 辅助
 // =============================================================
 

@@ -36,6 +36,15 @@ jobs:
           echo "OK: $(jq '.data | length' data/wf_market_items.json) items loaded"
           echo "Size: $(wc -c < data/wf_market_items.json) bytes"
 
+      - name: Download arbitration data
+        run: |
+          curl -sSL -o data/arbys.schedule.v2.json https://arbi.wf.wiki/data/arbys.schedule.v2.json
+          curl -sSL -o data/arbys.nodes.zh.json    https://arbi.wf.wiki/data/arbys.nodes.zh.json
+          curl -sSL -o data/tierlist.default.json  https://arbi.wf.wiki/data/tierlist.default.json
+
+      - name: Generate local data JS wrappers
+        run: python .github/scripts/generate_local_data.py
+
       - name: Download missing item images
         run: python .github/scripts/download_market_images.py
 

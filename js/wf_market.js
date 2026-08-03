@@ -4,22 +4,21 @@
  * 功能：
  *   - 启动时拉取全量物品清单用于自动补全
  *   - 搜索框输入实时模糊匹配 + 键盘上下/Enter + 鼠标点选
- *   - 选中物品后请求在线卖单并计算底价/众数/切尾均价/卖家数
+ *   - 选中物品后请求在线卖单并计算底价/众数/切尾均价/报价列表
  *   - 一键复制 /w 白金私聊指令
  *
  * 依赖 API (v2)：
- *   GET https://api.warframe.market/v2/items             (Language, Platform)
- *   GET https://api.warframe.market/v2/orders/item/{slug}  (Platform, Crossplay)
+ *   GET https://api.warframe.market/v2/items                  (Language, Platform)
+ *   GET https://api.warframe.market/v2/orders/item/{slug}/top (Platform, Crossplay)
  *
  * 数据结构：
  *   WmItem   { id, slug, slugL, name, nameL, nameEn, nameEnL, nameZh, nameZhL }
  *   WmOrder  { type, platinum, quantity, user: { status, ingameName } }
- *   PriceStat{ floor, mode, avg, sellers, slug, itemName }
+ *   PriceStat{ floor, mode, avg, sellers, slug, itemName, sampleOrders }
  */
 
 // ===== 常量 =====
 const WM_API_ORIGIN = 'https://api.warframe.market/v2';
-const WM_IMG_CDN_ORIGIN = 'https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/img';
 const WM_AUTOCOMPLETE_LIMIT = 10;
 const WM_SEARCH_DEBOUNCE = 80;
 const WM_QUERY_CACHE_TTL = 60 * 1000;
@@ -115,7 +114,6 @@ async function wmFetch(path, options = {}) {
   throw new Error(`所有请求均失败: ${errors.join('; ')}`);
 }
 
-const WM_IMG_CDN_BASE = WM_IS_LOCAL ? WM_PROXY_PREFIX + WM_IMG_CDN_ORIGIN : WM_IMG_CDN_ORIGIN;
 const WM_IMG_LOCAL_BASE = './data/img'; // GitHub Action 同步的同源图片目录
 const WM_IMG_DB_NAME = 'wf_market_img_cache';
 const WM_IMG_DB_STORE = 'images';
@@ -433,78 +431,43 @@ const Market = {
   async _loadAllItems() {
     if (this._state.itemsLoaded) return;
 
-    // 1. 优先读取本地缓存，命中则搜索立即可用（毫秒级）
+    // 1. 优先读取 localStorage 缓存（24h TTL），命中则搜索立即可用（毫秒级）
     const cached = this._loadItemsCache();
     if (cached) {
       this._state.allItems = cached;
       this._state.itemsLoaded = true;
       this._hideHint();
-      // 后台静默更新，用户无感
-      this._refreshItemsFromNetwork(true);
       return;
     }
 
-    // 2. 缓存未命中，显示加载提示并等待网络请求
+    // 2. 从本地同源文件加载（GitHub Action 每日更新，无 CORS 问题）
     this._state.isLoadingItems = true;
     this._showHint('正在加载物品清单…', 'loading');
 
-    await this._refreshItemsFromNetwork();
-
-    this._state.isLoadingItems = false;
-  },
-
-  /** 从网络拉取最新物品清单并更新缓存 */
-  async _refreshItemsFromNetwork(silent) {
     try {
-      if (!silent) this._showProgress('正在连接 Warframe Market…', 0);
-      // Language/Platform 头不通过 CORS 代理转发，改为 URL 查询参数
-      const text = await wmFetch('/items?language=' + WM_LANG + '&platform=' + WM_PLATFORM, {
-        method: 'GET',
-        headers: {
-          'Language': WM_LANG,
-          'Platform': WM_PLATFORM,
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!silent) this._showProgress('正在解析物品数据…', 100);
-      const json = JSON.parse(text);
+      let json;
+      if (IS_FILE_PROTOCOL) {
+        // file:// 协议下 fetch 被阻止，通过 <script> 标签加载 .js wrapper
+        await loadScript('data/wf_market_items.js');
+        json = window.__WM_ITEMS_DATA;
+      } else {
+        const resp = await fetch('./data/wf_market_items.json');
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        json = JSON.parse(await resp.text());
+      }
       const items = (json && json.data) || [];
+      if (items.length === 0) throw new Error('空数据');
       const processed = this._processItems(items);
       this._state.allItems = processed;
       this._state.itemsLoaded = true;
       this._saveItemsCache(processed);
-      if (!silent) this._hideHint();
-      return; // 在线加载成功
+      this._hideHint();
     } catch (e) {
-      console.warn('WM API 在线加载失败:', e);
-    }
-
-    // 兜底：加载 GitHub Action 同步的同源本地缓存文件（无 CORS，适用于 GitHub Pages）
-    if (!this._state.itemsLoaded) {
-      try {
-        if (!silent) this._showProgress('正在从本地缓存加载…', 50);
-        const resp = await fetch('./data/wf_market_items.json');
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const text = await resp.text();
-        const json = JSON.parse(text);
-        const items = (json && json.data) || [];
-        if (items.length === 0) throw new Error('空数据');
-        const processed = this._processItems(items);
-        this._state.allItems = processed;
-        this._state.itemsLoaded = true;
-        this._saveItemsCache(processed);
-        if (!silent) this._hideHint();
-        return;
-      } catch (e2) {
-        console.warn('本地缓存文件加载失败:', e2);
-      }
-    }
-
-    // 全部失败
-    if (!this._state.itemsLoaded) {
+      console.warn('本地物品清单加载失败:', e);
       this._showHint('物品清单加载失败，自动补全不可用（仍可直接输入物品名或 URL slug 查询）', 'error');
     }
+
+    this._state.isLoadingItems = false;
   },
 
   /** 预计算所有小写字段，搜索时零开销 */
@@ -726,50 +689,39 @@ const Market = {
           thumb.appendChild(wmRenderComponentPlaceholder(comp));
         } else {
           const imgFn = wmSlugToImageFilename(item.slug);
-          const cdnUrl = `${WM_IMG_CDN_BASE}/${imgFn}`;
           const localUrl = `${WM_IMG_LOCAL_BASE}/${imgFn}`;
-          const retryUrl = `${WM_IMG_CDN_BASE}/${imgFn}?_r=1`;
-          const cacheKey = cdnUrl.replace(/^https?:\/\/[^/]+/, '');
+          const cacheKey = `/${imgFn}`;
 
           thumb.classList.add('is-loading');
 
           // 懒加载：仅当缩略图进入可视区域时才加载图片
           const loadImage = () => {
+            if (IS_FILE_PROTOCOL) {
+              // file:// 协议下直接用 <img src> 加载，fetch 被阻止
+              const imgEl = document.createElement('img');
+              imgEl.alt = '';
+              imgEl.src = localUrl;
+              imgEl.onload = () => thumb.classList.remove('is-loading');
+              imgEl.onerror = () => {
+                thumb.classList.remove('is-loading');
+                imgEl.remove();
+                const fb = wmGetComponentType(item.slug);
+                if (fb) thumb.appendChild(wmRenderComponentPlaceholder(fb));
+                else thumb.classList.add('fallback');
+              };
+              thumb.appendChild(imgEl);
+              if (imgEl.complete) thumb.classList.remove('is-loading');
+              return;
+            }
+
             (async () => {
+              // 1. 优先读取 IndexedDB 缓存
               let blob = await WmImgCache.get(cacheKey);
 
-            // 1. 优先尝试本地文件（同源，极快，无 CORS）
+            // 2. 从本地同源资源加载（GitHub Action 同步，无 CORS 问题）
             if (!blob) {
               try {
                 const resp = await fetch(localUrl);
-                if (resp.ok) {
-                  const newBlob = await resp.blob();
-                  if (newBlob.type.startsWith('image/')) {
-                    blob = newBlob;
-                    WmImgCache.set(cacheKey, newBlob);
-                  }
-                }
-              } catch {}
-            }
-
-            // 2. 再从 CDN 加载
-            if (!blob) {
-              try {
-                const resp = await fetch(cdnUrl);
-                if (resp.ok) {
-                  const newBlob = await resp.blob();
-                  if (newBlob.type.startsWith('image/')) {
-                    blob = newBlob;
-                    WmImgCache.set(cacheKey, newBlob);
-                  }
-                }
-              } catch {}
-            }
-
-            // 3. 带 ?_r=1 重试 CDN
-            if (!blob && retryUrl) {
-              try {
-                const resp = await fetch(retryUrl);
                 if (resp.ok) {
                   const newBlob = await resp.blob();
                   if (newBlob.type.startsWith('image/')) {
@@ -1018,8 +970,8 @@ const Market = {
   },
 
   async _fetchOrders(slug) {
-    // 将 platform/crossplay 放在 URL 查询参数中，确保通过 CORS 代理也能正确传递
-    const path = `/orders/item/${encodeURIComponent(slug)}?platform=${WM_PLATFORM}&crossplay=${WM_CROSSPLAY}`;
+    // 使用 /top 端点：服务端只返回最多 5 条在线卖单，payload 极小
+    const path = `/orders/item/${encodeURIComponent(slug)}/top?platform=${WM_PLATFORM}&crossplay=${WM_CROSSPLAY}`;
     const text = await wmFetch(path, {
       method: 'GET',
       headers: {
@@ -1030,35 +982,31 @@ const Market = {
     });
     const json = JSON.parse(text);
     if (json && json.error) throw new Error(json.error);
-    return (json && json.data) || [];
+    // /top 返回 { data: { sell: [...], buy: [...] } }，只取 sell
+    const sellOrders = (json && json.data && json.data.sell) || [];
+    // 提取精简字段，丢弃不需要的字段
+    return sellOrders.map(o => ({
+      platinum: o.platinum,
+      quantity: o.quantity,
+      ingameName: o.user ? o.user.ingameName : '',
+      platform: o.user ? o.user.platform : '',
+    }));
   },
 
   // ===== 统计计算 =====
+  // 基于 /top 返回的最多 5 条最低价在线卖单
   _computeStats(orders, slug, itemObj) {
-    const valid = orders.filter(o =>
-      o.type === 'sell' && o.user && (o.user.status === 'ingame' || o.user.status === 'online')
-    );
-
-    if (valid.length === 0) {
+    const sellers = orders.length;
+    if (sellers === 0) {
       return { empty: true, slug, itemName: itemObj ? itemObj.name : slug, sellers: 0 };
     }
 
-    const prices = valid.map(o => o.platinum).sort((a, b) => a - b);
-    const sellers = valid.length;
+    // /top 已按买家最优排序（价格升序），无需再排序
+    const prices = orders.map(o => o.platinum);
+
     const floor = prices[0];
     const mode = this._calcMode(prices);
     const avg = this._calcTrimmedAvg(prices, 0.05);
-
-    const cheapest = valid.reduce((min, o) => o.platinum < min.platinum ? o : min, valid[0]);
-
-    // 按 platinum 从低到高排序后取前10
-    const sortedValid = valid.slice().sort((a, b) => a.platinum - b.platinum);
-    const sampleOrders = sortedValid.slice(0, 10).map(o => ({
-      platinum: o.platinum,
-      quantity: o.quantity,
-      ingameName: o.user.ingameName,
-      platform: o.user.platform,
-    }));
 
     return {
       empty: false,
@@ -1070,12 +1018,12 @@ const Market = {
       avg: Math.round(avg * 10) / 10,
       sellers,
       cheapest: {
-        name: cheapest.user.ingameName,
-        platinum: cheapest.platinum,
-        quantity: cheapest.quantity,
-        platform: cheapest.user.platform,
+        name: orders[0].ingameName,
+        platinum: orders[0].platinum,
+        quantity: orders[0].quantity,
+        platform: orders[0].platform,
       },
-      sampleOrders,
+      sampleOrders: orders,
     };
   },
 
@@ -1203,7 +1151,7 @@ const Market = {
       el.innerHTML = `
         <div class="market-error-icon"><span class="material-icons">sentiment_dissatisfied</span></div>
         <div class="market-error-text">暂无在线卖家</div>
-        <div class="market-error-desc">${stat.itemName} 当前没有游戏内在线的卖单，请稍后再来查看</div>
+        <div class="market-error-desc">${stat.itemName} 当前没有游戏内在线的卖单</div>
       `;
       this._els.resultArea.appendChild(el);
       return;
@@ -1225,9 +1173,9 @@ const Market = {
     const statsGrid = document.createElement('div');
     statsGrid.className = 'market-stats-grid';
     statsGrid.appendChild(this._createStatBox('建议价（众数）', stat.mode, 'gold', 'mode', '出现频率最高的价格，最贴近真实成交'));
-    statsGrid.appendChild(this._createStatBox('最低底价', stat.floor, 'blue', 'floor', '当前在线卖家中最低报价'));
-    statsGrid.appendChild(this._createStatBox('切尾均价', stat.avg, 'silver', 'avg', '剔除最高/最低 5% 后的均价'));
-    statsGrid.appendChild(this._createStatBox('在线卖家', stat.sellers, 'green', 'sellers', '过滤后的有效卖单数'));
+    statsGrid.appendChild(this._createStatBox('最低底价', stat.floor, 'blue', 'floor', '在线卖家中最低报价'));
+    statsGrid.appendChild(this._createStatBox('切尾均价', stat.avg, 'silver', 'avg', '剔除最高/最低后的均价'));
+    statsGrid.appendChild(this._createStatBox('在线卖家（最多5个）', stat.sellers, 'green', 'sellers', '当前返回的在线卖单数'));
     card.appendChild(statsGrid);
 
     const seller = document.createElement('div');
@@ -1283,7 +1231,7 @@ const Market = {
 
       const label = document.createElement('div');
       label.className = 'market-sample-label';
-      label.innerHTML = `<span class="material-icons">list</span><span>最低 ${stat.sampleOrders.length} 个报价</span>`;
+      label.innerHTML = `<span class="material-icons">list</span><span>在线卖单报价（共 ${stat.sampleOrders.length} 条）</span>`;
       sample.appendChild(label);
 
       const list = document.createElement('div');
@@ -1367,35 +1315,6 @@ const Market = {
       console.warn('复制失败:', e);
       showSnackbar('复制失败，请手动复制');
     }
-  },
-
-  _showProgress(msg, pct) {
-    clearEl(this._els.hint);
-    this._els.hint.className = 'market-hint loading';
-    this._els.hint.style.display = '';
-
-    const wrap = document.createElement('div');
-    wrap.className = 'market-progress-wrap';
-
-    const bar = document.createElement('div');
-    bar.className = 'market-progress-bar' + (pct < 0 ? ' indeterminate' : '');
-
-    if (pct >= 0) {
-      const fill = document.createElement('div');
-      fill.className = 'market-progress-fill';
-      fill.style.width = pct + '%';
-      bar.appendChild(fill);
-    }
-
-    wrap.appendChild(bar);
-
-    const meta = document.createElement('div');
-    meta.className = 'market-progress-meta';
-    const pctText = pct < 0 ? '加载中' : pct + '%';
-    meta.innerHTML = `<span class="market-progress-text">${msg}</span><span class="market-progress-pct">${pctText}</span>`;
-    wrap.appendChild(meta);
-
-    this._els.hint.appendChild(wrap);
   },
 
   // ===== 提示条 =====
