@@ -17,6 +17,46 @@
   /* 移动端无 hover，便签操作按钮常驻显示 */
   .note-card-actions { opacity: 1; }
 
+  /* 移动端隐藏浏览器工具栏多余的站点图标，并在"内置浏览器"左侧加金色竖线 */
+  .browser-toolbar .site-icon { display: none; }
+  .browser-toolbar .toolbar-brand {
+    position: relative;
+    padding-left: 14px;
+  }
+  .browser-toolbar .toolbar-brand::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background: var(--gold);
+    border-radius: 2px;
+    box-shadow: 0 0 8px var(--gold-glow);
+  }
+
+  /* 移动端隐藏齿轮图标、"SETTINGS"文字及下方单独的"设置"大标题，
+     将"设置"二字移到顶部竖线右侧同行显示 */
+  .settings-title-icon,
+  .settings-label,
+  .settings-heading { display: none; }
+
+  .settings-title-bar {
+    display: flex;
+    align-items: center;
+    overflow: visible;
+  }
+  .settings-title-bar::after {
+    content: "设置";
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+    margin-left: 10px;
+    white-space: nowrap;
+  }
+
   .taskboard-header {
     display: block;
   }

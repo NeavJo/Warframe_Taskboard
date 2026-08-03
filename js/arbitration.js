@@ -313,9 +313,11 @@ const Arbitration = {
 
     hvList.forEach((item) => {
       const targetTime = item.startTime * 1000;
+      const endTime = item.endTime * 1000;
 
-      // 跳过已过期的任务（超过自动删除时间）
-      if (now - targetTime > REMINDER_AUTO_DELETE_MS) return;
+      // 跳过已结束的任务（超过任务结束时间 = 开始后1h）
+      // 即使任务正在进行中（已开始未结束），也会添加提醒
+      if (now >= endTime) return;
 
       const tempId = `arbi_temp_${item.startTime}`;
       if (existing.some(r => r.id === tempId)) return;
@@ -327,6 +329,7 @@ const Arbitration = {
         icon: 'gavel',
         accent: '#1a5cff',
         targetTime: new Date(targetTime).toISOString(),
+        autoDeleteTime: new Date(endTime).toISOString(),
         isCompleted: false,
         createdAt: new Date().toISOString(),
         isTemp: true,
@@ -351,7 +354,7 @@ const Arbitration = {
     settingRow.innerHTML = `
       <div class="arbi-setting-info">
         <div class="arbi-setting-title">每日自动添加高价值提醒</div>
-        <div class="arbi-setting-desc">每天 0 点自动将 S/A+/A/A- 级仲裁任务添加到提醒列表，30分钟后自动删除</div>
+        <div class="arbi-setting-desc">每天 0 点自动将 S/A+/A/A- 级仲裁任务添加到提醒列表，任务开始 1 小时后（即任务结束时）自动删除</div>
       </div>
       <label class="toggle-switch">
         <input type="checkbox" id="arbi-auto-add-toggle" ${this._state.autoAddEnabled ? 'checked' : ''}>

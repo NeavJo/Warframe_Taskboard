@@ -80,6 +80,11 @@ const Reminder = {
     return reminders.filter(r => {
       const targetTime = new Date(r.targetTime).getTime();
       if (r.isTemp) {
+        // 仲裁临时提醒：基于 autoDeleteTime（任务开始后1h，即任务结束时间）自动删除
+        if (r.autoDeleteTime) {
+          return now < new Date(r.autoDeleteTime).getTime();
+        }
+        // 向后兼容：无 autoDeleteTime 的旧数据使用原 30 分钟逻辑
         return now - targetTime <= REMINDER_AUTO_DELETE_MS;
       }
       return !r.isCompleted || now - targetTime <= REMINDER_AUTO_DELETE_MS;
