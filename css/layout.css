@@ -229,13 +229,6 @@
   margin-right: 8px;
 }
 
-.sidebar-footer {
-  padding: 12px 20px 20px;
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: var(--text-muted);
-}
-
 /* ----- Content Panel (页面容器) ----- */
 .content-panel {
   flex: 1;

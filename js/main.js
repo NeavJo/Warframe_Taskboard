@@ -21,6 +21,7 @@
     { label: '仲裁', icon: 'gavel', pageId: 'page-arbitration' },
     { label: '浏览器（wiki）', icon: 'public', pageId: 'page-browser' },
     { label: '市场', icon: 'storefront', pageId: 'page-market' },
+    { label: '仓库', icon: 'inventory_2', pageId: 'page-inventory' },
     { label: '设置', icon: 'settings', pageId: 'page-settings' },
   ];
 
@@ -43,6 +44,7 @@
     browser: null,
     notes: null,
     market: null,
+    inventory: null,
 
     // =============================================================
     // 启动
@@ -67,6 +69,7 @@
         notes: document.getElementById('page-notes'),
         browser: document.getElementById('page-browser'),
         market: document.getElementById('page-market'),
+        inventory: document.getElementById('page-inventory'),
         settings: document.getElementById('page-settings'),
       };
 
@@ -112,6 +115,11 @@
       defer(() => {
         this.market = Market;
         this.market.init(this._els.pages.market);
+      });
+
+      defer(() => {
+        this.inventory = Inventory;
+        this.inventory.init(this._els.pages.inventory);
       });
 
       defer(() => {
@@ -271,6 +279,7 @@
       if (this.reminder) this.reminder.reloadFromStore();
       if (this.arbitration) this.arbitration.reloadFromStore();
       if (this.notes) this.notes.reloadFromStore();
+      if (this.inventory) this.inventory.reloadFromStore();
     },
 
     // =============================================================
@@ -422,22 +431,8 @@
         const clone = template.content.cloneNode(true);
         center.appendChild(clone);
 
-        // 绑定控件事件
-        const urlInput = document.getElementById('br-url-input');
-        const reloadBtn = document.getElementById('br-reload-btn');
-        const homeBtn = document.getElementById('br-home-btn');
-        const siteTabs = document.getElementById('br-wide-site-tabs');
-
-        if (urlInput) {
-          urlInput.value = this.browser.getCurrentUrl();
-          urlInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-              this.browser.handleUrlSubmit(urlInput.value);
-            }
-          });
-        }
-
         // 预设站点按钮（宽屏版）
+        const siteTabs = document.getElementById('br-wide-site-tabs');
         if (siteTabs) {
           clearEl(siteTabs);
           PRESET_SITES.forEach((site, i) => {
@@ -448,7 +443,6 @@
               onClick: () => {
                 if (isIframe) {
                   this.browser._handleSiteClick(i);
-                  if (urlInput) urlInput.value = site.url;
                 } else {
                   window.open(site.url, '_blank');
                 }
@@ -459,12 +453,6 @@
             siteTabs.appendChild(btn);
           });
         }
-
-        if (reloadBtn) reloadBtn.addEventListener('click', () => this.browser.reload());
-        if (homeBtn) homeBtn.addEventListener('click', () => {
-          this.browser.goHome();
-          if (urlInput) urlInput.value = PRESET_SITES[IFRAME_SITE_INDEX].url;
-        });
       }
     },
 

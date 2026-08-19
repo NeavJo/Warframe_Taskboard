@@ -40,6 +40,7 @@ const STORE_KEYS = {
   REMINDERS: 'wf_reminders_state',
   NOTES: 'wf_notes_state',
   ARBI_AUTO_ADD: 'wf_arbi_auto_add',
+  INVENTORY: 'wf_inventory_v1',
 };
 
 const DATA_VERSION = 4;
@@ -242,6 +243,30 @@ const Store = {
   },
 
   // =============================================================
+  // 仓库计数器存储
+  // =============================================================
+
+  loadInventory() {
+    try {
+      const raw = localStorage.getItem(STORE_KEYS.INVENTORY);
+      if (!raw) return { gold: 0, silver: 0, bronze: 0 };
+      const parsed = JSON.parse(raw);
+      return {
+        gold: typeof parsed.gold === 'number' ? parsed.gold : 0,
+        silver: typeof parsed.silver === 'number' ? parsed.silver : 0,
+        bronze: typeof parsed.bronze === 'number' ? parsed.bronze : 0,
+      };
+    } catch (e) {
+      return { gold: 0, silver: 0, bronze: 0 };
+    }
+  },
+
+  saveInventory(counts) {
+    this._save(STORE_KEYS.INVENTORY, counts);
+    this._triggerSync();
+  },
+
+  // =============================================================
   // 导出/导入全部数据
   // =============================================================
 
@@ -265,6 +290,7 @@ const Store = {
         arbiAutoAdd: this.loadArbiAutoAdd(),
       },
       marketFavorites,
+      inventory: this.loadInventory(),
     };
   },
 
@@ -284,6 +310,13 @@ const Store = {
       try {
         localStorage.setItem('wf_market_favorites_v1', JSON.stringify(data.marketFavorites));
       } catch (e) {}
+    }
+    if (data.inventory && typeof data.inventory === 'object') {
+      this.saveInventory({
+        gold: typeof data.inventory.gold === 'number' ? data.inventory.gold : 0,
+        silver: typeof data.inventory.silver === 'number' ? data.inventory.silver : 0,
+        bronze: typeof data.inventory.bronze === 'number' ? data.inventory.bronze : 0,
+      });
     }
     return true;
   },

@@ -33,35 +33,6 @@ const TestRunner = {
     return tiles[index] || null;
   },
 
-  // 通过图标名称获取侧栏按钮
-  navBtnByIcon(iconName) {
-    const tiles = this.$$('.sidebar-tile');
-    return tiles.find(t => t.querySelector(`.material-icons`)?.textContent === iconName) || null;
-  },
-
-  waitFor(sel, timeout = 3000) {
-    const start = Date.now();
-    while (Date.now() - start < timeout) {
-      const el = this.$(sel);
-      if (el) return el;
-    }
-    return null;
-  },
-
-  async click(sel) {
-    const el = this.waitFor(sel, 2000);
-    if (el) {
-      el.click();
-      await this.wait(100);
-      return true;
-    }
-    return false;
-  },
-
-  exists(sel) {
-    return !!this.$(sel);
-  },
-
   // 检查页面是否可见（通过 page-view 的 active class）
   pageVisible(pageId) {
     const page = document.getElementById(pageId);
@@ -73,13 +44,6 @@ const TestRunner = {
   switchPage(index) {
     const btn = this.navBtn(index);
     if (btn) btn.click();
-  },
-
-  visible(sel) {
-    const el = this.$(sel);
-    if (!el) return false;
-    const style = getComputedStyle(el);
-    return style.display !== 'none' && style.visibility !== 'hidden';
   },
 
   assert(condition, message) {
@@ -481,12 +445,7 @@ const TestRunner = {
         }, 1500);
       } catch (e) {
         // 降级方案
-        const ta = document.createElement('textarea');
-        ta.value = reportText;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
+        await copyText(reportText);
         showSnackbar('报告已复制');
       }
     });

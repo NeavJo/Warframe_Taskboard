@@ -337,11 +337,6 @@
   display: block;
 }
 
-.market-ac-thumb .material-icons {
-  font-size: 18px;
-  color: var(--text-muted);
-}
-
 .market-ac-thumb-bp {
   font-size: 10px;
   font-weight: 700;

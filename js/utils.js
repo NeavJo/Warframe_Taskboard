@@ -65,6 +65,14 @@ function formatDuration(ms) {
 }
 
 /**
+ * 格式化时间为 "HH:MM"
+ */
+function formatHHMM(date) {
+  const d = date || new Date();
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+/**
  * 计算日常/周常倒计时文字
  */
 function countdownText(now) {
@@ -111,6 +119,24 @@ function loadScript(src) {
  */
 function clearEl(el) {
   while (el.firstChild) el.removeChild(el.firstChild);
+}
+
+async function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {}
+  }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  const ok = document.execCommand('copy');
+  document.body.removeChild(ta);
+  return ok;
 }
 
 /**

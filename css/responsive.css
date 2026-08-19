@@ -157,6 +157,9 @@
 
   /* 窄屏 市场查价页 */
   .market-header { display: block; }
+
+  /* 窄屏 仓库计数页 */
+  .inventory-header { display: block; }
   .market-content { padding: 16px; }
   .market-stats-grid { grid-template-columns: repeat(2, 1fr); }
   .market-actions .wf-btn { min-width: 0; flex: 1 1 50%; }
@@ -236,6 +239,4 @@
   .market-stat-label { font-size: 10px; }
   .market-stat-desc { display: none; }
   .market-actions .wf-btn { flex: 1 1 100%; }
-  #mk-query-btn > span:last-child { display: none; }
-  #mk-query-btn { width: 36px; padding: 0; }
 }

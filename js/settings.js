@@ -263,10 +263,7 @@ const Settings = {
     if (!configured) {
       this._els.syncStatusText.textContent = '未配置';
     } else if (lastSync > 0) {
-      const date = new Date(lastSync);
-      const hh = String(date.getHours()).padStart(2, '0');
-      const mm = String(date.getMinutes()).padStart(2, '0');
-      this._els.syncStatusText.textContent = `已同步 · ${hh}:${mm}`;
+      this._els.syncStatusText.textContent = `已同步 · ${formatHHMM(new Date(lastSync))}`;
     } else {
       this._els.syncStatusText.textContent = '已配置 · 尚未同步';
     }
@@ -274,11 +271,8 @@ const Settings = {
 
   _updateUploadStatus(timestamp) {
     if (!this._els.syncStatus || !this._els.syncStatusText) return;
-    const date = new Date(timestamp);
-    const hh = String(date.getHours()).padStart(2, '0');
-    const mm = String(date.getMinutes()).padStart(2, '0');
     this._els.syncStatus.className = 'sync-status configured';
-    this._els.syncStatusText.textContent = `已上传 · ${hh}:${mm}`;
+    this._els.syncStatusText.textContent = `已上传 · ${formatHHMM(new Date(timestamp))}`;
   },
 
   _setSyncStatus(kind, text) {
@@ -505,12 +499,14 @@ const Settings = {
     const reminderCount = hasReminders ? data.reminders.length : 0;
     const notesCount = hasNotes ? data.notes.length : 0;
     const favCount = data.marketFavorites && Array.isArray(data.marketFavorites) ? data.marketFavorites.length : 0;
+    const hasInventory = data.inventory && typeof data.inventory === 'object';
+    const invText = hasInventory ? '和仓库计数' : '';
     const reminderText = reminderCount > 0 ? `和 ${reminderCount} 个提醒事项` : '';
     const notesText = notesCount > 0 ? `和 ${notesCount} 个便签` : '';
     const favText = favCount > 0 ? `和 ${favCount} 个市场收藏` : '';
     const confirmed = await confirmDialog({
       title: '导入确认',
-      message: `即将覆盖当前 ${data.dailyTasks.length} 个日常任务和 ${data.weeklyTasks.length} 个周常任务${reminderText}${notesText}${favText}。当前数据将丢失，是否继续？`,
+      message: `即将覆盖当前 ${data.dailyTasks.length} 个日常任务和 ${data.weeklyTasks.length} 个周常任务${reminderText}${notesText}${favText}${invText}。当前数据将丢失，是否继续？`,
       confirmText: '确认导入',
       danger: true,
     });
@@ -527,6 +523,7 @@ const Settings = {
     const reminderMsg = reminderCount > 0 ? ` + ${reminderCount} 提醒` : '';
     const notesMsg = notesCount > 0 ? ` + ${notesCount} 便签` : '';
     const favMsg = favCount > 0 ? ` + ${favCount} 收藏` : '';
-    showSnackbar(`已导入 ${data.dailyTasks.length} 日常 + ${data.weeklyTasks.length} 周常${reminderMsg}${notesMsg}${favMsg}`);
+    const invMsg = hasInventory ? ' + 仓库计数' : '';
+    showSnackbar(`已导入 ${data.dailyTasks.length} 日常 + ${data.weeklyTasks.length} 周常${reminderMsg}${notesMsg}${favMsg}${invMsg}`);
   },
 };

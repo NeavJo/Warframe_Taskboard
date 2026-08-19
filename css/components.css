@@ -65,6 +65,10 @@
   --card-accent: #B490FF;
   --card-accent-deep: rgba(180, 144, 255, 0.4);
 }
+.wf-card.bronze {
+  --card-accent: #CD7F32;
+  --card-accent-deep: #6B4020;
+}
 
 .wf-card > * {
   position: relative;
@@ -560,10 +564,6 @@
   overflow-y: auto;
   margin-top: 14px;
   padding: 2px 0;
-}
-
-.panel-list.drag-active .task-card {
-  cursor: default;
 }
 
 /* ----- 任务卡片 ----- */

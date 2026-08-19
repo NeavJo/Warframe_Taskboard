@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="css/pages/arbitration.css">
   <link rel="stylesheet" href="css/pages/notes.css">
   <link rel="stylesheet" href="css/pages/market.css">
+  <link rel="stylesheet" href="css/pages/inventory.css">
   <link rel="stylesheet" href="css/responsive.css">
 
   <!-- 预加载字体（可选） -->
@@ -85,6 +86,8 @@
         <div class="page-view" id="page-browser"></div>
         <!-- 市场查价页 -->
         <div class="page-view" id="page-market"></div>
+        <!-- 仓库计数页 -->
+        <div class="page-view" id="page-inventory"></div>
         <!-- 设置页 -->
         <div class="page-view" id="page-settings"></div>
       </main>
@@ -96,16 +99,6 @@
     <template id="browser-controls-template">
       <div class="browser-controls" id="br-wide-controls">
         <div class="site-tabs" id="br-wide-site-tabs"></div>
-        <div class="url-bar">
-          <span class="material-icons link-icon">link</span>
-          <input type="text" id="br-url-input" placeholder="输入 URL…" />
-        </div>
-        <button class="wf-btn wf-icon-btn" id="br-reload-btn" title="刷新">
-          <span class="material-icons">refresh</span>
-        </button>
-        <button class="wf-btn wf-icon-btn" id="br-home-btn" title="首页">
-          <span class="material-icons">home</span>
-        </button>
       </div>
     </template>
   </div>
@@ -124,6 +117,7 @@
   <script src="js/browser.js"></script>
   <script src="js/notes.js"></script>
   <script src="js/wf_market.js"></script>
+  <script src="js/inventory.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/test_runner.js"></script>
   <script src="js/main.js"></script>

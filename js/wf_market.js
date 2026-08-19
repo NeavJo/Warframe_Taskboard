@@ -26,7 +26,6 @@ const WM_FETCH_TIMEOUT = 15000; // 单个请求 15s 超时
 const WM_ITEMS_CACHE_KEY = 'wf_market_items_cache_v4';
 const WM_ITEMS_CACHE_TTL = 24 * 60 * 60 * 1000; // 物品清单缓存 24h（后台静默更新保证新鲜度）
 
-const WM_LANG = 'zh-hans';
 const WM_PLATFORM = 'pc';
 const WM_CROSSPLAY = 'true';
 
@@ -316,7 +315,6 @@ const Market = {
     allItems: [],
     itemsLoaded: false,
     isLoadingItems: false,
-    isQuerying: false,
     activeIndex: -1,
     matches: [],
     selectedItem: null,
@@ -403,8 +401,6 @@ const Market = {
     this._loadFavorites();
     this._renderFavoritesBar();
   },
-
-  reloadFromStore() {},
 
   /** 初始化缩略图懒加载（IntersectionObserver） */
   _initLazyLoad() {
@@ -945,7 +941,6 @@ const Market = {
     }
 
     this._showResultState('loading');
-    this._state.isQuerying = true;
     try {
       const orders = await this._fetchOrders(slug);
       const stat = this._computeStats(orders, slug, itemObj);
@@ -955,8 +950,6 @@ const Market = {
     } catch (e) {
       console.warn('查价失败:', e);
       this._showResultState('error', e.message || '查询失败');
-    } finally {
-      this._state.isQuerying = false;
     }
   },
 
@@ -1298,18 +1291,7 @@ const Market = {
   async _copyWhisperWithSeller(stat, sellerName, platinum) {
     const cmd = this._buildWhisperCommand(sellerName, stat.itemNameEn, platinum);
     try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(cmd);
-      } else {
-        const ta = document.createElement('textarea');
-        ta.value = cmd;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-      }
+      await copyText(cmd);
       showSnackbar('已复制白金私聊指令');
     } catch (e) {
       console.warn('复制失败:', e);

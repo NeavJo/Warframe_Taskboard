@@ -1,0 +1,140 @@
+/* inventory.css — 仓库 Prime 部件计数器 */
+
+.inventory-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.inventory-content {
+  padding: 20px;
+  flex: 1;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* 卡片 */
+.inventory-card {
+  --card-fill-tint: 8%;
+  --card-inset: 1.5px;
+}
+
+.inventory-card-inner {
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.inventory-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inventory-card-icon {
+  font-size: 28px;
+  color: var(--card-accent);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--card-accent) 50%, transparent));
+}
+
+.inventory-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+}
+
+.inventory-card-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+/* 数字显示 */
+.inventory-count-display {
+  margin: 4px 0;
+}
+
+.inventory-count-number {
+  font-size: 56px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--card-accent);
+  text-shadow:
+    0 0 12px color-mix(in srgb, var(--card-accent) 40%, transparent),
+    0 0 24px color-mix(in srgb, var(--card-accent) 20%, transparent);
+  line-height: 1;
+  display: inline-block;
+  transition: transform 0.15s ease-out;
+}
+
+.count-bump {
+  animation: countBump 0.3s ease-out;
+}
+
+@keyframes countBump {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* 按钮组 */
+.inventory-btn-group {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.inventory-btn {
+  flex: 1;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.inventory-btn-icon {
+  width: 40px;
+  flex: none;
+  height: 40px;
+  padding: 0;
+}
+
+/* 编辑对话框 */
+.inventory-edit-input {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+/* 响应式：窄屏单列 */
+@media (max-width: 899px) {
+  .inventory-grid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+}
+
+/* 窄屏减小间距 */
+@media (max-width: 479px) {
+  .inventory-content {
+    padding: 12px;
+  }
+  .inventory-card-inner {
+    padding: 18px 14px;
+  }
+  .inventory-count-number {
+    font-size: 48px;
+  }
+  .inventory-btn {
+    font-size: 13px;
+  }
+}

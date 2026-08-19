@@ -23,7 +23,6 @@ const IFRAME_SITE_INDEX = PRESET_SITES.findIndex(s => s.iframe);
 
 const Browser = {
   _state: {
-    currentIframeUrl: '',
     isReady: false,
   },
 
@@ -44,7 +43,7 @@ const Browser = {
                 <span class="material-icons mi-md">dashboard</span>
               </button>
               <span class="material-icons site-icon" id="br-site-icon" style="color:${PRESET_SITES[IFRAME_SITE_INDEX].accent};text-shadow:0 0 6px ${PRESET_SITES[IFRAME_SITE_INDEX].accent};">public</span>
-              <span class="toolbar-brand">内置浏览器</span>
+              <span class="toolbar-brand">Browser/内置浏览器</span>
             </div>
             <div class="page-spacer"></div>
             <span class="toolbar-hint"></span>
@@ -118,46 +117,9 @@ const Browser = {
   },
 
   _navigate(url) {
-    this._state.currentIframeUrl = url;
     this._els.loading.style.display = 'flex';
     this._els.iframe.style.display = 'none';
     this._els.iframe.src = url;
     localStorage.setItem(LAST_URL_KEY, url);
-  },
-
-  /**
-   * 回到 iframe 默认站点首页
-   */
-  goHome() {
-    const site = PRESET_SITES[IFRAME_SITE_INDEX];
-    this._navigate(site.url);
-  },
-
-  /**
-   * 刷新 iframe
-   */
-  reload() {
-    if (this._els.iframe.src) {
-      this._els.iframe.src = this._els.iframe.src;
-    }
-  },
-
-  /**
-   * URL 提交处理（由外部 URL 输入框调用）
-   */
-  handleUrlSubmit(val) {
-    let url = val.trim();
-    if (!url) return;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://' + url;
-    }
-    this._navigate(url);
-  },
-
-  /**
-   * 获取当前 iframe URL
-   */
-  getCurrentUrl() {
-    return this._els.iframe.src || '';
   },
 };

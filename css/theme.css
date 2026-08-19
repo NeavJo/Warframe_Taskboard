@@ -22,7 +22,6 @@
 
   --yellow: #FFD84D;
   --yellow-dim: rgba(255, 216, 77, 0.6);
-  --yellow-glow: rgba(255, 216, 77, 0.25);
 
   --text-primary: #E6EDF3;
   --text-secondary: #8B9AAA;
@@ -32,11 +31,6 @@
   --danger: #E5534B;
 
   /* ----- 从 orokin.css 迁移的变量 ----- */
-  --chamfer-sm: 4px;
-  --chamfer-md: 8px;
-  --chamfer-lg: 12px;
-  --chamfer-xl: 16px;
-
   --gold-deep: #8a6d1b;
 
   --blue-bright: #80d4ff;
