@@ -53,7 +53,7 @@ async function wmFetch(path, options = {}) {
   const fullUrl = WM_API_ORIGIN + path;
   const urls = [];
 
-  // Cloudflare Worker 代理（优先）
+  // Cloudflare Worker 代理（优先）- 发送相对路径，与 Worker 默认行为一致
   if (WM_WORKER_URL && !WM_WORKER_URL.includes('YOUR_WORKER')) {
     urls.push(WM_WORKER_URL + '/proxy' + path);
   }
