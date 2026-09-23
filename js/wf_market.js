@@ -37,32 +37,30 @@ const WM_IS_LOCAL = (function() {
 })();
 
 const WM_PROXY_PREFIX = '/proxy/';
-const WM_CORS_PROXIES = [
-  'https://corsproxy.io/?url=',
-  'https://api.allorigins.win/raw?url=',
-  'https://corsproxy.org/latest?url=',
-  'https://api-proxy-forever.vercel.app/proxy?url=',
-  'https://corsproxy.anywhere.link/v1/?url=',
-];
+// TODO: 部署 Cloudflare Worker 后将下方占位符替换为真实地址（不带 /proxy）
+const WM_WORKER_URL = 'https://wftb-market-proxy.neavphjeason.workers.dev';
+const WM_CORS_PROXIES = [];
+
+const WM_USER_AGENT = 'WarframeTaskboard/1.0 (+https://github.com/neavj/warframe-taskboard)';
 
 /**
  * 并行尝试所有可用 URL 获取 API 数据，返回最快成功的响应文本
+ * - Cloudflare Worker 代理（优先）
  * - 本地 dev-server 代理
- * - 多个公共 CORS 代理（并行）
  * - 直连（兜底）
  */
 async function wmFetch(path, options = {}) {
   const fullUrl = WM_API_ORIGIN + path;
   const urls = [];
 
+  // Cloudflare Worker 代理（优先）
+  if (WM_WORKER_URL && !WM_WORKER_URL.includes('YOUR_WORKER')) {
+    urls.push(WM_WORKER_URL + '/proxy' + path);
+  }
+
   // 本地代理（仅本地环境且未加 ?noproxy）
   if (WM_IS_LOCAL && !location.search.includes('noproxy')) {
     urls.push(WM_PROXY_PREFIX + fullUrl);
-  }
-
-  // CORS 代理（并行）
-  for (const proxy of WM_CORS_PROXIES) {
-    urls.push(proxy + encodeURIComponent(fullUrl));
   }
 
   // 直连兜底
@@ -71,7 +69,14 @@ async function wmFetch(path, options = {}) {
   const errors = [];
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), WM_FETCH_TIMEOUT);
-  const mergedOptions = { ...options, signal: controller.signal };
+  const mergedOptions = {
+    ...options,
+    signal: controller.signal,
+    headers: {
+      'User-Agent': WM_USER_AGENT,
+      ...options.headers,
+    },
+  };
 
   // 使用 Promise.allSettled：将所有请求同时发出，取第一个成功
   const results = await Promise.allSettled(
