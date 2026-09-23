@@ -55,7 +55,7 @@ async function wmFetch(path, options = {}) {
 
   // Cloudflare Worker 代理（优先）- 发送相对路径，与 Worker 默认行为一致
   if (WM_WORKER_URL && !WM_WORKER_URL.includes('YOUR_WORKER')) {
-    urls.push(WM_WORKER_URL + '/proxy' + path);
+    urls.push(WM_WORKER_URL + '/proxy/v2' + path);
   }
 
   // 本地代理（仅本地环境且未加 ?noproxy）
